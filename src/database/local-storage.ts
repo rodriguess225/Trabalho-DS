@@ -1,17 +1,13 @@
 // src/database/local-storage.ts
+import { Exame } from '../models/exame.entity';
 import { Prescricao } from '../models/prescricao.entity';
-import { User } from '../models/user.entity';
-
-const bcrypt = require("bcryptjs");
-
 
 // Esta lista simula a nossa tabela na base de dados
 export const baseDeDadosLocal: Prescricao[] = [
-    { id: 1, medicamento: "Aspirina", dose: "500mg", medico_nome: "Dr. House" }
+    { id: 1, medicamento: "Aspirina", dose: "500mg", medico_nome: "Dr. House" , dataCriacao : new Date() }
 ];
 
-// "Tabela" de utilizadores
-export const baseDeDadosUsers: User[] = [
-    { id: 1, username: "medico", password: bcrypt.hashSync("1234", 1), role: "medico" },
-    { id: 2, username: "admin", password: bcrypt.hashSync("admin1234", 1), role: "admin" }
+// Esta lista simula a nossa tabela de exames na base de dados
+export const baseDeDadosExamesLocal: Exame[] = [
+    { id: 1, nome: "RX Torax", codigo: "RX01", medico_nome: "Dr. House" }
 ];
