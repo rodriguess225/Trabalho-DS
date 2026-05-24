@@ -89,6 +89,37 @@
     .erro {
       color: red;
     }
+    /* Estilos específicos para o Questionário CARAT */
+    .carat-pergunta {
+      margin-bottom: 16px;
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .carat-pergunta label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .carat-pergunta select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    .carat-resultados {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 6px;
+      display: none; /* Fica escondido até o questionário ser submetido */
+    }
   </style>
 </head>
 
@@ -99,6 +130,7 @@
     <button onclick="mostrarPagina('pagina-prescricoes')">Prescrições</button>
     <button onclick="mostrarPagina('pagina-exames')">Exames</button>
     <button onclick="mostrarPagina('pagina-fhir')">Consulta FHIR</button>
+    <button onclick="mostrarPagina('pagina-carat')">Questionário CARAT</button>
   </nav>
 
   <main>
@@ -149,6 +181,51 @@
       </div>
 
       </div>
+    </section>
+
+    <section id="pagina-carat" class="pagina">
+      <h1>Questionário CARAT</h1>
+      <p>Nas últimas 4 semanas, por causa da sua asma/rinite/alergia, em média, quantas vezes teve:</p>
+
+      <form id="formCarat">
+        
+        <h3 style="color: #4b5563;">Vias Aéreas Superiores</h3>
+        <div class="carat-pergunta"><label>1. Nariz entupido? *</label><select id="caratQ1" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>2. Espirros? *</label><select id="caratQ2" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>3. Comichão no nariz? *</label><select id="caratQ3" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>4. Corrimento/pingo do nariz? *</label><select id="caratQ4" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+
+        <h3 style="color: #4b5563; margin-top: 30px;">Vias Aéreas Inferiores</h3>
+        <div class="carat-pergunta"><label>5. Falta de ar/dispneia? *</label><select id="caratQ5" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>6. Chiadeira no peito/pieira? *</label><select id="caratQ6" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>7. Aperto no peito com esforço físico? *</label><select id="caratQ7" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>8. Cansaço/dificuldade em fazer as suas actividades ou tarefas do dia-a-dia? *</label><select id="caratQ8" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>9. Acordou durante a noite por causa da sua asma/rinite/alergia? *</label><select id="caratQ9" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+
+        <p style="margin-top: 30px; font-weight: bold;">Nas últimas 4 semanas, por causa da sua asma/rinite/alergia, quantas vezes teve que:</p>
+        <div class="carat-pergunta">
+          <label>10. Aumentar a utilização dos seus medicamentos? *</label>
+          <select id="caratQ10" required>
+            <option value="" disabled selected>Selecione uma opção...</option>
+            <option value="3">Não estou a tomar medicamentos / Nunca</option>
+            <option value="2">Menos de 7 dias</option>
+            <option value="1">7 ou mais dias</option>
+          </select>
+        </div>
+
+        <button class="form-btn" type="submit" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px;">Submeter Avaliação e Calcular Score</button>
+      </form>
+
+      <div id="resultadosCarat" class="carat-resultados">
+        <h2 style="margin-top: 0;">Resultados da Avaliação:</h2>
+        <p><strong>Pontuação Vias Aéreas Superiores (1-4):</strong> <span id="scoreSuperiores">0</span> / 12</p>
+        <p><strong>Pontuação Vias Aéreas Inferiores (5-10):</strong> <span id="scoreInferiores">0</span> / 18</p>
+        <p style="font-size: 18px; border-top: 1px solid #ccc; padding-top: 10px;">
+          <strong>Pontuação Total: <span id="scoreTotal">0</span> / 30</strong>
+        </p>
+        <p><strong>Interpretação Clínica:</strong> <span id="interpretacaoCarat"></span></p>
+      </div>
+
     </section>
   </main>
 
@@ -397,6 +474,55 @@
 
     document.getElementById('formPrescricao').addEventListener('submit', criarPrescricao);
     document.getElementById('formFhir').addEventListener('submit', pesquisarFhir);
+
+    // Lógica para o formulário do CARAT (Oficial 10 Perguntas)
+    document.getElementById('formCarat').addEventListener('submit', function(event) {
+      event.preventDefault(); // Evita recarregar a página
+      
+      // Recolher as respostas (0 a 3)
+      const q1 = parseInt(document.getElementById('caratQ1').value);
+      const q2 = parseInt(document.getElementById('caratQ2').value);
+      const q3 = parseInt(document.getElementById('caratQ3').value);
+      const q4 = parseInt(document.getElementById('caratQ4').value);
+      const q5 = parseInt(document.getElementById('caratQ5').value);
+      const q6 = parseInt(document.getElementById('caratQ6').value);
+      const q7 = parseInt(document.getElementById('caratQ7').value);
+      const q8 = parseInt(document.getElementById('caratQ8').value);
+      const q9 = parseInt(document.getElementById('caratQ9').value);
+      const q10 = parseInt(document.getElementById('caratQ10').value);
+
+      // Calcular parciais de acordo com o PDF
+      const scoreSuperiores = q1 + q2 + q3 + q4;
+      const scoreInferiores = q5 + q6 + q7 + q8 + q9 + q10;
+      const scoreTotal = scoreSuperiores + scoreInferiores;
+
+      // Injetar os valores na interface
+      document.getElementById('scoreSuperiores').textContent = scoreSuperiores;
+      document.getElementById('scoreInferiores').textContent = scoreInferiores;
+      document.getElementById('scoreTotal').textContent = scoreTotal;
+
+      // Aplicar Lógica de Negócio (Interpretação e Alertas)
+      const caixaResultados = document.getElementById('resultadosCarat');
+      const textoInterpretacao = document.getElementById('interpretacaoCarat');
+
+      if (scoreTotal > 24) {
+          textoInterpretacao.textContent = "Asma e Rinite Controladas. Excelente! Mantenha a medicação atual e o autocuidado.";
+          caixaResultados.style.backgroundColor = '#dcfce7'; // Fundo verde claro
+          caixaResultados.style.border = '1px solid #86efac';
+          textoInterpretacao.style.color = '#166534';
+      } else {
+          textoInterpretacao.textContent = "Controlo Insuficiente (Abaixo ou igual a 24). Foi gerado um ALERTA para a equipa médica e deverá ter a sua medicação revista.";
+          caixaResultados.style.backgroundColor = '#fee2e2'; // Fundo vermelho claro
+          caixaResultados.style.border = '1px solid #fca5a5';
+          textoInterpretacao.style.color = '#991b1b';
+      }
+
+      // Mostrar os resultados no ecrã
+      caixaResultados.style.display = 'block';
+
+      // (Futuramente, é aqui que faremos o fetch POST para o backend TypeORM / Node.js)
+      // ex: fetch('/api/avaliacoes-carat', { method: 'POST', body: JSON.stringify({...}) });
+    });
 
     buscarPrescricoes();
   </script>
