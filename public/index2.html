@@ -207,10 +207,10 @@
           <label>10. Aumentar a utilização dos seus medicamentos? *</label>
           <select id="caratQ10" required>
             <option value="" disabled selected>Selecione uma opção...</option>
-            <option value="4">Não estou a tomar medicamentos </option>
-            <option value="3">Nunca</option>
-            <option value="2">Menos de 7 dias</option>
-            <option value="1">7 ou mais dias</option>
+            <option value="3">Não estou a tomar medicamentos </option>
+            <option value="2">Nunca</option>
+            <option value="1">Menos de 7 dias</option>
+            <option value="0">7 ou mais dias</option>
           </select>
         </div>
 
@@ -477,7 +477,7 @@
     document.getElementById('formFhir').addEventListener('submit', pesquisarFhir);
 
     // Lógica para o formulário do CARAT (Oficial 10 Perguntas)
-    document.getElementById('formCarat').addEventListener('submit', function(event) {
+    document.getElementById('formCarat').addEventListener('submit', async function(event) {
       event.preventDefault(); // Evita recarregar a página
       
       // Recolher as respostas (0 a 3)
@@ -520,6 +520,40 @@
 
       // Mostrar os resultados no ecrã
       caixaResultados.style.display = 'block';
+
+
+      // Mostrar os resultados no ecrã e esconder a mensagem provisória
+      caixaResultados.style.display = 'block';
+
+      // --- A NOSSA LIGAÇÃO AO BACKEND COMEÇA AQUI ---
+      try {
+        // Preparamos os dados como o servidor está à espera (DTO)
+        const dadosCarat = {
+          utente_id: "UTENTE_TESTE_01", // Por agora usamos um ID falso até termos o Login
+          q1, q2, q3, q4, q5, q6, q7, q8, q9, q10
+        };
+
+        const resposta = await fetch('/carat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dadosCarat)
+        });
+
+        if (!resposta.ok) {
+          throw new Error('Erro ao guardar avaliação no servidor.');
+        }
+
+        const dadosGuardados = await resposta.json();
+        
+        // Podemos até mostrar um pequeno aviso de sucesso!
+        alert(`Sucesso! A avaliação do utente ${dadosGuardados.utente_id} foi guardada na base de dados com ID ${dadosGuardados.id}.`);
+
+      } catch (erro) {
+        console.error(erro);
+        alert('Atenção: O questionário foi calculado, mas houve um erro ao guardar na Base de Dados.');
+      }
 
       // (Futuramente, é aqui que faremos o fetch POST para o backend TypeORM / Node.js)
       // ex: fetch('/api/avaliacoes-carat', { method: 'POST', body: JSON.stringify({...}) });

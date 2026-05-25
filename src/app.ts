@@ -5,6 +5,7 @@ import { Prescricao } from './models/prescricao.entity';
 import { Exame } from './models/exame.entity';
 import exameRoutes from './routes/exame.routes';
 import prescricaoRoutes from './routes/prescricao.routes';
+import caratRoutes from './routes/carat.routes';
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use('/prescricoes', prescricaoRoutes);
 app.use('/exames', exameRoutes);
 app.use('/pedidos-exames', exameRoutes);
+app.use('/carat', caratRoutes);
 
 if (require.main === module) {
     AppDataSource.initialize().then(async () => {
