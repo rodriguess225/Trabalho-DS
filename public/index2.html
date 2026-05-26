@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Sistema Clínico</title>
+  <title>Sistema Clínico SaudINOB</title>
   <style>
     body {
       margin: 0;
@@ -80,15 +80,18 @@
       max-width: 400px;
     }
 
-    input,
+    input, select,
     button.form-btn {
       padding: 8px;
       font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
     .erro {
       color: red;
     }
+
     /* Estilos específicos para o Questionário CARAT */
     .carat-pergunta {
       margin-bottom: 16px;
@@ -118,7 +121,7 @@
       margin-top: 20px;
       padding: 20px;
       border-radius: 6px;
-      display: none; /* Fica escondido até o questionário ser submetido */
+      display: none;
     }
   </style>
 </head>
@@ -127,59 +130,49 @@
   <nav>
     <h2>Menu</h2>
     <button onclick="mostrarPagina('pagina-inicio')">Início</button>
+    <button onclick="mostrarPagina('pagina-utentes')">Gerir Utentes</button>
+    <button onclick="mostrarPagina('pagina-carat')">Questionário CARAT</button>
     <button onclick="mostrarPagina('pagina-prescricoes')">Prescrições</button>
     <button onclick="mostrarPagina('pagina-exames')">Exames</button>
     <button onclick="mostrarPagina('pagina-fhir')">Consulta FHIR</button>
-    <button onclick="mostrarPagina('pagina-carat')">Questionário CARAT</button>
   </nav>
 
   <main>
     <section id="pagina-inicio" class="pagina ativa">
-      <h1>Sistema Clínico</h1>
-      <p>Escolha uma funcionalidade no menu.</p>
+      <h1>Sistema Clínico SaudINOB</h1>
+      <p>Bem-vindo ao sistema. Escolha uma funcionalidade no menu lateral.</p>
     </section>
 
-    <section id="pagina-prescricoes" class="pagina">
-      <h1>Prescrições</h1>
+    <section id="pagina-utentes" class="pagina">
+      <h1>Gerir Utentes</h1>
 
-      <h2>Nova Prescrição</h2>
-      <form id="formPrescricao">
-        <input id="medicamento" placeholder="Medicamento" required />
-        <input id="dose" placeholder="Dose" required />
-        <input id="medicoNome" placeholder="Nome do médico" required />
-        <button class="form-btn" type="submit">Criar prescrição</button>
-        <p id="erroPrescricao" class="erro"></p>
+      <h2>Registar Novo Utente</h2>
+      <form id="formUtente">
+        <input id="utenteNome" placeholder="Nome Completo" required />
+        <input id="utenteEmail" type="email" placeholder="Email" required />
+        <input id="utentePassword" type="password" placeholder="Password de Acesso" required />
+        <input id="utenteNumero" placeholder="Número de Utente (SNS)" required />
+        <label style="font-size: 13px; color: #555; margin-top: 4px;">Data de Nascimento:</label>
+        <input id="utenteDataNascimento" type="date" required />
+        
+        <select id="utenteSexo">
+          <option value="" disabled selected>Selecione o Género...</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Feminino">Feminino</option>
+          <option value="Outro">Outro</option>
+        </select>
+        <input id="utenteNif" placeholder="NIF (Opcional)" />
+        <input id="utenteTelefone" placeholder="Telefone (Opcional)" />
+        <input id="utenteMorada" placeholder="Morada (Opcional)" />
+
+        <button class="form-btn" type="submit" style="background: #10b981; color: white; border: none; cursor: pointer; border-radius: 4px; padding: 10px; margin-top: 5px;">Registar Utente</button>
+        <p id="erroUtente" class="erro"></p>
       </form>
 
-      <h2>Lista de Prescrições</h2>
-      <div id="listaPrescricoes">
-        <p>A carregar prescrições...</p>
-      </div>
-    </section>
-
-    <section id="pagina-exames" class="pagina">
-      <h1>Exames</h1>
-      <button onclick="buscarExames()">Atualizar exames</button>
-      <div id="listaExames">
-        <p>Nenhum exame carregado.</p>
-      </div>
-    </section>
-
-    <section id="pagina-fhir" class="pagina">
-      <h1>Consulta FHIR</h1>
-      <form id="formFhir">
-        <input id="codigoLoinc" value="8310-5" placeholder="Código LOINC" required />
-        <button class="form-btn" type="submit">Pesquisar Observation</button>
-      </form>
-
-      <h2>Resultado</h2>
-
-      <div id="resultadoFhir">
-
-        <p>Sem resultados.</p>
-
-      </div>
-
+      <h2 style="margin-top: 40px;">Lista de Utentes</h2>
+      <button onclick="buscarUtentes()" style="padding: 6px 12px; cursor: pointer;">Atualizar Lista</button>
+      <div id="listaUtentes">
+        <p>A carregar utentes...</p>
       </div>
     </section>
 
@@ -189,6 +182,13 @@
 
       <form id="formCarat">
         
+        <div class="carat-pergunta" style="background: #e0f2fe; border-color: #bae6fd;">
+          <label>Selecione o Utente que está a responder:</label>
+          <select id="caratUtenteId" required>
+            <option value="" disabled selected>A carregar utentes da Base de Dados...</option>
+          </select>
+        </div>
+
         <h3 style="color: #4b5563;">Vias Aéreas Superiores</h3>
         <div class="carat-pergunta"><label>1. Nariz entupido? *</label><select id="caratQ1" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
         <div class="carat-pergunta"><label>2. Espirros? *</label><select id="caratQ2" required><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
@@ -207,14 +207,14 @@
           <label>10. Aumentar a utilização dos seus medicamentos? *</label>
           <select id="caratQ10" required>
             <option value="" disabled selected>Selecione uma opção...</option>
-            <option value="3">Não estou a tomar medicamentos </option>
-            <option value="2">Nunca</option>
-            <option value="1">Menos de 7 dias</option>
-            <option value="0">7 ou mais dias</option>
+            <option value="3">Não estou a tomar medicamentos / Nunca</option>
+            <option value="2">Menos de 7 dias</option>
+            <option value="1">7 ou mais dias</option>
+            <option value="0">Todos os dias</option>
           </select>
         </div>
 
-        <button class="form-btn" type="submit" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px;">Submeter Avaliação e Calcular Score</button>
+        <button class="form-btn" type="submit" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px; background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 6px;">Submeter Avaliação e Calcular Score</button>
       </form>
 
       <div id="resultadosCarat" class="carat-resultados">
@@ -226,261 +226,164 @@
         </p>
         <p><strong>Interpretação Clínica:</strong> <span id="interpretacaoCarat"></span></p>
       </div>
+    </section>
 
+    <section id="pagina-prescricoes" class="pagina">
+      <h1>Prescrições</h1>
+
+      <h2>Nova Prescrição</h2>
+      <form id="formPrescricao">
+        <input id="medicamento" placeholder="Medicamento" required />
+        <input id="dose" placeholder="Dose" required />
+        <input id="medicoNome" placeholder="Nome do médico" required />
+        <button class="form-btn" type="submit" style="background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 4px;">Criar prescrição</button>
+        <p id="erroPrescricao" class="erro"></p>
+      </form>
+
+      <h2>Lista de Prescrições</h2>
+      <div id="listaPrescricoes">
+        <p>A carregar prescrições...</p>
+      </div>
+    </section>
+
+    <section id="pagina-exames" class="pagina">
+      <h1>Exames</h1>
+      <button onclick="buscarExames()" style="padding: 6px 12px; cursor: pointer;">Atualizar exames</button>
+      <div id="listaExames">
+        <p>Nenhum exame carregado.</p>
+      </div>
+    </section>
+
+    <section id="pagina-fhir" class="pagina">
+      <h1>Consulta FHIR</h1>
+      <form id="formFhir">
+        <input id="codigoLoinc" value="8310-5" placeholder="Código LOINC" required />
+        <button class="form-btn" type="submit" style="background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 4px;">Pesquisar Observation</button>
+      </form>
+
+      <h2>Resultado</h2>
+      <div id="resultadoFhir">
+        <p>Sem resultados.</p>
+      </div>
     </section>
   </main>
 
   <script>
+    // --- NAVEGAÇÃO ---
     function mostrarPagina(idPagina) {
-      const paginas = document.querySelectorAll('.pagina');
-      paginas.forEach(pagina => pagina.classList.remove('ativa'));
-
+      document.querySelectorAll('.pagina').forEach(pagina => pagina.classList.remove('ativa'));
       const paginaAtiva = document.getElementById(idPagina);
       if (paginaAtiva) {
         paginaAtiva.classList.add('ativa');
       }
     }
 
-    async function buscarPrescricoes() {
-      alert('Aqui');
-      const container = document.getElementById('listaPrescricoes');
-      container.innerHTML = '<p>A carregar prescrições...</p>';
+    // --- LÓGICA DE UTENTES ---
+    async function buscarUtentes() {
+      const container = document.getElementById('listaUtentes');
+      const selectCarat = document.getElementById('caratUtenteId'); // Dropdown do CARAT
+      
+      container.innerHTML = '<p>A carregar utentes...</p>';
 
       try {
-        const resposta = await fetch('/prescricoes');
+        const resposta = await fetch('/utentes');
         const dados = await resposta.json();
 
         if (!Array.isArray(dados) || dados.length === 0) {
-          container.innerHTML = '<p>Nenhuma prescrição registada.</p>';
+          container.innerHTML = '<p>Nenhum utente registado no sistema.</p>';
+          selectCarat.innerHTML = '<option value="" disabled selected>Nenhum utente registado.</option>';
           return;
         }
 
+        // 1. Constrói a Tabela de Utentes
         let html = `
           <table>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Medicamento</th>
-                <th>Dose</th>
-                <th>Médico</th>
-                <th>Data de Criação</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
-
-        for (const p of dados) {
-          html += `
-            <tr>
-              <td>${p.id ?? ''}</td>
-              <td>${p.medicamento ?? ''}</td>
-              <td>${p.dose ?? ''}</td>
-              <td>${p.medico_nome ?? ''}</td>
-              <td>${p.dataCriacao ?? 'não exposta'}</td>
-            </tr>
-          `;
-        }
-
-        html += '</tbody></table>';
-        container.innerHTML = html;
-      } catch (erro) {
-        container.innerHTML = '<p>Erro ao carregar prescrições.</p>';
-      }
-    }
-
-    async function buscarExames() {
-      const container = document.getElementById('listaExames');
-      container.innerHTML = '<p>A carregar exames...</p>';
-
-      try {
-        const resposta = await fetch('/exames');
-        const dados = await resposta.json();
-
-        if (!Array.isArray(dados) || dados.length === 0) {
-          container.innerHTML = '<p>Nenhum exame registado.</p>';
-          return;
-        }
-
-        let html = `
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
+                <th>ID (UUID)</th>
                 <th>Nome</th>
-                <th>Código</th>
-                <th>Médico</th>
-                <th>Data de Criação</th>
+                <th>Email</th>
+                <th>Nº SNS</th>
+                <th>Data Nascimento</th>
               </tr>
             </thead>
             <tbody>
         `;
 
-        for (const exame of dados) {
+        // 2. Preenche a tabela e também o Dropdown do formulário CARAT!
+        selectCarat.innerHTML = '<option value="" disabled selected>Selecione o Utente...</option>';
+
+        for (const u of dados) {
+          const idCurto = u.id ? u.id.substring(0, 8) + '...' : '';
+          
+          // Adiciona à Tabela
           html += `
             <tr>
-              <td>${exame.id ?? ''}</td>
-              <td>${exame.nome ?? ''}</td>
-              <td>${exame.codigo ?? ''}</td>
-              <td>${exame.medico_nome ?? ''}</td>
-              <td>${exame.dataCriacao ?? 'não exposta'}</td>
+              <td style="font-family: monospace;">${idCurto}</td>
+              <td>${u.nome ?? ''}</td>
+              <td>${u.email ?? ''}</td>
+              <td>${u.numeroUtente ?? ''}</td>
+              <td>${u.dataNascimento ?? ''}</td>
             </tr>
           `;
+
+          // Adiciona ao Dropdown do CARAT
+          selectCarat.innerHTML += `<option value="${u.id}">${u.nome} (SNS: ${u.numeroUtente})</option>`;
         }
 
         html += '</tbody></table>';
         container.innerHTML = html;
       } catch (erro) {
-        container.innerHTML = '<p>Erro ao carregar exames.</p>';
+        container.innerHTML = '<p>Erro ao carregar a lista de utentes.</p>';
+        selectCarat.innerHTML = '<option value="" disabled selected>Erro ao carregar utentes.</option>';
       }
     }
 
-    async function criarPrescricao(event) {
+    async function criarUtente(event) {
       event.preventDefault();
+      const erroUtente = document.getElementById('erroUtente');
+      erroUtente.textContent = '';
 
-      const erroPrescricao = document.getElementById('erroPrescricao');
-      erroPrescricao.textContent = '';
-
-      const medicamento = document.getElementById('medicamento').value.trim();
-      const dose = document.getElementById('dose').value.trim();
-      const medico_nome = document.getElementById('medicoNome').value.trim();
+      const utente = {
+        nome: document.getElementById('utenteNome').value.trim(),
+        email: document.getElementById('utenteEmail').value.trim(),
+        password: document.getElementById('utentePassword').value.trim(),
+        numeroUtente: document.getElementById('utenteNumero').value.trim(),
+        dataNascimento: document.getElementById('utenteDataNascimento').value,
+        sexo: document.getElementById('utenteSexo').value,
+        nif: document.getElementById('utenteNif').value.trim(),
+        telefone: document.getElementById('utenteTelefone').value.trim(),
+        morada: document.getElementById('utenteMorada').value.trim()
+      };
 
       try {
-        const resposta = await fetch('/prescricoes', {
+        const resposta = await fetch('/utentes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ medicamento, dose, medico_nome })
+          body: JSON.stringify(utente)
         });
 
         if (!resposta.ok) {
           const dados = await resposta.json();
-          throw new Error(dados.erro || 'Erro ao criar prescrição');
+          throw new Error(dados.erro || 'Erro ao criar utente');
         }
 
-        document.getElementById('formPrescricao').reset();
-        await buscarPrescricoes();
+        document.getElementById('formUtente').reset();
+        await buscarUtentes(); // Atualiza a tabela e a dropdown do CARAT
+        alert('Utente registado com sucesso no sistema!');
       } catch (erro) {
-        erroPrescricao.textContent = erro.message;
+        erroUtente.textContent = erro.message;
       }
     }
 
-    async function pesquisarFhir(event) {
+    document.getElementById('formUtente').addEventListener('submit', criarUtente);
 
-      event.preventDefault();
-
-      const codigo = document.getElementById('codigoLoinc').value.trim();
-
-      const resultado = document.getElementById('resultadoFhir');
-
-      resultado.innerHTML = '<p>A pesquisar...</p>';
-
-      try {
-
-        const resposta = await fetch(`/fhir/observations?code=${encodeURIComponent(codigo)}`);
-
-        if (!resposta.ok) {
-
-          throw new Error('Erro na resposta do servidor');
-
-        }
-
-        const dados = await resposta.json();
-
-        if (!Array.isArray(dados) || dados.length === 0) {
-
-          resultado.innerHTML = '<p>Nenhuma Observation encontrada para esse código LOINC.</p>';
-
-          return;
-
-        }
-
-        let html = `
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>ID</th>
-
-            <th>Código LOINC</th>
-
-            <th>Descrição</th>
-
-            <th>Valor</th>
-
-            <th>Unidade</th>
-
-            <th>Data/Hora</th>
-
-            <th>Doente</th>
-
-            <th>Estado</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-    `;
-
-        for (const obs of dados) {
-
-          html += `
-
-        <tr>
-
-          <td>${obs.id ?? ''}</td>
-
-          <td>${obs.code ?? ''}</td>
-
-          <td>${obs.display ?? ''}</td>
-
-          <td>${obs.value ?? ''}</td>
-
-          <td>${obs.unit ?? ''}</td>
-
-          <td>${obs.effectiveDateTime ?? ''}</td>
-
-          <td>${obs.subject ?? ''}</td>
-
-          <td>${obs.status ?? ''}</td>
-
-        </tr>
-
-      `;
-
-        }
-
-        html += `
-
-        </tbody>
-
-      </table>
-
-    `;
-
-        resultado.innerHTML = html;
-
-      } catch (erro) {
-
-        console.error(erro);
-
-        resultado.innerHTML = '<p class="erro">Erro ao consultar servidor FHIR.</p>';
-
-      }
-
-    }
-
-    document.getElementById('formPrescricao').addEventListener('submit', criarPrescricao);
-    document.getElementById('formFhir').addEventListener('submit', pesquisarFhir);
-
-    // Lógica para o formulário do CARAT (Oficial 10 Perguntas)
+    // --- LÓGICA DO CARAT (Agora com Fetch ligado à BD!) ---
     document.getElementById('formCarat').addEventListener('submit', async function(event) {
-      event.preventDefault(); // Evita recarregar a página
+      event.preventDefault(); 
       
-      // Recolher as respostas (0 a 3)
+      const utente_id = document.getElementById('caratUtenteId').value;
+      
       const q1 = parseInt(document.getElementById('caratQ1').value);
       const q2 = parseInt(document.getElementById('caratQ2').value);
       const q3 = parseInt(document.getElementById('caratQ3').value);
@@ -492,75 +395,157 @@
       const q9 = parseInt(document.getElementById('caratQ9').value);
       const q10 = parseInt(document.getElementById('caratQ10').value);
 
-      // Calcular parciais de acordo com o PDF
       const scoreSuperiores = q1 + q2 + q3 + q4;
       const scoreInferiores = q5 + q6 + q7 + q8 + q9 + q10;
       const scoreTotal = scoreSuperiores + scoreInferiores;
 
-      // Injetar os valores na interface
       document.getElementById('scoreSuperiores').textContent = scoreSuperiores;
       document.getElementById('scoreInferiores').textContent = scoreInferiores;
       document.getElementById('scoreTotal').textContent = scoreTotal;
 
-      // Aplicar Lógica de Negócio (Interpretação e Alertas)
       const caixaResultados = document.getElementById('resultadosCarat');
       const textoInterpretacao = document.getElementById('interpretacaoCarat');
 
       if (scoreTotal > 24) {
           textoInterpretacao.textContent = "Asma e Rinite Controladas. Excelente! Mantenha a medicação atual e o autocuidado.";
-          caixaResultados.style.backgroundColor = '#dcfce7'; // Fundo verde claro
+          caixaResultados.style.backgroundColor = '#dcfce7'; 
           caixaResultados.style.border = '1px solid #86efac';
           textoInterpretacao.style.color = '#166534';
       } else {
-          textoInterpretacao.textContent = "Controlo Insuficiente (Abaixo ou igual a 24). Foi gerado um ALERTA para a equipa médica e deverá ter a sua medicação revista.";
-          caixaResultados.style.backgroundColor = '#fee2e2'; // Fundo vermelho claro
+          textoInterpretacao.textContent = "Controlo Insuficiente (Abaixo ou igual a 24). Foi gerado um ALERTA para a equipa médica.";
+          caixaResultados.style.backgroundColor = '#fee2e2'; 
           caixaResultados.style.border = '1px solid #fca5a5';
           textoInterpretacao.style.color = '#991b1b';
       }
 
-      // Mostrar os resultados no ecrã
       caixaResultados.style.display = 'block';
 
-
-      // Mostrar os resultados no ecrã e esconder a mensagem provisória
-      caixaResultados.style.display = 'block';
-
-      // --- A NOSSA LIGAÇÃO AO BACKEND COMEÇA AQUI ---
+      // Envia os dados para a Base de Dados
       try {
-        // Preparamos os dados como o servidor está à espera (DTO)
         const dadosCarat = {
-          utente_id: "UTENTE_TESTE_01", // Por agora usamos um ID falso até termos o Login
+          utente_id, // ID real escolhido na Dropdown
           q1, q2, q3, q4, q5, q6, q7, q8, q9, q10
         };
 
         const resposta = await fetch('/carat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dadosCarat)
         });
 
         if (!resposta.ok) {
-          throw new Error('Erro ao guardar avaliação no servidor.');
+          const erroServidor = await resposta.json();
+          throw new Error(erroServidor.erro || 'Erro ao guardar avaliação no servidor.');
         }
 
         const dadosGuardados = await resposta.json();
-        
-        // Podemos até mostrar um pequeno aviso de sucesso!
-        alert(`Sucesso! A avaliação do utente ${dadosGuardados.utente_id} foi guardada na base de dados com ID ${dadosGuardados.id}.`);
+        alert(`Sucesso! A avaliação do utente foi guardada na base de dados (Score: ${dadosGuardados.scoreTotal}).`);
+        document.getElementById('formCarat').reset();
 
       } catch (erro) {
         console.error(erro);
         alert('Atenção: O questionário foi calculado, mas houve um erro ao guardar na Base de Dados.');
       }
-
-      // (Futuramente, é aqui que faremos o fetch POST para o backend TypeORM / Node.js)
-      // ex: fetch('/api/avaliacoes-carat', { method: 'POST', body: JSON.stringify({...}) });
     });
 
+    // --- LÓGICA DE PRESCRIÇÕES ---
+    async function buscarPrescricoes() {
+      const container = document.getElementById('listaPrescricoes');
+      container.innerHTML = '<p>A carregar prescrições...</p>';
+      try {
+        const resposta = await fetch('/prescricoes');
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || dados.length === 0) {
+          container.innerHTML = '<p>Nenhuma prescrição registada.</p>';
+          return;
+        }
+        let html = `<table><thead><tr><th>#</th><th>Medicamento</th><th>Dose</th><th>Médico</th><th>Data de Criação</th></tr></thead><tbody>`;
+        for (const p of dados) {
+          html += `<tr><td>${p.id ?? ''}</td><td>${p.medicamento ?? ''}</td><td>${p.dose ?? ''}</td><td>${p.medico_nome ?? ''}</td><td>${p.dataCriacao ?? ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (erro) {
+        container.innerHTML = '<p>Erro ao carregar prescrições.</p>';
+      }
+    }
+
+    async function criarPrescricao(event) {
+      event.preventDefault();
+      const erroPrescricao = document.getElementById('erroPrescricao');
+      erroPrescricao.textContent = '';
+      const medicamento = document.getElementById('medicamento').value.trim();
+      const dose = document.getElementById('dose').value.trim();
+      const medico_nome = document.getElementById('medicoNome').value.trim();
+      try {
+        const resposta = await fetch('/prescricoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicamento, dose, medico_nome })
+        });
+        if (!resposta.ok) throw new Error((await resposta.json()).erro || 'Erro ao criar prescrição');
+        document.getElementById('formPrescricao').reset();
+        await buscarPrescricoes();
+      } catch (erro) {
+        erroPrescricao.textContent = erro.message;
+      }
+    }
+    document.getElementById('formPrescricao').addEventListener('submit', criarPrescricao);
+
+    // --- LÓGICA DE EXAMES ---
+    async function buscarExames() {
+      const container = document.getElementById('listaExames');
+      container.innerHTML = '<p>A carregar exames...</p>';
+      try {
+        const resposta = await fetch('/exames');
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || dados.length === 0) {
+          container.innerHTML = '<p>Nenhum exame registado.</p>';
+          return;
+        }
+        let html = `<table><thead><tr><th>#</th><th>Nome</th><th>Código</th><th>Médico</th><th>Data de Criação</th></tr></thead><tbody>`;
+        for (const exame of dados) {
+          html += `<tr><td>${exame.id ?? ''}</td><td>${exame.nome ?? ''}</td><td>${exame.codigo ?? ''}</td><td>${exame.medico_nome ?? ''}</td><td>${exame.dataCriacao ?? ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (erro) {
+        container.innerHTML = '<p>Erro ao carregar exames.</p>';
+      }
+    }
+
+    // --- LÓGICA FHIR ---
+    async function pesquisarFhir(event) {
+      event.preventDefault();
+      const codigo = document.getElementById('codigoLoinc').value.trim();
+      const resultado = document.getElementById('resultadoFhir');
+      resultado.innerHTML = '<p>A pesquisar...</p>';
+      try {
+        const resposta = await fetch(`/fhir/observations?code=${encodeURIComponent(codigo)}`);
+        if (!resposta.ok) throw new Error('Erro na resposta do servidor');
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || dados.length === 0) {
+          resultado.innerHTML = '<p>Nenhuma Observation encontrada para esse código LOINC.</p>';
+          return;
+        }
+        let html = `<table><thead><tr><th>ID</th><th>Código LOINC</th><th>Descrição</th><th>Valor</th><th>Unidade</th><th>Data/Hora</th><th>Doente</th><th>Estado</th></tr></thead><tbody>`;
+        for (const obs of dados) {
+          html += `<tr><td>${obs.id ?? ''}</td><td>${obs.code ?? ''}</td><td>${obs.display ?? ''}</td><td>${obs.value ?? ''}</td><td>${obs.unit ?? ''}</td><td>${obs.effectiveDateTime ?? ''}</td><td>${obs.subject ?? ''}</td><td>${obs.status ?? ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        resultado.innerHTML = html;
+      } catch (erro) {
+        resultado.innerHTML = '<p class="erro">Erro ao consultar servidor FHIR.</p>';
+      }
+    }
+    document.getElementById('formFhir').addEventListener('submit', pesquisarFhir);
+
+    // --- INICIALIZAÇÃO DA PÁGINA ---
+    // Ao abrir a página, vai buscar a informação toda à Base de Dados
+    buscarUtentes();
     buscarPrescricoes();
+    buscarExames();
+
   </script>
 </body>
-
 </html>

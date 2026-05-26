@@ -1,15 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Utente } from './utente.entity';
 
-@Entity('avaliacao_carat')
+@Entity('avaliacoes_carat')
 export class AvaliacaoCarat {
-
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
-    utente_id!: string;
+    @ManyToOne(() => Utente, (utente) => utente.avaliacoes, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'utente_id' })
+    utente!: Utente;
 
-    // Respostas individuais (0 a 3)
     @Column() q1!: number;
     @Column() q2!: number;
     @Column() q3!: number;
@@ -21,20 +21,10 @@ export class AvaliacaoCarat {
     @Column() q9!: number;
     @Column() q10!: number;
 
-    // Scores Calculados
-    @Column()
-    scoreSuperiores!: number;
+    @Column() scoreSuperiores!: number;
+    @Column() scoreInferiores!: number;
+    @Column() scoreTotal!: number;
+    @Column() nivelControlo!: string;
 
-    @Column()
-    scoreInferiores!: number;
-
-    @Column()
-    scoreTotal!: number;
-
-    //ver isto do nivel de controlo 
-    @Column()
-    nivelControlo!: string;
-
-    @Column()
-    dataAvaliacao!: Date;
+    @Column({ default: () => 'CURRENT_TIMESTAMP' }) dataAvaliacao!: Date;
 }
