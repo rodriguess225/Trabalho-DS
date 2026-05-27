@@ -8,29 +8,29 @@ import {
 @Entity("sintomas_reportados")
 export class SintomaReportado {
     @PrimaryGeneratedColumn()
-    id_sintoma: number;
+    id_sintoma!: number;
 
     @Column()
-    id_utente: number; // FK -> utentes.id_utente
+    id_utente!: number; // FK -> utentes.id_utente
 
     @Column({ nullable: true })
-    tipoSintoma: string;
+    tipoSintoma!: string;
 
     @Column({ type: "int", nullable: true })
-    gravidade: number;
+    gravidade!: number;
 
     @Column({ type: "datetime", nullable: true })
-    dataSintoma: string;
+    dataSintoma!: string;
 
     @Column({ nullable: true })
-    numSintoma: string;
+    numSintoma!: string;
 
     @Column({ nullable: true })
-    descricao: string;
+    descricao!: string;
 
     @Column({ default: false })
-    sintomaPresistente: boolean;
+    sintomaPresistente!: boolean;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 }

@@ -7,20 +7,20 @@ import {
 @Entity("configuracao_limiares")
 export class ConfiguracaoLimiares {
     @PrimaryGeneratedColumn()
-    id_configuracao: number;
+    id_configuracao!: number;
 
     @Column({ nullable: true })
-    id_administrador: number; // FK -> administradores.id_administrador
+    id_administrador!: number; // FK -> administradores.id_administrador
 
     @Column({ type: "int", default: 20 })
-    limiar_score: number;
+    limiar_score!: number;
 
     @Column({ type: "int", nullable: true })
-    limiar_delta: number;
+    limiar_delta!: number;
 
     @Column({ type: "int", nullable: true })
-    limiar_score_int: number;
+    limiar_score_int!: number;
 
     @Column({ type: "datetime", nullable: true })
-    ultima_atualizacao: string;
+    ultima_atualizacao!: string;
 }

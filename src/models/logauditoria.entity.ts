@@ -8,29 +8,29 @@ import {
 @Entity("logs_auditoria")
 export class LogAuditoria {
     @PrimaryGeneratedColumn()
-    id_log_auditoria: number;
+    id_log_auditoria!: number;
 
     @Column({ nullable: true })
-    id_utilizador: number; // FK -> utilizadores.id
+    id_utilizador!: number; // FK -> utilizadores.id
 
     @Column()
-    tipoAcao: string; // "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT"
+    tipoAcao!: string; // "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT"
 
     @Column()
-    entidade: string; // Ex: "AvaliacaoCARAT" | "Alerta" | "Utilizador"
+    entidade!: string; // Ex: "AvaliacaoCARAT" | "Alerta" | "Utilizador"
 
     @Column({ nullable: true })
-    id_registo_afetado: number; // ID do registo afetado
+    id_registo_afetado!: number; // ID do registo afetado
 
     @Column({ type: "datetime", nullable: true })
-    dataHora: string;
+    dataHora!: string;
 
     @Column({ nullable: true })
-    valorAntigo: string;
+    valorAntigo!: string;
 
     @Column({ nullable: true })
-    valorNovo: string;
+    valorNovo!: string;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 }

@@ -7,8 +7,8 @@ import {
 @Entity("alergias")
 export class Alergia {
     @PrimaryGeneratedColumn()
-    id_alergia: number;
+    id_alergia!: number;
 
     @Column()
-    nomeAlergia: string;
+    nomeAlergia!: string;
 }

@@ -8,23 +8,23 @@ import {
 @Entity("intervencoes_clinicas")
 export class IntervencaoClinica {
     @PrimaryGeneratedColumn()
-    id_intervencao: number;
+    id_intervencao!: number;
 
     @Column()
-    id_alerta: number; // FK -> alertas.id_alerta
+    id_alerta!: number; // FK -> alertas.id_alerta
 
     @Column()
-    id_medico: number; // FK -> medicos.id_medico
+    id_medico!: number; // FK -> medicos.id_medico
 
     @Column({ type: "datetime" })
-    dataRegisto: string;
+    dataRegisto!: string;
 
     @Column({ nullable: true })
-    notasMedico: string;
+    notasMedico!: string;
 
     @Column({ nullable: true })
-    acaoTomada: string;
+    acaoTomada!: string;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 }
