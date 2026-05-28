@@ -124,6 +124,7 @@
       display: none;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -139,6 +140,13 @@
 
   <main>
     <section id="pagina-inicio" class="pagina ativa">
+      <h1>Dashboard Clínico SaudINOB</h1>
+  
+  <div id="bloco-alertas" style="display:none; background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3 style="color: #991b1b; margin: 0 0 10px 0;"> Alertas de Monitorização (Controlo Insuficiente)</h3>
+    <div id="lista-alertas-criticos"></div>
+  </div>
+      
       <h1>Sistema Clínico SaudINOB</h1>
       <p>Bem-vindo ao sistema. Escolha uma funcionalidade no menu lateral.</p>
     </section>
@@ -185,7 +193,7 @@
         <div class="carat-pergunta" style="background: #e0f2fe; border-color: #bae6fd;">
           <label>Selecione o Utente que está a responder:</label>
           <select id="caratUtenteId" required>
-            <option value="" disabled selected>A carregar utentes da Base de Dados...</option>
+            <option value="" >A carregar utentes da Base de Dados...</option>
           </select>
         </div>
 
@@ -214,8 +222,16 @@
           </select>
         </div>
 
-        <button class="form-btn" type="submit" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px; background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 6px;">Submeter Avaliação e Calcular Score</button>
+        <button onclick="submeterAvaliacao(event)" class="form-btn" type="button" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px; background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 6px;">Submeter Avaliação e Calcular Score</button>
       </form>
+      <h2 style="margin-top: 40px;">Histórico de Avaliações CARAT</h2>
+      <button onclick="buscarHistoricoCarat()" style="padding: 6px 12px; cursor: pointer;">Atualizar Histórico</button>
+      <div style="width: 100%; margin: 20px 0; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+  <canvas id="graficoEvolucaoCarat"></canvas>
+</div>
+      <div id="listaCarat">
+          <p>A carregar histórico...</p>
+        </div>
 
       <div id="resultadosCarat" class="carat-resultados">
         <h2 style="margin-top: 0;">Resultados da Avaliação:</h2>
@@ -269,6 +285,7 @@
   </main>
 
   <script>
+    let meuGraficoCarat = null;
     // --- NAVEGAÇÃO ---
     function mostrarPagina(idPagina) {
       document.querySelectorAll('.pagina').forEach(pagina => pagina.classList.remove('ativa'));
@@ -432,16 +449,30 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dadosCarat)
         });
+        const dadosRetornados = await resposta.json();
 
         if (!resposta.ok) {
-          const erroServidor = await resposta.json();
-          throw new Error(erroServidor.erro || 'Erro ao guardar avaliação no servidor.');
+          throw new Error(dadosRetornados.erro || 'Erro ao guardar avaliação no servidor.');
         }
-
-        const dadosGuardados = await resposta.json();
-        alert(`Sucesso! A avaliação do utente foi guardada na base de dados (Score: ${dadosGuardados.scoreTotal}).`);
+        const scoreExibicao = dadosRetornados.resultado?.scoreTotal || dadosRetornados.scoreTotal;
+        const rec = dadosRetornados.resultado?.recomendacoes || dadosRetornados.recomendacoes || "Sem recomendação";
+const passo = dadosRetornados.resultado?.proximoPassoSugerido || dadosRetornados.proximoPassoSugerido || "N/A";
+        alert(`Sucesso! A avaliação do utente foi guardada na base de dados (Score: ${scoreExibicao}).`);
+        
         document.getElementById('formCarat').reset();
-
+        document.getElementById('scoreSuperiores').textContent = '0';
+        document.getElementById('scoreInferiores').textContent = '0';
+        document.getElementById('scoreTotal').textContent = '0';
+        document.getElementById('resultadosCarat').style.display = 'none';
+        document.getElementById('interpretacaoCarat').innerHTML = `
+    <strong>${dadosRetornados.nivelControlo || (scoreTotal > 24 ? "Controlada" : "Não Controlada")}</strong><br><br>
+    <div style="font-size: 14px; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 5px; text-align: left;">
+        <strong>Recomendação:</strong> ${rec}<br>
+        <strong>Próximo Passo:</strong> ${passo}
+    </div>
+`;
+alert(`Avaliação guardada! Score: ${dadosRetornados.scoreTotal || scoreTotal}`);
+        buscarHistoricoCarat(); 
       } catch (erro) {
         console.error(erro);
         alert('Atenção: O questionário foi calculado, mas houve um erro ao guardar na Base de Dados.');
@@ -546,6 +577,230 @@
     buscarPrescricoes();
     buscarExames();
 
+    async function buscarHistoricoCarat() {
+  const container = document.getElementById('listaCarat');
+  if (!container) return; // Segurança caso a div não exista
+
+  container.innerHTML = '<p>A carregar histórico...</p>';
+
+  try {
+    const resposta = await fetch('/carat');
+    const dados = await resposta.json();
+
+    if (!Array.isArray(dados) || dados.length === 0) {
+      container.innerHTML = '<p>Ainda não realizou nenhuma avaliação.</p>';
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Total</th>
+            <th>Sup./Inf.</th>
+            <th>Controlo</th>
+            <th>Sugestão</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const c of dados) {
+      const data = new Date(c.dataAvaliacao).toLocaleDateString('pt-PT');
+      html += `
+        <tr>
+          <td>${data}</td>
+          <td><strong>${c.scoreTotal}</strong></td>
+          <td>${c.scoreSuperiores} / ${c.scoreInferiores}</td>
+          <td>${c.nivelControlo}</td>
+          <td style="font-size: 12px;">${c.proximoPassoSugerido}</td>
+        </tr>
+      `;
+    }
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    
+    // Só chama o gráfico se a função existir
+    if (typeof atualizarGrafico === 'function') {
+        atualizarGrafico(dados);
+    }
+    
+  } catch (erro) {
+    console.error("Erro no histórico:", erro);
+    container.innerHTML = '<p>Erro ao carregar histórico.</p>';
+  }
+}
+
+// Chamar a função
+buscarHistoricoCarat();
+
+function atualizarGrafico(dados) {
+  const ctx = document.getElementById('graficoEvolucaoCarat').getContext('2d');
+
+  // Organizamos os dados: ordenamos por data (da mais antiga para a mais recente)
+  const dadosOrdenados = [...dados].sort((a, b) => new Date(a.dataAvaliacao) - new Date(b.dataAvaliacao));
+
+  const labels = dadosOrdenados.map(d => new Date(d.dataAvaliacao).toLocaleDateString('pt-PT'));
+  const scores = dadosOrdenados.map(d => d.scoreTotal);
+
+  // Se o gráfico já existir, destruímos para criar um novo (evita sobreposição)
+  if (meuGraficoCarat) {
+    meuGraficoCarat.destroy();
+  }
+
+  meuGraficoCarat = new Chart(ctx, {
+    type: 'line', // Gráfico de linha para mostrar evolução
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Evolução Score Total CARAT',
+        data: scores,
+        borderColor: '#0070f3',
+        backgroundColor: 'rgba(0, 112, 243, 0.1)',
+        borderWidth: 3,
+        tension: 0.3, // Curva suave na linha
+        fill: true,
+        pointRadius: 5,
+        pointBackgroundColor: '#0070f3'
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          min: 0,
+          max: 30, // Score máximo do CARAT
+          title: { display: true, text: 'Pontuação Total' }
+        }
+      }
+    }
+  });
+}
+async function carregarUtentesParaCarat() {
+  const select = document.getElementById('caratUtenteId');
+  if (!select) return;
+  try {
+    const resposta = await fetch('/utentes'); // Assume-se que a rota dos teus colegas é /utentes
+    const utentes = await resposta.json();
+
+    select.innerHTML = '<option value="" >Selecione um Utente...</option>';
+    utentes.forEach(u => {
+      const option = document.createElement('option');
+      option.value = u.id;
+      option.textContent = u.nome;
+      select.appendChild(option);
+    });
+  } catch (erro) {
+    select.innerHTML = '<option value="">Erro ao carregar utentes</option>';
+  }
+}
+
+// Chamar logo no início
+window.onload = () => {
+    carregarUtentesParaCarat();
+};
+async function carregarAlertasMedicos() {
+  const container = document.getElementById('lista-alertas-criticos');
+  const bloco = document.getElementById('bloco-alertas');
+  
+  if (!container || !bloco) return; // Segurança caso os IDs não existam no HTML
+
+  try {
+    const res = await fetch('/alertas'); 
+    
+    // Se a rota não existir (404), saímos silenciosamente
+    if (!res.ok) {
+      console.log("Serviço de alertas ainda não configurado no servidor.");
+      bloco.style.display = 'none';
+      return;
+    }
+
+    const alertas = await res.json();
+    const pendentes = alertas.filter(a => !a.lido);
+
+    if (pendentes.length > 0) {
+      bloco.style.display = 'block';
+      container.innerHTML = pendentes.map(a => `
+        <div style="padding: 5px 0; border-bottom: 1px solid #fca5a5;">
+          <strong>Paciente:</strong> ${a.utente?.nome || 'ID: '+a.utente_id} <br>
+          <small>${a.descricao}</small>
+        </div>
+      `).join('');
+    } else {
+      bloco.style.display = 'none';
+    }
+  } catch (e) { 
+    console.log("Sem alertas no momento ou erro de ligação."); 
+    if (bloco) bloco.style.display = 'none';
+  }
+}
+
+async function submeterAvaliacao(event) {
+    if (event) event.preventDefault(); // Evita que a página recarregue
+
+    // 1. Vai buscar o ID do Utente selecionado
+    const utenteId = document.getElementById('caratUtenteId')|| document.getElementById('utenteSelect');
+
+    if (!utenteId) {
+        alert("Por favor, selecione um utente primeiro.");
+        return;
+    }
+
+    // 2. Recolhe as respostas (ajusta os nomes se necessário)
+    const respostas = [];
+    for (let i = 1; i <= 10; i++) {
+        const select = document.querySelector(`select[name="q${i}"]`);
+        if (select) {
+            respostas.push(parseInt(select.value));
+        } else {
+            // Se não encontrar por name, tenta por ID (ex: q1, q2...)
+            const selectId = document.getElementById(`q${i}`);
+            respostas.push(selectId ? parseInt(selectId.value) : 0);
+        }
+    }
+
+    // 3. O objeto que o Back-end (Service) está à espera
+    const dadosParaEnviar = {
+        utente_id: parseInt(utenteId),
+        q1: respostas[0],
+        q2: respostas[1],
+        q3: respostas[2],
+        q4: respostas[3],
+        q5: respostas[4],
+        q6: respostas[5],
+        q7: respostas[6],
+        q8: respostas[7],
+        q9: respostas[8],
+        q10: respostas[9]
+    };
+
+    console.log("A enviar dados para o servidor:", dadosParaEnviar);
+
+    try {
+        const response = await fetch('/carat/submeter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosParaEnviar)
+        });
+
+        const resultado = await response.json();
+
+        if (response.ok) {
+            alert("Sucesso! Avaliação guardada.");
+            console.log("Resposta do servidor:", resultado);
+            
+            // Se tiveres uma função para o gráfico, chama-a aqui:
+            // if (typeof desenharGrafico === "function") desenharGrafico(resultado);
+        } else {
+            alert("Erro: " + (resultado.message || "Falha ao guardar."));
+        }
+    } catch (error) {
+        console.error("Erro na comunicação:", error);
+        alert("Erro de ligação com o servidor.");
+    }
+}
   </script>
 </body>
 </html>

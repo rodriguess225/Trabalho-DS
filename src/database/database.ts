@@ -7,11 +7,13 @@ import { Utente } from '../models/utente.entity';
 import { Medico } from '../models/medico.entity';
 import { Administrador } from '../models/administrador.entity';
 import { Alerta } from '../models/alerta.entity';
+import { LogAuditoria } from '../models/logauditoria.entity'; 
+import { ConfiguracaoLimiares } from '../models/configuracaolimiares.entity';
 
 export const AppDataSource = new DataSource({
     type: 'better-sqlite3',
-    database: 'data.db',
-    entities: [Prescricao, Exame, AvaliacaoCarat, Utente, Medico, Administrador, Alerta],
+    database: 'database.db',
+    entities: [Prescricao, Exame, AvaliacaoCarat, Utente, Medico, Administrador, Alerta, LogAuditoria, ConfiguracaoLimiares],
     synchronize: true, 
 }); 
 

@@ -3,7 +3,7 @@ import { Utente } from './utente.entity';
 
 @Entity('avaliacoes_carat')
 export class AvaliacaoCarat {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({ name: 'id_avaliacao_carat' })
     id!: number;
 
     @ManyToOne(() => Utente, (utente) => utente.avaliacoes, { onDelete: 'CASCADE' })
@@ -26,5 +26,7 @@ export class AvaliacaoCarat {
     @Column() scoreTotal!: number;
     @Column() nivelControlo!: string;
 
+    @Column({ type: 'text', nullable: true }) recomendacoes!: string;
+    @Column({ type: 'text', nullable: true }) proximoPassoSugerido!: string;
     @Column({ default: () => 'CURRENT_TIMESTAMP' }) dataAvaliacao!: Date;
 }

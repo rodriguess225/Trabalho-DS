@@ -5,4 +5,11 @@ export interface Prescricao {
     medicamento: string;
     dose: string;
     medico_nome: string;
+    dataCriacao: Date; // Adiciona isto para bater certo com o app.ts
 }
+export const appConfig = {
+    auth: {
+        jwtSecret: 'chave-secreta-para-token-123',
+        expiresIn: '24h'
+    },
+};

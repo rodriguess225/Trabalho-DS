@@ -3,11 +3,13 @@ import path from 'path';
 import { AppDataSource } from './database/database';
 import { Prescricao } from './models/prescricao.entity';
 import { Exame } from './models/exame.entity';
+import { Utente } from './models/utente.entity';
 import exameRoutes from './routes/exame.routes';
 import prescricaoRoutes from './routes/prescricao.routes';
 import caratRoutes from './routes/carat.routes';
 import utenteRoutes from './routes/utente.routes';
 import fhirRoutes from './routes/fhir.routes';
+import alertasRoutes from './routes/alertas.routes';
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use('/pedidos-exames', exameRoutes);
 app.use('/carat', caratRoutes);
 app.use('/utentes', utenteRoutes);
 app.use('/fhir', fhirRoutes);
+app.use('/alertas', alertasRoutes);
 if (require.main === module) {
     AppDataSource.initialize().then(async () => {
 
@@ -30,6 +33,23 @@ if (require.main === module) {
         const exameRepo = AppDataSource.getRepository(Exame);
         if (await exameRepo.count() === 0) {
             await exameRepo.save({ nome: 'RX Torax', codigo: 'RX01', medico_nome: 'Dr. House' });
+        }
+
+        const utenteRepo = AppDataSource.getRepository(Utente);
+        if (await utenteRepo.count() === 0) {
+            console.log("A criar utente de teste...");
+            await utenteRepo.save({
+                nome: 'Paciente Exemplo',
+                email: 'paciente@teste.pt',
+                password: '123',
+                numeroUtente: '123456789',
+                dataNascimento: '1985-01-01',
+                sexo: 'Masculino',
+                nif: '123456789',
+                telefone: '912345678',
+                morada: 'Rua de Teste, Porto'
+            });
+            console.log("Utente de teste criado!");
         }
 
         app.listen(3000, () => console.log("Servidor (TypeORM + SQLite) a correr na porta 3000"));

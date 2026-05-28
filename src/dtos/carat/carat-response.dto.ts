@@ -8,4 +8,6 @@ export interface CaratResponseDto {
     scoreTotal: number;
     nivelControlo: string;
     dataAvaliacao: Date;
+    recomendacoes: string; 
+    proximoPassoSugerido?: string;
 }
