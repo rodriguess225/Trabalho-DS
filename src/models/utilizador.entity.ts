@@ -3,32 +3,32 @@ import {Entity,PrimaryGeneratedColumn,Column,CreateDateColumn,UpdateDateColumn,}
 @Entity("utilizadores")
 export class Utilizador {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
  
     @Column()
-    nome: string;
+    nome!: string;
  
     @Column({ unique: true })
-    email: string;
+    email!: string;
  
     @Column()
-    password: string;
+    password!: string;
  
     @Column()
-    perfil: string; // "UTENTE" | "MEDICO" | "ADMIN"
+    perfil!: string; // "UTENTE" | "MEDICO" | "ADMIN"
  
     @Column({ default: true })
-    ativo: boolean;
+    ativo!: boolean;
  
     @Column({ nullable: true })
-    telemovel: string;
+    telemovel!: string;
  
     @Column({ nullable: true, type: "date" })
-    ultimoLogin: string;
+    ultimoLogin!: string;
  
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
  
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }

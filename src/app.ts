@@ -15,6 +15,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
+
 app.use('/prescricoes', prescricaoRoutes);
 app.use('/exames', exameRoutes);
 app.use('/pedidos-exames', exameRoutes);
@@ -22,8 +23,14 @@ app.use('/carat', caratRoutes);
 app.use('/utentes', utenteRoutes);
 app.use('/fhir', fhirRoutes);
 app.use('/alertas', alertasRoutes);
-if (require.main === module) {
-    AppDataSource.initialize().then(async () => {
+
+async function start() {
+    try {
+        // Se já estiver ligado, não tenta ligar outra vez
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+            console.log("Base de dados conectada!");
+        }
 
         const prescricaoRepo = AppDataSource.getRepository(Prescricao);
         if (await prescricaoRepo.count() === 0) {
@@ -52,8 +59,18 @@ if (require.main === module) {
             console.log("Utente de teste criado!");
         }
 
-        app.listen(3000, () => console.log("Servidor (TypeORM + SQLite) a correr na porta 3000"));
-    });
+        // Tenta iniciar o servidor. Se a porta 3000 estiver ocupada, ele avisa.
+        app.listen(3000, () => {
+            console.log("Servidor a correr na porta 3000");
+        });
+
+    } catch (err) {
+        console.error("Erro ao iniciar:", err);
+    }
+}
+
+if (require.main === module) {
+    start();
 }
 
 export default app;

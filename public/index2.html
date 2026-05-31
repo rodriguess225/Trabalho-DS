@@ -136,16 +136,11 @@
     <button onclick="mostrarPagina('pagina-prescricoes')">Prescrições</button>
     <button onclick="mostrarPagina('pagina-exames')">Exames</button>
     <button onclick="mostrarPagina('pagina-fhir')">Consulta FHIR</button>
+    <button onclick="mostrarPagina('pagina-alertas'); buscarAlertas();" >Consulta Alertas</button>
   </nav>
 
   <main>
     <section id="pagina-inicio" class="pagina ativa">
-      <h1>Dashboard Clínico SaudINOB</h1>
-  
-  <div id="bloco-alertas" style="display:none; background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3 style="color: #991b1b; margin: 0 0 10px 0;"> Alertas de Monitorização (Controlo Insuficiente)</h3>
-    <div id="lista-alertas-criticos"></div>
-  </div>
       
       <h1>Sistema Clínico SaudINOB</h1>
       <p>Bem-vindo ao sistema. Escolha uma funcionalidade no menu lateral.</p>
@@ -282,6 +277,16 @@
         <p>Sem resultados.</p>
       </div>
     </section>
+
+    <section id="pagina-alertas" class="pagina">
+     <h1>Consulta Alertas</h1>
+       <button onclick="buscarAlertas()">Atualizar Alertas</button>
+  
+      <div id="listaAlertas">
+      <p>Nenhum alerta crítico registado.</p>
+      </div>
+    </section>
+
   </main>
 
   <script>
@@ -701,84 +706,52 @@ async function carregarUtentesParaCarat() {
 window.onload = () => {
     carregarUtentesParaCarat();
 };
-async function carregarAlertasMedicos() {
-  const container = document.getElementById('lista-alertas-criticos');
-  const bloco = document.getElementById('bloco-alertas');
-  
-  if (!container || !bloco) return; // Segurança caso os IDs não existam no HTML
-
-  try {
-    const res = await fetch('/alertas'); 
-    
-    // Se a rota não existir (404), saímos silenciosamente
-    if (!res.ok) {
-      console.log("Serviço de alertas ainda não configurado no servidor.");
-      bloco.style.display = 'none';
-      return;
-    }
-
-    const alertas = await res.json();
-    const pendentes = alertas.filter(a => !a.lido);
-
-    if (pendentes.length > 0) {
-      bloco.style.display = 'block';
-      container.innerHTML = pendentes.map(a => `
-        <div style="padding: 5px 0; border-bottom: 1px solid #fca5a5;">
-          <strong>Paciente:</strong> ${a.utente?.nome || 'ID: '+a.utente_id} <br>
-          <small>${a.descricao}</small>
-        </div>
-      `).join('');
-    } else {
-      bloco.style.display = 'none';
-    }
-  } catch (e) { 
-    console.log("Sem alertas no momento ou erro de ligação."); 
-    if (bloco) bloco.style.display = 'none';
-  }
-}
 
 async function submeterAvaliacao(event) {
-    if (event) event.preventDefault(); // Evita que a página recarregue
-
-    // 1. Vai buscar o ID do Utente selecionado
-    const utenteId = document.getElementById('caratUtenteId')|| document.getElementById('utenteSelect');
-
-    if (!utenteId) {
-        alert("Por favor, selecione um utente primeiro.");
+    if (event) event.preventDefault();
+    // 1. Ir buscar o ID do Utente de forma segura
+    const select = document.getElementById('caratUtenteId') || document.getElementById('utenteSelect');
+    const utenteIdValue = select ? select.value.trim() : "";
+    
+    if (!utenteIdValue || utenteIdValue === "") {
+        alert("Erro: Selecione um utente válido.");
         return;
     }
 
-    // 2. Recolhe as respostas (ajusta os nomes se necessário)
-    const respostas = [];
-    for (let i = 1; i <= 10; i++) {
-        const select = document.querySelector(`select[name="q${i}"]`);
-        if (select) {
-            respostas.push(parseInt(select.value));
-        } else {
-            // Se não encontrar por name, tenta por ID (ex: q1, q2...)
-            const selectId = document.getElementById(`q${i}`);
-            respostas.push(selectId ? parseInt(selectId.value) : 0);
-        }
+        // 2. Recolher as respostas
+        const respostas = [];
+        for (let i = 1; i <= 10; i++) {
+            const elemento = document.getElementById(`caratQ${i}`);
+    
+    if (elemento) {
+        const valor = Number(elemento.value);
+        console.log(`Lido caratQ${i}:`, valor);
+        respostas.push(valor);
+    } else {
+        console.error(`ERRO: Elemento caratQ${i} não encontrado!`);
+        respostas.push(0);
     }
+        }
 
-    // 3. O objeto que o Back-end (Service) está à espera
-    const dadosParaEnviar = {
-        utente_id: parseInt(utenteId),
-        q1: respostas[0],
-        q2: respostas[1],
-        q3: respostas[2],
-        q4: respostas[3],
-        q5: respostas[4],
-        q6: respostas[5],
-        q7: respostas[6],
-        q8: respostas[7],
-        q9: respostas[8],
-        q10: respostas[9]
-    };
+        // 3. Montar o objeto (Testamos com utenteId que é o padrão)
+        const dadosParaEnviar = {
+            utente_id: utenteIdValue, 
+            q1: respostas[0],
+            q2: respostas[1],
+            q3: respostas[2],
+            q4: respostas[3],
+            q5: respostas[4],
+            q6: respostas[5],
+            q7: respostas[6],
+            q8: respostas[7],
+            q9: respostas[8],
+            q10: respostas[9]
+        };
 
-    console.log("A enviar dados para o servidor:", dadosParaEnviar);
+        console.log("A enviar para o servidor:", dadosParaEnviar);
 
-    try {
+
+        try {
         const response = await fetch('/carat/submeter', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -789,16 +762,94 @@ async function submeterAvaliacao(event) {
 
         if (response.ok) {
             alert("Sucesso! Avaliação guardada.");
-            console.log("Resposta do servidor:", resultado);
-            
-            // Se tiveres uma função para o gráfico, chama-a aqui:
-            // if (typeof desenharGrafico === "function") desenharGrafico(resultado);
+            location.reload(); // Recarrega para limpar o form
         } else {
-            alert("Erro: " + (resultado.message || "Falha ao guardar."));
+            // Se der erro 400, o 'resultado.erro' terá a mensagem do servidor
+            console.error("Erro detalhado do servidor:", resultado);
+            alert("Erro: " + (resultado.erro || "Falha ao guardar."));
         }
     } catch (error) {
-        console.error("Erro na comunicação:", error);
-        alert("Erro de ligação com o servidor.");
+        console.error("Erro na ligação:", error);
+        alert("Servidor desligado ou erro de rede.");
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', buscarAlertas);
+
+document.addEventListener('DOMContentLoaded', buscarAlertas);
+
+async function buscarAlertas() {
+    const container = document.getElementById('listaAlertas');
+    try {
+        const response = await fetch('/alertas');
+        const alertas = await response.json();
+
+        if (alertas.length === 0) {
+            container.innerHTML = '<p>Nenhum alerta crítico registado.</p>';
+            return;
+        }
+
+        let html = `
+            <table style="width: 100%; border-collapse: collapse; background: white; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #eee; text-align: left;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Utente</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Descrição</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Estado</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        alertas.forEach(alerta => {
+            const dataFormatada = new Date(alerta.dataCriacao).toLocaleString();
+            
+            html += `
+                <tr style="${alerta.lido ? 'background-color: #f9f9f9; color: #888;' : ''}">
+                    <td style="padding: 10px; border: 1px solid #ddd;">${dataFormatada}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${alerta.utente ? alerta.utente.nome : 'Desconhecido'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; color: ${alerta.lido ? '#888' : '#d00'}; font-weight: bold;">${alerta.descricao}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        ${alerta.lido ? 'Lido' : 'Pendente'}
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        ${!alerta.lido ? `
+                            <button onclick="marcarComoLido(${alerta.id})" 
+                                    style="background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                Marcar como lido
+                            </button>
+                        ` : 'Concluído'}
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+    } catch (error) {
+        console.error("Erro ao buscar alertas:", error);
+        container.innerHTML = '<p>Erro ao carregar alertas.</p>';
+    }
+}
+
+async function marcarComoLido(id) {
+    try {
+        console.log("A enviar pedido para ID:", id);
+        const response = await fetch(`/alertas/${id}/ler`, {
+            method: 'PATCH'
+        });
+
+        if (response.ok) {
+            await buscarAlertas(); // Atualiza a lista visualmente
+        } else {
+            console.error("Erro no servidor ao marcar como lido");
+        }
+    } catch (error) {
+        console.error("Erro de ligação:", error);
     }
 }
   </script>

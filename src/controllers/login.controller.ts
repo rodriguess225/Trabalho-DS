@@ -4,7 +4,7 @@
 // Se a autenticação falhar, responde com erro 401.
 
 import { Request, Response } from 'express';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../services/auth.services';
 
 export class LoginController {
     private authService = new AuthService();
