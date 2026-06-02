@@ -1,13 +1,15 @@
-// Define os dados devolvidos ao cliente na resposta. 
-// (Podemos não querer devolver as respostas todas, apenas o resultado do cálculo)
-export interface CaratResponseDto {
+import { RespostaCaratResponseDto } from '../respostacarat/respostacarat-response.dto';
+
+export interface AvaliacaoCaratResponseDto {
     id: number;
-    utente_id: string;
-    scoreSuperiores: number;
-    scoreInferiores: number;
+    utenteId: number;
     scoreTotal: number;
+    scoreViasSuperiores: number;
+    scoreViasInferiores: number;
     nivelControlo: string;
+    recomendacoes: string | null;
+    proximoPassoSugerido: string | null;
     dataAvaliacao: Date;
-    recomendacoes: string; 
-    proximoPassoSugerido?: string;
+    
+    respostas?: RespostaCaratResponseDto[]; 
 }
