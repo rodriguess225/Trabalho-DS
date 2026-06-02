@@ -1,9 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
 
 @Entity("sintomas_reportados")
 export class SintomaReportado {
@@ -25,7 +20,7 @@ export class SintomaReportado {
     @Column({ nullable: true })
     numSintoma!: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true }) //Notas adicionais
     descricao!: string;
 
     @Column({ default: false })

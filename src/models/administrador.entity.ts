@@ -1,13 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-
-@Entity('administradores')
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
+ 
+@Entity("administrador")
 export class Administrador {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
-    @Column() nome!: string;
-    @Column({ unique: true }) email!: string;
-    @Column() password!: string;
-
-    @Column({ default: () => 'CURRENT_TIMESTAMP' }) dataCriacao!: Date;
+    @PrimaryGeneratedColumn()
+    id_administrador!: number;
+ 
+    @Column()
+    id_utilizador!: number; // FK -> utilizadores.id
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+ 
+    @UpdateDateColumn()
+    updatedAt!: Date;
 }
+ 

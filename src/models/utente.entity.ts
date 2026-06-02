@@ -1,28 +1,38 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { AvaliacaoCarat } from './avaliacao-carat.entity';
-import { Alerta } from './alerta.entity';
-
-@Entity('utentes')
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
+ 
+@Entity("utentes")
 export class Utente {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
 
-    @Column() nome!: string;
-    @Column({ unique: true }) email!: string;
-    @Column() password!: string;
-    @Column({ unique: true }) numeroUtente!: string;
-    @Column() dataNascimento!: string;
-    
-    @Column({ nullable: true }) sexo!: string;
-    @Column({ nullable: true }) telefone!: string;
-    @Column({ unique: true, nullable: true }) nif!: string;
-    @Column({ nullable: true }) morada!: string;
-
-    @OneToMany(() => AvaliacaoCarat, (avaliacao) => avaliacao.utente)
-    avaliacoes!: AvaliacaoCarat[];
-
-    @OneToMany(() => Alerta, (alerta) => alerta.utente)
-    alertas!: Alerta[];
-
-    @Column({ default: () => 'CURRENT_TIMESTAMP' }) dataCriacao!: Date;
+    @PrimaryGeneratedColumn()
+    id_utente!: number;
+ 
+    @Column()
+    id_utilizador!: number; // FK -> utilizadores.id
+ 
+    @Column({ nullable: true })
+    id_medico!: number; // FK -> medicos.id_medico
+ 
+    @Column({ type: "date", nullable: true })
+    dataNascimento!: string;
+ 
+    @Column({ nullable: true })
+    morada!: string;
+ 
+    @Column({ nullable: true })
+    genero!: string;
+ 
+    @Column({ nullable: true })
+    numSaude!: string;
+ 
+    @Column({ default: true })
+    ativo!: boolean;
+ 
+    @Column({ nullable: true })
+    nif!: number;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+ 
+    @UpdateDateColumn()
+    updatedAt!: Date;
 }

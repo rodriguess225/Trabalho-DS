@@ -1,9 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
 
 @Entity("logs_auditoria")
 export class LogAuditoria {
@@ -17,7 +12,7 @@ export class LogAuditoria {
     tipoAcao!: string; // "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT"
 
     @Column()
-    entidade!: string; // Ex: "AvaliacaoCARAT" | "Alerta" | "Utilizador"
+    entidadeAfetada!: string; // Ex: "AvaliacaoCARAT" | "Alerta" | "Utilizador"
 
     @Column({ nullable: true })
     id_registo_afetado!: number; // ID do registo afetado

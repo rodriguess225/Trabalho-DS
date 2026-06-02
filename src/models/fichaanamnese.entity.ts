@@ -1,10 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
-} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
 
 @Entity("fichas_anamnese")
 export class FichaAnamnese {
@@ -15,7 +9,7 @@ export class FichaAnamnese {
     id_utente!: number; // FK -> utentes.id_utente (one-to-one)
 
     @Column({ nullable: true })
-    estiloVida!: string;
+    estadoTabagico!: string;  //estiloVida
 
     @Column({ nullable: true })
     antecedentes!: string;

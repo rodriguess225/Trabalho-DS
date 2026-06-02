@@ -1,9 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 
 @Entity("intervencoes_clinicas")
 export class IntervencaoClinica {
@@ -20,7 +15,7 @@ export class IntervencaoClinica {
     dataRegisto!: string;
 
     @Column({ nullable: true })
-    notasMedico!: string;
+    notasMedicas!: string;
 
     @Column({ nullable: true })
     acaoTomada!: string;

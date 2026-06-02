@@ -1,8 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
 
 @Entity("configuracao_limiares")
 export class ConfiguracaoLimiares {
@@ -16,10 +12,7 @@ export class ConfiguracaoLimiares {
     limiar_score!: number;
 
     @Column({ type: "int", nullable: true })
-    limiar_delta!: number;
-
-    @Column({ type: "int", nullable: true })
-    limiar_score_int!: number;
+    limiar_delta_deterorização!: number;
 
     @Column({ type: "datetime", nullable: true })
     ultima_atualizacao!: string;

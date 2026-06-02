@@ -1,17 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-
-@Entity()
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+ 
+@Entity("exames")
 export class Exame {
-
     @PrimaryGeneratedColumn()
-    id!: number;
-
+    id_exame!: number;
+ 
     @Column()
-    nome!: string;
+    id_utente!: number; // FK -> utentes.id_utente
+ 
+    @Column({ nullable: true })
+    id_intervencao_clinica!: number; // FK -> intervencoes_clinicas.id_intervencao
 
-    @Column()
-    codigo!: string;
-
-    @Column()
-    medico_nome!: string;
+    @Column({ nullable: true })
+    tipoExame!: string;
+ 
+    @Column({ type: "date", nullable: true })
+    dataSolicitacao!: string;
+ 
+    @Column({ nullable: true })
+    resultado!: string;
+ 
+    @Column({ default: false })
+    concluido!: boolean;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
 }
+ 

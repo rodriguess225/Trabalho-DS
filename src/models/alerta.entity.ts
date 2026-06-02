@@ -1,23 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Utente } from './utente.entity';
-import { Medico } from './medico.entity';
-
-@Entity('alertas')
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+ 
+@Entity("alertas")
 export class Alerta {
     @PrimaryGeneratedColumn()
-    id!: number;
-
-    @ManyToOne(() => Utente, (utente) => utente.alertas, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'utente_id' })
-    utente!: Utente;
-
-    @ManyToOne(() => Medico, (medico) => medico.alertas, { nullable: true, onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'medico_id' })
-    medico!: Medico;
-
-    @Column() tipoAlerta!: string;
-    @Column() descricao!: string;
-    @Column({ default: false }) lido!: boolean;
-
-    @Column({ default: () => 'CURRENT_TIMESTAMP' }) dataCriacao!: Date;
+    id_alerta!: number;
+ 
+    @Column()
+    id_utente!: number; // FK -> utentes.id_utente
+ 
+    @Column()
+    id_medico!: number; // FK -> medicos.id_medico
+ 
+    @Column({ nullable: true })
+    id_avaliacao_origem!: number; // FK -> avaliacoes_carat.id_avaliacao
+ 
+    @Column()
+    tipo!: string;
+ 
+    @Column({nullable: true })
+    prioridade!: string;
+ 
+    // "NOVO" | "VISTO" | "EM_SEGUIMENTO" | "FECHADO"
+    @Column({ default: "NOVO" })
+    estado!: string;
+ 
+    @Column({ nullable: true })
+    motivo!: string;
+ 
+    @Column({ type: "datetime", nullable: true })         //estas duas parecem iguais
+    dataGeracao!: string;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
 }

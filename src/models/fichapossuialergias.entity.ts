@@ -1,8 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-} from "typeorm";
+import {Entity, PrimaryGeneratedColumn ,Column,} from "typeorm";
 
 // Tabela de ligação entre FichaAnamnese e Alergia
 @Entity("ficha_pressao_alergias")
