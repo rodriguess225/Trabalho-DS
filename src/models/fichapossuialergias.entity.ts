@@ -1,8 +1,8 @@
 import {Entity, PrimaryGeneratedColumn ,Column,} from "typeorm";
 
 // Tabela de ligação entre FichaAnamnese e Alergia
-@Entity("ficha_pressao_alergias")
-export class FichaPressaoAlergias {
+@Entity("ficha_possui_alergias")
+export class FichaPossuiAlergias {
     @PrimaryGeneratedColumn()
     id_utente_alergia!: number;
 

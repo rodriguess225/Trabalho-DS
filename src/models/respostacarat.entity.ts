@@ -1,22 +1,16 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-// Tabela separada para cada resposta do questionário CARAT
 @Entity("respostas_carat")
 export class RespostaCarat {
     @PrimaryGeneratedColumn()
-    id_resposta!: number;
-
-    @Column()
-    id_avaliacao!: number; // FK -> avaliacoes_carat.id_avaliacao
+    id!: number;
 
     @Column({ type: "int" })
-    num_pergunta!: number;
+    avaliacaoId!: number; 
 
     @Column({ type: "int" })
-    valor_premium!: number;
+    num_pergunta!: number; // 1 a 10
+
+    @Column({ type: "int" })
+    valor!: number; // O valor da resposta escolhida
 }
-

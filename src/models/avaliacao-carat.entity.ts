@@ -1,32 +1,31 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Utente } from './utente.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 
-@Entity('avaliacoes_carat')
-export class AvaliacaoCarat {
-    @PrimaryGeneratedColumn({ name: 'id_avaliacao_carat' })
+@Entity("avaliacoes-carat")
+export class AvaliacaoCARAT {
+    @PrimaryGeneratedColumn()
     id!: number;
 
-    @ManyToOne(() => Utente, (utente) => utente.avaliacoes, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'utente_id' })
-    utente!: Utente;
+    @Column({ type: "int" })
+    utenteId!: number; // Ligação manual ao ID do Utente
 
-    @Column() q1!: number;
-    @Column() q2!: number;
-    @Column() q3!: number;
-    @Column() q4!: number;
-    @Column() q5!: number;
-    @Column() q6!: number;
-    @Column() q7!: number;
-    @Column() q8!: number;
-    @Column() q9!: number;
-    @Column() q10!: number;
+    @Column({ type: "int" })
+    scoreTotal!: number;
 
-    @Column() scoreSuperiores!: number;
-    @Column() scoreInferiores!: number;
-    @Column() scoreTotal!: number;
-    @Column() nivelControlo!: string;
+    @Column({ type: "int" })
+    scoreViasSuperiores!: number;
 
-    @Column({ type: 'text', nullable: true }) recomendacoes!: string;
-    @Column({ type: 'text', nullable: true }) proximoPassoSugerido!: string;
-    @Column({ default: () => 'CURRENT_TIMESTAMP' }) dataAvaliacao!: Date;
+    @Column({ type: "int" })
+    scoreViasInferiores!: number;
+
+    @Column({ type: "varchar", length: 50 })
+    nivelControlo!: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    recomendacoes!: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    proximoPassoSugerido!: string;
+
+    @CreateDateColumn()
+    dataAvaliacao!: Date;
 }
