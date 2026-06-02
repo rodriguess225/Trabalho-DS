@@ -12,8 +12,7 @@ routes.get('/', authMiddleware, requireRole('MEDICO'), async (req, res) => {
     try {
         const alertaRepo = AppDataSource.getRepository(Alerta);
         const alertas = await alertaRepo.find({ 
-            relations: ['utente'],
-            order: { id: 'DESC' } 
+            relations: ['utente']
         });
         res.json(alertas);
     } catch (err) {
@@ -26,10 +25,15 @@ routes.get('/', authMiddleware, requireRole('MEDICO'), async (req, res) => {
 // Atualizar estado do alerta para lido
 routes.patch('/:id/ler', authMiddleware, requireRole('MEDICO'), async (req, res) => {
     try {
-        const { id } = req.params;
-        const alertaRepo = AppDataSource.getRepository(Alerta);
+        const idParam = req.params.id;
+        if (!idParam) {
+            return res.status(400).json({ erro: 'ID do alerta é obrigatório.' });
+        }
         
-        await alertaRepo.update(id, { lido: true });
+        const alertaRepo = AppDataSource.getRepository(Alerta);
+        const alertaId = Number(idParam);
+        
+        await alertaRepo.update(alertaId, { estado: 'VISTO' });
         
         res.json({ mensagem: "Alerta atualizado com sucesso" });
     } catch (err) {

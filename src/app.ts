@@ -1,9 +1,11 @@
 import express from 'express';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { AppDataSource } from './database/database';
 import { Prescricao } from './models/prescricao.entity';
 import { Exame } from './models/exame.entity';
 import { Utente } from './models/utente.entity';
+import { Utilizador } from './models/utilizador.entity';
 import exameRoutes from './routes/exame.routes';
 import prescricaoRoutes from './routes/prescricao.routes';
 import caratRoutes from './routes/carat.routes';
@@ -42,24 +44,71 @@ async function start() {
 
         const exameRepo = AppDataSource.getRepository(Exame);
         if (await exameRepo.count() === 0) {
-            await exameRepo.save({ nome: 'RX Torax', codigo: 'RX01', medico_nome: 'Dr. House' });
+            const hoje = new Date();
+            const dataSolicitacao: string = hoje.toISOString().split('T')[0] || '2024-01-01';
+            await exameRepo.save({ 
+                tipoExame: 'RX Torax', 
+                id_utente: 1, 
+                dataSolicitacao: dataSolicitacao 
+            });
         }
 
         const utenteRepo = AppDataSource.getRepository(Utente);
         if (await utenteRepo.count() === 0) {
             console.log("A criar utente de teste...");
             await utenteRepo.save({
-                nome: 'Paciente Exemplo',
-                email: 'paciente@teste.pt',
-                password: '123',
-                numeroUtente: '123456789',
+                id_utilizador: 1,
                 dataNascimento: '1985-01-01',
-                sexo: 'Masculino',
-                nif: '123456789',
-                telefone: '912345678',
-                morada: 'Rua de Teste, Porto'
+                morada: 'Rua de Teste, Porto',
+                genero: 'Masculino',
+                numSaude: '123456789',
+                nif: 123456789
             });
             console.log("Utente de teste criado!");
+        }
+
+        // Criar utilizadores de teste (UTENTE, MEDICO, ADMIN)
+        const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        if (await utilizadorRepo.count() === 0) {
+            console.log("A criar utilizadores de teste...");
+
+            // Hash das passwords
+            const passwordUtenteHash = await bcrypt.hash('utente123', 10);
+            const passwordMedicoHash = await bcrypt.hash('medico123', 10);
+            const passwordAdminHash = await bcrypt.hash('admin123', 10);
+
+            await utilizadorRepo.save([
+                {
+                    nome: 'João Silva - Utente',
+                    email: 'utente@teste.pt',
+                    password: passwordUtenteHash,
+                    perfil: 'UTENTE',
+                    ativo: true,
+                    telemovel: '912345678'
+                },
+                {
+                    nome: 'Dr. António Pereira - Médico',
+                    email: 'medico@teste.pt',
+                    password: passwordMedicoHash,
+                    perfil: 'MEDICO',
+                    ativo: true,
+                    telemovel: '917654321'
+                },
+                {
+                    nome: 'Administrador do Sistema',
+                    email: 'admin@teste.pt',
+                    password: passwordAdminHash,
+                    perfil: 'ADMIN',
+                    ativo: true,
+                    telemovel: '918765432'
+                }
+            ]);
+
+            console.log("Utilizadores de teste criados!");
+            console.log("\n📋 Credenciais de Teste:");
+            console.log("  UTENTE: utente@teste.pt / utente123");
+            console.log("  MEDICO: medico@teste.pt / medico123");
+            console.log("  ADMIN:  admin@teste.pt / admin123\n");
         }
 
         // Tenta iniciar o servidor. Se a porta 3000 estiver ocupada, ele avisa.

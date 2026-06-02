@@ -5,7 +5,7 @@
 // Se o token estiver ausente, mal formatado ou inválido, devolve erro 401.
 
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { appConfig } from '../config/app.config';
 
 export interface AuthRequest extends Request {
