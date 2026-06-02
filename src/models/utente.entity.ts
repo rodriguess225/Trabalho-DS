@@ -24,9 +24,6 @@ export class Utente {
     @Column({ nullable: true })
     numSaude!: string;
  
-    @Column({ default: true })
-    ativo!: boolean;
- 
     @Column({ nullable: true })
     nif!: number;
  

@@ -1,6 +1,9 @@
 export interface ExameResponseDto {
   id: number;
-  nome: string;
-  codigo: string;
-  medico_nome: string;
+  id_utente: number;
+  id_intervencao_clinica: number;
+  tipoExame: string;
+  dataSolicitacao: string;
+  resultado: string;
+  concluido: boolean;
 }

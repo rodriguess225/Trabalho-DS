@@ -1,11 +1,9 @@
 export interface CreateUtenteDto {
-    nome: string;
-    email: string;
-    password: string;
-    numeroUtente: string;
+    id_utilizador: number; // FK -> utilizadores.id
+    id_medico: number; // FK -> medicos.id_medico
+    numSaude: string;
     dataNascimento: string;
-    sexo?: string;
-    telefone?: string;
+    genero?: string;
     nif?: string;
     morada?: string;
 }

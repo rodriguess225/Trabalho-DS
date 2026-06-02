@@ -1,10 +1,12 @@
 export interface UtenteResponseDto {
     id: string;
+    id_utilizador: number;
+    id_medico: number;
     nome: string;
     email: string;
-    numeroUtente: string;
+    numSaude: string;
     dataNascimento: string;
-    sexo: string;
+    genero: string;
     telefone: string;
     nif: string;
     morada: string;
