@@ -1,6 +1,6 @@
 export interface CreateMedicacaoDto {
     id_utente: number;
-    id_intervencao_clinica?: number; 
+    id_intervencao_clinica: number; 
     nomeMedicacao: string;           
     dose: string;                    
     frequencia: string;              
