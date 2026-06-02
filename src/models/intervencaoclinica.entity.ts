@@ -6,10 +6,13 @@ export class IntervencaoClinica {
     id_intervencao!: number;
 
     @Column()
-    id_alerta!: number; // FK -> alertas.id_alerta
+    id_medico!: number; // FK -> medicos.id_medico
 
     @Column()
-    id_medico!: number; // FK -> medicos.id_medico
+    id_utente!: number; //FK -> utentes.id
+
+    @Column({nullable: true})
+    id_alerta!: number; // FK -> alertas.id_alerta
 
     @Column({ type: "datetime" })
     dataRegisto!: string;
