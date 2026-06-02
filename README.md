@@ -244,3 +244,123 @@ RNF-T4
 Entrega e Configuração
 O repositório do projeto deve incluir scripts de migração de base de dados (migrations), rotinas de carregamento de dados simulados (seeds) e um ficheiro estruturado (README.md) com as instruções exatas para a instalação, configuração e execução da aplicação nos diferentes ambientes.
 
+
+Casos de uso 
+ UC0
+ O caso de uso «Autenticar no Sistema» detalha o processo crítico de controlo de acessos à
+plataforma de saúde, validando as credenciais dos diferentes utilizadores (utentes, médicos
+ou administradores) para estabelecer uma sessão segura através de um token JWT. Este
+procedimento é fundamental para garantir a privacidade e segurança dos dados,
+reencaminhando o utilizador — que deve possuir uma conta ativa — para o dashboard
+correspondente ao seu nível de permissões
+
+UC1 
+O caso de uso «Realizar Avaliação CARAT» detalha a submissão deste questionário clínico
+por um utente autenticado, desencadeando a validação de dados e o cálculo automático
+dos scores para interpretar o nível de controlo da doença. Este processo destaca-se por
+fornecer ao utilizador um diagnóstico imediato e autónomo do seu estado respiratório,
+concluindo-se com o registo do resultado e a consequente atualização do seu dashboard de
+saúde.
+
+UC2
+O caso de uso «Consultar Dashboard de Saúde» permite ao utente autenticado aceder ao
+seu histórico de avaliações CARAT, visualizando a evolução temporal dos scores através de
+gráficos que destacam o limiar de controlo de 24 pontos. Esta agregação visual de dados
+revela-se fundamental para promover a autogestão da doença, dotando o utilizador de uma
+perspetiva clara e imediata sobre o seu estado clínico para identificar rapidamente
+tendências de melhoria ou agravamento.
+
+UC3
+O caso de uso «Visualizar Alertas e Avisos de Risco» descreve o processo através do qual
+o utente autenticado consulta notificações automáticas geradas pelo sistema face a indícios
+de controlo insuficiente ou deterioração clínica. Esta funcionalidade prioriza a segurança do
+paciente, garantindo a informação atempada sobre situações críticas e prestando a devida
+orientação caso seja necessário contacto médico. Após a visualização, o estado do alerta é
+atualizado para «Lido», atestando a consciencialização do utente sobre a sua situação de
+risco e desativando o respetivo destaque visual.
+
+UC4
+O caso de uso «Atualizar Dados Pessoais» permite ao utente autenticado efetuar a
+manutenção das suas informações de contacto e biográficas, no estrito cumprimento das
+normas de privacidade estabelecidas. Esta atualização dos dados administrativos revela-se
+essencial para garantir o correto acompanhamento do paciente e a eficácia das
+comunicações clínicas. A conclusão deste processo assegura não só a gravação das novas
+informações na base de dados, mas também o respetivo registo da ação para efeitos de
+auditoria.
+
+UC5
+O caso de uso «Reportar Sintoma Diário» permite ao utente autenticado efetuar o registo
+ágil de sintomas isolados, garantindo uma monitorização contínua a curto prazo entre as
+avaliações formais CARAT. Este processo aciona o motor de regras do sistema com o
+intuito de detetar precocemente potenciais crises agudas, culminando com a integração
+automática desta informação no histórico clínico do paciente.
+
+UC6 
+O caso de uso «Consultar Lista de Pacientes» permite ao médico autenticado aceder à
+listagem dos seus utentes associados, visualizando um resumo clínico que destaca o último
+score CARAT e indicadores visuais de risco. Esta funcionalidade revela-se fundamental
+para dotar o profissional de saúde da capacidade de priorizar os seus contactos e
+intervenções clínicas com base em dados objetivos e atualizados. A consulta consiste na
+obtenção de uma visão global da lista de pacientes, garantindo a rápida identificação e
+acompanhamento dos casos que exigem atenção prioritária.
+
+UC7
+O caso de uso «Visualizar Histórico de Utente» descreve o acesso do médico autenticado
+ao processo clínico digital e detalhado de um utente sobre a doente sob a sua
+responsabilidade, agregando o histórico de avaliações CARAT, a evolução gráfica dos
+scores, os sintomas diários e os alertas gerados. Esta disponibilização cronológica e
+estruturada de informação revela-se essencial para fundamentar a tomada de decisão e o
+ajuste terapêutico, sempre no cumprimento do controlo de acessos e da privacidade. O
+processo consiste na obtenção de uma visão clínica longitudinal por parte do profissional,
+reunindo as condições necessárias para a sua intervenção e validação do estado do
+paciente.
+
+UC8 
+O caso de uso «Validar/Arquivar Alertas» permite ao médico autenticado gerir as
+notificações automáticas de risco, optando por intervir ou arquivar cada alerta após a
+análise do historial clínico do paciente. Esta funcionalidade assume especial relevância na
+responsabilização clínica e na organização das prioridades, garantindo que nenhum doente
+em situação crítica fica sem o devido acompanhamento. O processo conclui-se com a
+atualização do estado da notificação para resolvido ou arquivado, o que desencadeia o
+recálculo automático do nível de risco visual do utente no dashboard do profissional de
+saúde.
+
+UC9 
+O caso de uso «Inserir Notas Clínicas» permite ao médico autenticado registar
+manualmente observações e ajustes terapêuticos no processo digital do utente, fornecendo
+um contexto qualitativo essencial que complementa os dados quantitativos dos scores
+CARAT. A centralização destas informações na plataforma revela-se fundamental para
+assegurar um acompanhamento clínico estruturado e rigoroso. O processo acaba com a
+integração permanente da nota no histórico do doente, ficando a operação registada de
+forma imutável no sistema para garantir a devida rastreabilidade e proteção médico-legal.
+
+UC10  
+O caso de uso «Gerir Utilizadores e Associações» descreve as operações efetuadas pelo
+administrador com privilégios máximos para criar, editar ou inativar contas, bem como para
+estabelecer as devidas vinculações entre utentes e médicos assistentes. Esta
+funcionalidade é essencial para garantir a integridade do controlo de acessos, assegurando
+rigorosamente a segurança e a privacidade dos dados de saúde. A conclusão deste
+processo reflete as alterações na base de dados e atualiza o log de auditoria, garantindo a
+total rastreabilidade das transações administrativas realizadas.
+
+UC11 
+O caso de uso «Configurar Limiares e Regras do Sistema» permite ao administrador
+autenticado com privilégios máximos parametrizar o motor de regras da plataforma,
+ajustando dinamicamente os valores que ativam os alertas clínicos, como o limiar de
+controlo do CARAT. Esta funcionalidade confere uma elevada escalabilidade e flexibilidade
+ao sistema, assegurando que as regras de negócio podem ser atualizadas de forma
+contínua sem necessidade de intervenção no código-fonte. A conclusão deste processo
+garante que os novos parâmetros de cálculo entram em vigor com efeitos imediatos para
+todas as avaliações clínicas submetidas posteriormente.
+
+UC12
+O caso de uso «Gerir Perfis e Auditoria» engloba as operações técnicas mais sensíveis da
+plataforma, permitindo ao administrador autenticado configurar permissões avançadas,
+consultar exaustivamente os logs de auditoria e executar scripts de simulação de dados.
+Esta funcionalidade revela-se crucial para garantir a total transparência e governança do
+sistema, assegurando não só a integridade da aplicação como também o cumprimento dos
+requisitos não funcionais de auditoria. O processo termina na aplicação efetiva destas
+ações de gestão, gerando simultaneamente um registo imutável que documenta a
+intervenção para efeitos de rastreabilidade e proteção legal.
+
+
