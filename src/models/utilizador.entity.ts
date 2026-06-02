@@ -7,13 +7,13 @@ export class Utilizador {
  
     @Column()
     nome!: string;
- 
+
     @Column({ unique: true })
     email!: string;
- 
+
     @Column()
     password!: string;
- 
+
     @Column()
     perfil!: string; // "UTENTE" | "MEDICO" | "ADMIN"
  

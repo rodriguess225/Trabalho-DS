@@ -1,43 +1,55 @@
 /*Esta classe AuthService é responsável por autenticar um utilizador.
 
 Ou seja, recebe:
-	•	username
+	•	email
 	•	password
 
 e verifica se:
-	1.	o utilizador existe
+	1.	o utilizador existe na BD
 	2.	a password está correta
 
 Se tudo correr bem, gera um token JWT que poderá depois ser usado nas rotas protegidas.*/
 
-
-
 import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { baseDeDadosUsers } from '../database/local-storage';
+import { AppDataSource } from '../database/database';
+import { Utilizador } from '../models/utilizador.entity';
 import { appConfig } from '../config/app.config';
 
 export class AuthService {
-    login(username: string, password: string): string {
-        const user = baseDeDadosUsers.find(u => u.username === username);
+    async login(email: string, password: string): Promise<string> {
+        const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        
+        // Procura o utilizador na BD pelo email
+        const utilizador = await utilizadorRepo.findOne({ 
+            where: { email } 
+        });
 
-        if (!user) {
+        if (!utilizador) {
             throw new Error('Credenciais inválidas.');
         }
 
-        const passwordValida = bcrypt.compareSync(password, user.password);
+        // Verifica se a password está correta
+        const passwordValida = await bcrypt.compare(password, utilizador.password);
 
         if (!passwordValida) {
             throw new Error('Credenciais inválidas.');
         }
 
+        // Verifica se o utilizador está ativo
+        if (!utilizador.ativo) {
+            throw new Error('Utilizador inativo.');
+        }
+
+        // Gera o token JWT com os dados do utilizador
         const token = jwt.sign(
             {
-                id: user.id,
-                username: user.username,
-                role: user.role
+                id: utilizador.id,
+                email: utilizador.email,
+                role: utilizador.perfil
             },
-            appConfig.auth.jwtSecret
+            appConfig.auth.jwtSecret,
+            { expiresIn: '24h' }
         );
 
         return token;

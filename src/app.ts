@@ -10,11 +10,14 @@ import caratRoutes from './routes/carat.routes';
 import utenteRoutes from './routes/utente.routes';
 import fhirRoutes from './routes/fhir.routes';
 import alertasRoutes from './routes/alertas.routes';
+import authRoutes from './routes/auth.routes';
+
 
 const app = express();
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
+app.use('/auth', authRoutes);
 
 app.use('/prescricoes', prescricaoRoutes);
 app.use('/exames', exameRoutes);

@@ -11,7 +11,7 @@ import { appConfig } from '../config/app.config';
 export interface AuthRequest extends Request {
     user?: {
         id: number;
-        username: string;
+        email: string;
         role: string;
     };
 }
@@ -36,7 +36,7 @@ export function authMiddleware(
     try {
         const decoded = jwt.verify(token, appConfig.auth.jwtSecret) as {
             id: number;
-            username: string;
+            email: string;
             role: string;
         };
 
