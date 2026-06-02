@@ -4,6 +4,6 @@ export interface CreateUtenteDto {
     numSaude: string;
     dataNascimento: string;
     genero?: string;
-    nif?: string;
+    nif?: number;
     morada?: string;
 }
