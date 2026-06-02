@@ -5,13 +5,13 @@
 // Se o token estiver ausente, mal formatado ou inválido, devolve erro 401.
 
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { appConfig } from '../config/app.config';
 
 export interface AuthRequest extends Request {
     user?: {
         id: number;
-        username: string;
+        email: string;
         role: string;
     };
 }
@@ -36,7 +36,7 @@ export function authMiddleware(
     try {
         const decoded = jwt.verify(token, appConfig.auth.jwtSecret) as {
             id: number;
-            username: string;
+            email: string;
             role: string;
         };
 

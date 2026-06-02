@@ -9,11 +9,17 @@ import { AuthService } from '../services/auth.services';
 export class LoginController {
     private authService = new AuthService();
 
-    login(req: Request, res: Response) {
+    async login(req: Request, res: Response) {
         try {
-            const { username, password } = req.body;
+            const { email, password } = req.body;
 
-            const token = this.authService.login(username, password);
+            if (!email || !password) {
+                return res.status(400).json({
+                    erro: 'Email e password são obrigatórios.'
+                });
+            }
+
+            const token = await this.authService.login(email, password);
 
             return res.status(200).json({
                 mensagem: 'Login com sucesso',
