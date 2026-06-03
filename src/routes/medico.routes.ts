@@ -1,13 +1,12 @@
 import { Router } from 'express';
-import { UtenteController } from '../controllers/utente.controller';
+import { MedicoController } from '../controllers/medico.controller';
 
 const routes = Router();
-const controller = new UtenteController();
+const controller = new MedicoController();
 
 routes.get('/', controller.listar.bind(controller));
 routes.get('/:id', controller.buscarPorId.bind(controller));
 routes.get('/utilizador/:id_utilizador', controller.buscarPorIdUtilizador.bind(controller));
 routes.post('/', controller.criar.bind(controller));
-routes.patch('/:id/medico', controller.associarMedico.bind(controller));
 
 export default routes;

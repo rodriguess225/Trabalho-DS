@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { ExameController } from '../controllers/exame.controller';
+import { MedicacaoController } from '../controllers/medicacao.controller';
 
 const routes = Router();
-const controller = new ExameController();
+const controller = new MedicacaoController();
 
-routes.get('/', controller.listar.bind(controller));
 routes.get('/utente/:id_utente', controller.listarPorUtente.bind(controller));
 routes.post('/', controller.criar.bind(controller));
 

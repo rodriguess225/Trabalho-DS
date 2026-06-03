@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { ExameController } from '../controllers/exame.controller';
+import { AdministradorController } from '../controllers/administrador.controller';
 
 const routes = Router();
-const controller = new ExameController();
+const controller = new AdministradorController();
 
 routes.get('/', controller.listar.bind(controller));
-routes.get('/utente/:id_utente', controller.listarPorUtente.bind(controller));
 routes.post('/', controller.criar.bind(controller));
 
 export default routes;
