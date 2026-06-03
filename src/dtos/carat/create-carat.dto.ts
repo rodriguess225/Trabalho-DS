@@ -1,7 +1,7 @@
 import { CreateRespostaCaratDto } from '../respostacarat/create-respostacarat.dto'; // <-- Adicionar este import
 
 export interface CreateAvaliacaoCaratDto {
-    utenteId: number;
+    id_utente: number;
     scoreTotal: number;
     scoreViasSuperiores: number;
     scoreViasInferiores: number;

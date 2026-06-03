@@ -12,7 +12,7 @@ export class ConfiguracaoLimiares {
     limiar_score!: number;
 
     @Column({ type: "int", nullable: true })
-    limiar_delta_deterorização!: number;
+    limiar_delta_deterioracao!: number;
 
     @Column({ type: "datetime", nullable: true })
     ultima_atualizacao!: string;

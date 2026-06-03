@@ -1,6 +1,6 @@
 import { RespostaCaratResponseDto } from '../respostacarat/respostacarat-response.dto';
 
-export interface AvaliacaoCaratResponseDto {
+export interface CaratResponseDto {
     id: number;
     utenteId: number;
     scoreTotal: number;

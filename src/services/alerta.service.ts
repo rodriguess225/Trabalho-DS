@@ -17,7 +17,7 @@ export class AlertaService {
             id_avaliacao_origem: dados.id_avaliacao_origem,
             tipo: dados.tipo,
             prioridade: dados.prioridade,
-            estado: 'PENDENTE',
+            estado: 'NOVO',
             motivo: dados.motivo
         });
 
