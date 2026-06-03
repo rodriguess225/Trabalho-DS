@@ -12,20 +12,20 @@ export class Alerta {
     id_medico!: number; // FK -> medicos.id_medico
  
     @Column({ nullable: true })
-    id_avaliacao_origem!: number; // FK -> avaliacoes_carat.id_avaliacao
+    id_avaliacao_origem!: number | null; // FK -> avaliacoes_carat.id_avaliacao
  
     @Column()
     tipo!: string;
  
     @Column({nullable: true })
-    prioridade!: string;
+    prioridade!: string | null; 
  
     // "NOVO" | "VISTO" | "EM_SEGUIMENTO" | "FECHADO"
     @Column({ default: "NOVO" })
     estado!: string;
  
     @Column({ nullable: true })
-    motivo!: string;
+    motivo!: string | null; 
  
     @Column({ type: "datetime", nullable: true })         //estas duas parecem iguais
     dataGeracao!: string;

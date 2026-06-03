@@ -33,10 +33,9 @@ export class DashboardService {
             throw new Error("Utente não encontrado no sistema.");
         }
 
-        const utilizador = await this.utilizadorRepo.findOne({ where: { id_utilizador: utente.id_utilizador } });
+        const utilizador = await this.utilizadorRepo.findOne({ where: { id: utente.id_utilizador } });
 
-        // 3. Buscar a informação toda EM PARALELO (muito mais rápido que usar await um por um)
-        // Nota: Assumi que nas vossas entidades a chave estrangeira é 'id_utente' ou 'utenteId'.
+        
         const [
             avaliacoesCarat,
             alertas,

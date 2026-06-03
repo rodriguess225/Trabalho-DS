@@ -14,11 +14,10 @@ export class AlertaService {
         const novoAlerta = this.repo.create({
             id_utente: dados.id_utente,
             id_medico: dados.id_medico,
-            id_avaliacao_origem: dados.id_avaliacao_origem,
+            id_avaliacao_origem: dados.id_avaliacao_origem ?? null, 
             tipo: dados.tipo,
-            prioridade: dados.prioridade,
-            estado: 'NOVO',
-            motivo: dados.motivo
+            prioridade: dados.prioridade ?? 'MÉDIA',                
+            motivo: dados.motivo ?? null                            
         });
 
         const alertaGuardado = await this.repo.save(novoAlerta);
