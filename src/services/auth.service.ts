@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { appConfig } from '../config/app.config';
 
- import {AppDataSource } from '../database/database'; 
+import {AppDataSource } from '../database/database'; 
 
 export class AuthService {
     
