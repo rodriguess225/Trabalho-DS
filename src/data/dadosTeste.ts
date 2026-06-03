@@ -1,5 +1,3 @@
-// FILE: src/data/dadosTeste.ts
-
 // ==========================================
 // 1. UTILIZADORES E PERFIS DE ACESSO
 // ==========================================
@@ -138,20 +136,21 @@ export const sintomasMock = [
 export const medicacoesMock = [
     { id_utente: 1, nomeMedicacao: 'Budesonida + Formoterol', dose: '160/4.5 mcg', frequencia: '2 inalações, 2x ao dia', dataPrescricao: doisMesesAtras.toISOString() },
     { id_utente: 1, nomeMedicacao: 'Salbutamol', dose: '100 mcg', frequencia: 'Em caso de SOS (falta de ar)', dataPrescricao: mesPassado.toISOString() },
+    { id_utente: 1, nomeMedicacao: 'Prednisolona (Corticoide)', dose: '20 mg', frequencia: '1x ao dia durante 5 dias', dataPrescricao: doisMesesAtras.toISOString(), dataFinal: mesPassado.toISOString() },
     { id_utente: 2, nomeMedicacao: 'Bilastina', dose: '20 mg', frequencia: '1 comprimido de manhã', dataPrescricao: hoje.toISOString() },
     { id_utente: 3, nomeMedicacao: 'Tiotrópio', dose: '18 mcg', frequencia: '1 inalação por dia', dataPrescricao: doisMesesAtras.toISOString() }
 ];
 
 export const examesMock = [
     { id_utente: 1, tipoExame: 'Espirometria com Prova de Broncodilatação', dataSolicitacao: mesPassado.toISOString().split('T')[0], resultado: 'Obstrução moderada reversível.', concluido: true },
-    { id_utente: 1, tipoExame: 'Raio-X Tórax', dataSolicitacao: hoje.toISOString().split('T')[0], resultado: null, concluido: false },
+    { id_utente: 1, tipoExame: 'Raio-X Tórax', id_intervencao_clinica: 1, dataSolicitacao: mesPassado.toISOString().split('T')[0], resultado: null, concluido: false },
     { id_utente: 2, tipoExame: 'Testes de Sensibilidade Cutânea (Prick Test)', dataSolicitacao: doisMesesAtras.toISOString().split('T')[0], resultado: 'Positivo para Ácaros e Pêlo de Gato.', concluido: true },
     { id_utente: 3, tipoExame: 'TAC Torácica', dataSolicitacao: hoje.toISOString().split('T')[0], resultado: null, concluido: false }
 ];
 
 export const intervencoesMock = [
-    { id_utente: 1, id_medico: 1, notasMedicas: 'Utente não tem cumprido a medicação de manutenção. Explicada técnica inalatória.', acaoTomada: 'Reforço do ensino e prescrito Raio-X Tórax.', dataRegisto: hoje.toISOString() },
-    { id_utente: 3, id_medico: 1, notasMedicas: 'Agravamento dos sintomas de DPOC. Suspeita de infeção respiratória.', acaoTomada: 'Prescrita antibioterapia e solicitada TAC urgente.', dataRegisto: hoje.toISOString() }
+    { id_utente: 1, id_medico: 1, id_alerta: 3, notasMedicas: 'Utente avaliado presencialmente após alerta do sistema por score CARAT baixo. Foi reforçada a técnica inalatória.', acaoTomada: 'Reforço do ensino e agendado RX Tórax.', dataRegisto: mesPassado.toISOString() },
+    { id_utente: 3, id_medico: 1, id_alerta: null, notasMedicas: 'Agravamento dos sintomas de DPOC. Suspeita de infeção respiratória.', acaoTomada: 'Prescrita antibioterapia e solicitada TAC urgente.', dataRegisto: hoje.toISOString() }
 ];
 
 // ==========================================
