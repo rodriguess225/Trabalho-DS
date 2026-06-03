@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
-import { Prescricao } from '../models/prescricao.entity';
 import { Exame } from '../models/exame.entity';
 import { AvaliacaoCARAT } from '../models/avaliacao-carat.entity';
 import { RespostaCarat } from '../models/respostacarat.entity';
@@ -23,7 +22,6 @@ export const AppDataSource = new DataSource({
     type: 'better-sqlite3',
     database: 'database.db',
     entities: [
-        Prescricao,
         Exame,
         AvaliacaoCARAT,
         RespostaCarat,

@@ -2,12 +2,10 @@ import express from 'express';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import { AppDataSource } from './database/database';
-import { Prescricao } from './models/prescricao.entity';
 import { Exame } from './models/exame.entity';
 import { Utente } from './models/utente.entity';
 import { Utilizador } from './models/utilizador.entity';
 import exameRoutes from './routes/exame.routes';
-import prescricaoRoutes from './routes/prescricao.routes';
 import caratRoutes from './routes/carat.routes';
 import utenteRoutes from './routes/utente.routes';
 import fhirRoutes from './routes/fhir.routes';
@@ -21,7 +19,6 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 app.use('/auth', authRoutes);
 
-app.use('/prescricoes', prescricaoRoutes);
 app.use('/exames', exameRoutes);
 app.use('/pedidos-exames', exameRoutes);
 app.use('/carat', caratRoutes);
@@ -37,10 +34,6 @@ async function start() {
             console.log("Base de dados conectada!");
         }
 
-        const prescricaoRepo = AppDataSource.getRepository(Prescricao);
-        if (await prescricaoRepo.count() === 0) {
-            await prescricaoRepo.save({ medicamento: 'Aspirina', dose: '500mg', medico_nome: 'Dr. House', dataCriacao: new Date() });
-        }
 
         const exameRepo = AppDataSource.getRepository(Exame);
         if (await exameRepo.count() === 0) {
@@ -121,8 +114,5 @@ async function start() {
     }
 }
 
-if (require.main === module) {
-    start();
-}
 
 export default app;
