@@ -4,22 +4,16 @@
 // Se a autenticação falhar, responde com erro 401.
 
 import { Request, Response } from 'express';
-import { AuthService } from '../services/auth.services';
+import { AuthService } from '../services/auth.service';
 
 export class LoginController {
     private authService = new AuthService();
 
-    async login(req: Request, res: Response) {
+    login(req: Request, res: Response) {
         try {
-            const { email, password } = req.body;
+            const { username, password } = req.body;
 
-            if (!email || !password) {
-                return res.status(400).json({
-                    erro: 'Email e password são obrigatórios.'
-                });
-            }
-
-            const token = await this.authService.login(email, password);
+            const token = this.authService.login(username, password);
 
             return res.status(200).json({
                 mensagem: 'Login com sucesso',
