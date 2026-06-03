@@ -24,7 +24,8 @@ export class ConfiguracaoLimiaresService {
     async atualizarLimiar(dados: CreateConfiguracaoLimiaresDto, id_admin_que_alterou: number): Promise<ConfiguracaoLimiares> {
         const novaConfig = this.repo.create({
             limiar_score: dados.limiar_score,
-            id_administrador: id_admin_que_alterou 
+            id_administrador: id_admin_que_alterou,
+            limiar_delta_deterioracao: dados.delta_deterioracao
         });
 
         const configGuardada = await this.repo.save(novaConfig);

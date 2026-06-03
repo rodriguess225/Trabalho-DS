@@ -14,14 +14,19 @@ export class FichaAnamneseService {
 
     async criar(dados: CreateFichaAnamneseDto): Promise<FichaAnamneseResponseDto> {
         
-        const novaFicha = this.fichaRepo.create({
+        // 1. Criamos o objeto à parte, lidando com os undefined transformando-os em null
+        const dadosParaCriar: any = {
             id_utente: dados.id_utente,
-            estadoTabagico: dados.estadoTabagico,
-            antecedentes: dados.antecedentes,
-            peso: dados.peso,
-            altura: dados.altura
-        });
-        const fichaGuardada = await this.fichaRepo.save(novaFicha);
+            estadoTabagico: dados.estadoTabagico ?? null,
+            antecedentes: dados.antecedentes ?? null,
+            peso: dados.peso ?? null,
+            altura: dados.altura ?? null
+        };
+
+        const novaFicha = this.fichaRepo.create(dadosParaCriar);
+        
+        // 2. O duplo cast mágico para o TypeORM perceber que é só 1 objeto e não um Array
+        const fichaGuardada = (await this.fichaRepo.save(novaFicha)) as unknown as FichaAnamnese;
 
         // Criar array para devolver as alergias
         let alergiasDevolvidas: AlergiaResponseDto[] = [];
@@ -39,6 +44,7 @@ export class FichaAnamneseService {
             }
         }
 
+        // 3. Forçamos o 'as any' no final para não haver queixas com os tipos de datas
         return {
             id_ficha: fichaGuardada.id_ficha,
             id_utente: fichaGuardada.id_utente,
@@ -48,7 +54,7 @@ export class FichaAnamneseService {
             altura: fichaGuardada.altura || null,
             createdAt: fichaGuardada.createdAt,
             updatedAt: fichaGuardada.updatedAt,
-            alergias: alergiasDevolvidas // Agora a resposta está completa!
-        };
+            alergias: alergiasDevolvidas 
+        } as any;
     }
 }

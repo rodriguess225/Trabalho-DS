@@ -22,18 +22,20 @@ export class UtilizadorService {
         // 2. Encriptar a password antes de guardar
         const passwordHash = await bcrypt.hash(dados.password, 10);
 
-        // 3. Criar a entidade
-        const novoUtilizador = this.repo.create({
+        // 3. Criar a entidade com o truque do 'any' para evitar erros de tipos opcionais
+        const dadosParaCriar: any = {
             nome: dados.nome,
             email: dados.email,
             password: passwordHash,
             perfil: dados.perfil,
-            telemovel: dados.telemovel,
+            telemovel: dados.telemovel ?? null, // Proteção contra undefined
             ativo: true // Por defeito, contas novas vêm ativas
-        });
+        };
 
-        // 4. Guardar na BD
-        const utilizadorGuardado = await this.repo.save(novoUtilizador);
+        const novoUtilizador = this.repo.create(dadosParaCriar);
+
+        // 4. Guardar na BD com o cast para não ser interpretado como Array
+        const utilizadorGuardado = (await this.repo.save(novoUtilizador)) as unknown as Utilizador;
 
         // 5. Registar a ação no Log de Auditoria
         await this.logService.registarLog({
@@ -67,7 +69,8 @@ export class UtilizadorService {
     async registarUltimoLogin(id: number): Promise<void> {
         const utilizador = await this.buscarPorId(id);
         if (utilizador) {
-            utilizador.ultimoLogin = new Date().toISOString().split('T')[0]; // Guarda no formato YYYY-MM-DD
+            // O 'as string' garante ao compilador que o resultado do split[0] existe sempre!
+            utilizador.ultimoLogin = new Date().toISOString().split('T')[0] as string; 
             await this.repo.save(utilizador);
         }
     }

@@ -11,19 +11,22 @@ export class UtenteService {
      * Cria os dados demográficos e clínicos do Utente na base de dados
      */
     async criarUtente(dados: CreateUtenteDto, id_utilizador_que_criou: number): Promise<Utente> {
-        // 1. Mapear EXATAMENTE com as colunas definidas no utente.entity.ts
-        const novoUtente = this.repo.create({
+        
+        // 1. Driblar a restrição do TypeScript lidando com os potenciais undefined
+        const dadosParaCriar: any = {
             id_utilizador: dados.id_utilizador,
-            id_medico: dados.id_medico, // Pode ser undefined no início
-            dataNascimento: dados.dataNascimento,
-            morada: dados.morada,
-            genero: dados.genero,
-            numSaude: dados.numSaude,
-            nif: dados.nif
-        });
+            id_medico: dados.id_medico ?? null, 
+            dataNascimento: dados.dataNascimento ?? null,
+            morada: dados.morada ?? null,
+            genero: dados.genero ?? null,
+            numSaude: dados.numSaude ?? null,
+            nif: dados.nif ?? null
+        };
 
-        // 2. Gravar o Utente
-        const utenteGuardado = await this.repo.save(novoUtente);
+        const novoUtente = this.repo.create(dadosParaCriar);
+
+        // 2. O cast mágico para o TypeORM perceber que é apenas 1 objeto
+        const utenteGuardado = (await this.repo.save(novoUtente)) as unknown as Utente;
 
         // 3. Auditoria
         await this.logService.registarLog({

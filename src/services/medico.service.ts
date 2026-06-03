@@ -11,18 +11,22 @@ export class MedicoService {
      * Cria o perfil profissional do Médico e guarda na tabela 'medicos'
      */
     async criarMedico(dados: CreateMedicoDto, id_admin_que_criou: number): Promise<Medico> {
-        // 1. Mapeamento direto para a tabela baseando na Entidade
-        const novoMedico = this.repo.create({
+        
+        // 1. O nosso truque do 'any' para contornar o exactOptionalPropertyTypes
+        // Adicionei o numCedula pois vi no teu erro que a entidade Medico exige isso!
+        const dadosParaCriar: any = {
             id_utilizador: dados.id_utilizador,
-            especialidade: dados.especialidade
-            // Nota: Se no ER tiverem adicionado 'numCedula' ou 'instituicao', deves adicionar aqui também, ex:
-            // numCedula: dados.numCedula
-        });
+            especialidade: dados.especialidade ?? null,
+            // Se o vosso DTO tiver numCedula, ele usa, senão passa null para a BD não berrar
+            numCedula: (dados as any).numCedula ?? null 
+        };
 
-        // 2. Guardar na BD
-        const medicoGuardado = await this.repo.save(novoMedico);
+        const novoMedico = this.repo.create(dadosParaCriar);
 
-        // 3. Auditoria obrigatória
+        // 2. O duplo cast para garantir ao TypeScript que não é um Array
+        const medicoGuardado = (await this.repo.save(novoMedico)) as unknown as Medico;
+
+        // 3. Auditoria obrigatória (Mantemos o JSON.stringify porque o log exige string)
         await this.logService.registarLog({
             id_utilizador: id_admin_que_criou,
             tipoAcao: 'CREATE',
@@ -34,23 +38,17 @@ export class MedicoService {
         return medicoGuardado;
     }
 
-    /**
-     * Lista todos os médicos. Fundamental para a interface onde o Utente ou Admin escolhem um médico.
-     */
+  
     async listarMedicos(): Promise<Medico[]> {
         return await this.repo.find();
     }
 
-    /**
-     * Retorna a ficha de médico através do ID de utilizador (Usado durante o Login para saber quem é)
-     */
+  
     async buscarPorIdUtilizador(id_utilizador: number): Promise<Medico | null> {
         return await this.repo.findOneBy({ id_utilizador: id_utilizador });
     }
 
-    /**
-     * Busca os detalhes de um médico específico (para o Dashboard do Utente ver o contacto do médico)
-     */
+    
     async buscarPorId(id_medico: number): Promise<Medico | null> {
         return await this.repo.findOneBy({ id_medico: id_medico });
     }

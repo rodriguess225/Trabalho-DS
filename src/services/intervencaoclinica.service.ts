@@ -3,33 +3,44 @@ import { IntervencaoClinica } from '../models/intervencaoclinica.entity';
 import { CreateIntervencaoDto } from '../dtos/intervencaoClinica/create-intervencao.dto';
 import { IntervencaoResponseDto } from '../dtos/intervencaoClinica/intervencao-response.dto';
 import { LogAuditoriaService } from './logauditoria.service';
+import { AlertaService } from './alerta.service';
 
 export class IntervencaoClinicaService {
     private repo = AppDataSource.getRepository(IntervencaoClinica);
     private logService = new LogAuditoriaService();
-
+    private alertaService = new AlertaService();
+    
     async registarIntervencao(dados: CreateIntervencaoDto, id_medico_que_registou: number): Promise<IntervencaoResponseDto> {
-        const nova = this.repo.create({
+        
+        // Criamos o objeto à parte para o TypeORM não se confundir
+        const dadosParaCriar: any = {
             id_utente: dados.id_utente,
             id_medico: dados.id_medico,
-            id_alerta: dados.id_alerta,
-            notasMedicas: dados.notasMedicas,
-            acaoTomada: dados.acoesTomadas, // Mapeado corretamente para a BD
+            id_alerta: dados.id_alerta ?? null,
+            notasMedicas: dados.notasMedicas ?? null,
+            acaoTomada: dados.acoesTomadas ?? null, 
             dataRegisto: new Date().toISOString()
-        });
-        const guardada = await this.repo.save(nova);
+        };
+
+        const nova = this.repo.create(dadosParaCriar); 
+        
+        // CORREÇÃO AQUI: as unknown as IntervencaoClinica
+        const guardada = (await this.repo.save(nova)) as unknown as IntervencaoClinica;
+             
+        if (dados.id_alerta) {
+              await this.alertaService.atualizarEstado(dados.id_alerta, 'FECHADO', id_medico_que_registou);
+        }
 
         await this.logService.registarLog({
             id_utilizador: id_medico_que_registou,
             tipoAcao: 'CREATE',
             entidadeAfetada: 'IntervencaoClinica',
             id_registo_afetado: guardada.id_intervencao,
-            valorNovo: JSON.stringify({ notasMedicas: dados.notasMedicas })
+            valorNovo: JSON.stringify({ notasMedicas: dados.notasMedicas }) 
         });
 
         return this.toResponseDto(guardada);
     }
-
     private toResponseDto(intervencao: IntervencaoClinica): IntervencaoResponseDto {
         return {
             id_intervencao: intervencao.id_intervencao,
@@ -37,7 +48,7 @@ export class IntervencaoClinicaService {
             id_medico: intervencao.id_medico,
             notasMedicas: intervencao.notasMedicas || '',
             diagnostico: null,
-            dataIntervencao: new Date(intervencao.dataRegisto)
-        } as IntervencaoResponseDto;
+            dataIntervencao: intervencao.dataRegisto 
+        } as any;
     }
 }

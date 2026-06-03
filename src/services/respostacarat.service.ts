@@ -8,12 +8,19 @@ export class RespostaCaratService {
      * Guarda individualmente uma resposta associada a uma avaliação
      */
     async criarResposta(id_avaliacao: number, num_pergunta: number, valor_pontuacao: number): Promise<RespostaCarat> {
-        const novaResposta = this.repo.create({
-            id_avaliacao: id_avaliacao,
+        
+        // Mapeamos os nomes para baterem EXATAMENTE certo com a entidade RespostaCarat
+        const dadosParaCriar: any = {
+            avaliacaoId: id_avaliacao, // Na entidade chama-se avaliacaoId
             num_pergunta: num_pergunta,
-            valor_pontuacao: valor_pontuacao
-        });
+            valor: valor_pontuacao     // Na entidade chama-se valor
+        };
 
-        return await this.repo.save(novaResposta);
+        const novaResposta = this.repo.create(dadosParaCriar);
+
+        // O nosso já conhecido duplo cast para garantir que devolve apenas 1 objeto
+        const respostaGuardada = (await this.repo.save(novaResposta)) as unknown as RespostaCarat;
+
+        return respostaGuardada;
     }
 }

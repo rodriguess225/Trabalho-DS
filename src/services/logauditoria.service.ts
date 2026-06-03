@@ -5,39 +5,37 @@ import { CreateLogAuditoriaDto } from '../dtos/logauditoria/create-logauditoria.
 export class LogAuditoriaService {
     private repo = AppDataSource.getRepository(LogAuditoria);
 
-    /**
-     * Regista uma nova ação no sistema (CREATE, UPDATE, DELETE, LOGIN)
-     */
     async registarLog(dados: CreateLogAuditoriaDto): Promise<LogAuditoria> {
-        const novoLog = this.repo.create({
-            id_utilizador: dados.id_utilizador,
+        
+        // 1. Driblar o TypeScript isolando os dados num 'any' e convertendo undefined em null
+        const dadosParaCriar: any = {
+            id_utilizador: dados.id_utilizador ?? null,
             tipoAcao: dados.tipoAcao,
             entidadeAfetada: dados.entidadeAfetada,
-            id_registo_afetado: dados.id_registo_afetado,
-            dataHora: dados.dataHora || new Date().toISOString(), // Se não vier data, assume agora
-            valorAntigo: dados.valorAntigo ? JSON.stringify(dados.valorAntigo) : undefined,
-            valorNovo: dados.valorNovo ? JSON.stringify(dados.valorNovo) : undefined
-        });
+            id_registo_afetado: dados.id_registo_afetado ?? null,
+            dataHora: dados.dataHora || new Date().toISOString(), // Mantemos a data como string como pede a BD
+            valorAntigo: dados.valorAntigo ?? null,
+            valorNovo: dados.valorNovo ?? null
+        };
 
-        return await this.repo.save(novoLog);
+        const novoLog = this.repo.create(dadosParaCriar);
+
+        // 2. Duplo cast para evitar o problema de ele achar que vai devolver um Array
+        const logGuardado = (await this.repo.save(novoLog)) as unknown as LogAuditoria;
+
+        return logGuardado;
     }
 
-    /**
-     * Permite ao Administrador ver o histórico de logs
-     */
     async listarLogs(): Promise<LogAuditoria[]> {
         return await this.repo.find({
-            order: { createdAt: 'DESC' } // Mostra os mais recentes primeiro
+            order: { dataHora: 'DESC' } 
         });
     }
 
-    /**
-     * Permite ver o histórico de um utilizador específico (ex: o que o Médico X andou a fazer)
-     */
     async listarLogsPorUtilizador(id_utilizador: number): Promise<LogAuditoria[]> {
         return await this.repo.find({
             where: { id_utilizador: id_utilizador },
-            order: { createdAt: 'DESC' }
+            order: { dataHora: 'DESC' }
         });
     }
 }

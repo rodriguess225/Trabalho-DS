@@ -1,0 +1,3826 @@
+﻿// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\config\app.config.ts
+// Define a estrutura da nossa PrescriÃ§Ã£o no sistema 
+
+export interface Prescricao {
+    id: number;
+    medicamento: string;
+    dose: string;
+    medico_nome: string;
+    dataCriacao: Date; // Adiciona isto para bater certo com o app.ts
+}
+export const appConfig = {
+    auth: {
+        jwtSecret: 'chave-secreta-para-token-123',
+        expiresIn: '24h'
+    },
+};
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\controllers\avaliacao.controller.ts
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\controllers\carat.controller.ts
+import { Request, Response } from 'express';
+import { CaratService } from '../services/carat.service';
+import { CreateCaratDto } from '../dtos/carat/create-carat.dto';
+
+export class CaratController {
+    private service = new CaratService();
+
+    listar = async (req: Request, res: Response) => {
+        try {
+            const avaliacoes = await this.service.listarAvaliacoes();
+            return res.json(avaliacoes);
+        } catch (error: any) {
+            return res.status(500).json({ erro: "Erro ao listar avaliaÃ§Ãµes" });
+        }
+    }
+
+   criar = async (req: Request, res: Response) => {
+        try {
+            const dto: CreateCaratDto = req.body;
+            const novaAvaliacao = await this.service.submeterAvaliacao(dto);
+            
+            return res.status(201).json({
+                mensagem: "AvaliaÃ§Ã£o CARAT submetida com sucesso",
+                resultado: novaAvaliacao
+            });
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message });
+        }
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\controllers\exame.controller.ts
+import { Request, Response } from 'express';
+import { ExameService } from '../services/exame.service';
+
+export class ExameController {
+    private service = new ExameService();
+
+    async listar(req: Request, res: Response) {
+        const exames = await this.service.listarExames();
+        return res.json(exames);
+    }
+
+    async criar(req: Request, res: Response) {
+        try {
+            const { nome, codigo, medico_nome } = req.body;
+
+            const novoExame = await this.service.criarExame({ nome, codigo, medico_nome });
+
+            return res.status(201).json({
+                mensagem: `Exame ${novoExame.nome} registado no sistema`,
+                exame: novoExame
+            });
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message });
+        }
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\controllers\login.controller.ts
+// Controller responsÃ¡vel pelo login.
+// Recebe as credenciais enviadas no pedido HTTP, chama o AuthService
+// para validar o utilizador e devolve o token JWT em caso de sucesso.
+// Se a autenticaÃ§Ã£o falhar, responde com erro 401.
+
+import { Request, Response } from 'express';
+import { AuthService } from '../services/auth.services';
+
+export class LoginController {
+    private authService = new AuthService();
+
+    async login(req: Request, res: Response) {
+        try {
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                return res.status(400).json({
+                    erro: 'Email e password sÃ£o obrigatÃ³rios.'
+                });
+            }
+
+            const token = await this.authService.login(email, password);
+
+            return res.status(200).json({
+                mensagem: 'Login com sucesso',
+                token
+            });
+        } catch (error: any) {
+            return res.status(401).json({
+                erro: error.message
+            });
+        }
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\controllers\utente.controller.ts
+import { Request, Response } from 'express';
+import { UtenteService } from '../services/utente.service';
+import { CreateUtenteDto } from '../dtos/utente/create-utente.dto'; // <-- Import do DTO de volta!
+
+export class UtenteController {
+    private service = new UtenteService();
+
+    async listar(req: Request, res: Response) {
+        try {
+            const utentes = await this.service.listarUtentes();
+            return res.json(utentes);
+        } catch (error) {
+            return res.status(500).json({ erro: "Erro ao listar utentes." });
+        }
+    }
+
+    async criar(req: Request, res: Response) {
+        try {
+            // TransformaÃ§Ã£o explÃ­cita do body no nosso DTO (A forma mais correta e segura)
+            const dto: CreateUtenteDto = req.body; 
+            
+            const novoUtente = await this.service.criarUtente(dto);
+            return res.status(201).json(novoUtente);
+            
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message });
+        }
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\database\database.ts
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
+
+import { Exame } from '../models/exame.entity';
+import { AvaliacaoCARAT } from '../models/avaliacao-carat.entity';
+import { RespostaCarat } from '../models/respostacarat.entity';
+import { Utente } from '../models/utente.entity';
+import { Medico } from '../models/medico.entity';
+import { Administrador } from '../models/administrador.entity';
+import { Alerta } from '../models/alerta.entity';
+import { LogAuditoria } from '../models/logauditoria.entity';
+import { ConfiguracaoLimiares } from '../models/configuracaolimiares.entity';
+import { IntervencaoClinica } from '../models/intervencaoclinica.entity';
+import { SintomaReportado } from '../models/sintomareportado.entity';
+import { Medicacao } from '../models/medicacao.entity';
+import { FichaAnamnese } from '../models/fichaanamnese.entity';
+import { FichaPossuiAlergias } from '../models/fichapossuialergias.entity';
+import { Alergia } from '../models/alergia.entity';
+import { Utilizador } from '../models/utilizador.entity';
+
+export const AppDataSource = new DataSource({
+    type: 'better-sqlite3',
+    database: 'database.db',
+    entities: [
+        Exame,
+        AvaliacaoCARAT,
+        RespostaCarat,
+        Utente,
+        Medico,
+        Administrador,
+        Alerta,
+        LogAuditoria,
+        ConfiguracaoLimiares,
+        IntervencaoClinica,
+        SintomaReportado,
+        Medicacao,
+        FichaAnamnese,
+        FichaPossuiAlergias,
+        Alergia,
+        Utilizador
+    ],
+    synchronize: true,
+});
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\database\local-storage.ts
+// src/database/local-storage.ts
+import { Exame } from '../models/exame.entity';
+
+
+
+
+export const baseDeDadosExamesLocal: Exame[] = [
+    { id: 1, nome: "RX Torax", codigo: "RX01", medico_nome: "Dr. House" } as unknown as Exame //as para evitar erros para jÃ¡ depois serÃ¡ retirado
+];
+
+export const baseDeDadosUsers: any[] = [];
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\administrador\administrador-response.dto.ts
+import { UtilizadorResponseDto } from '../utilizador/utilizador-response.dto';
+
+export interface AdministradorResponseDto {
+    id_administrador: number; 
+    id_Utilizador: number;
+    utilizador: UtilizadorResponseDto; // ComposiÃ§Ã£o para incluir os dados do utilizador associado
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\administrador\create-administrador.dto.ts
+export interface CreateAdministradorDto {
+    id_Utilizador: number; // Exatamente como no ER (U maiÃºsculo)
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\alergia\alergia-response.dto.ts
+export interface AlergiaResponseDto {
+    id_alergia: number;
+    nomeAlergia: string;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\alergia\create-alergia.dto.ts
+export interface CreateAlergiaDto {
+    nomeAlergia: string;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\alerta\alerta-response.dto.ts
+export interface AlertaResponseDto {
+    id_alerta: number;
+    id_utente: number;
+    id_medico: number;
+    id_avaliacao_origem: number | null;
+    tipo: string;
+    prioridade: string | null;
+    estado: string;
+    motivo: string | null;
+    dataGeracao: string | null;
+    createdAt: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\alerta\create-alerta.dto.ts
+export interface CreateAlertaDto {
+    id_utente: number;
+    id_medico: number;
+    id_avaliacao_origem?: number;
+    tipo: string;
+    prioridade?: string;
+    estado?: string; 
+    motivo?: string;
+    dataGeracao?: string; 
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\anamnese\create-ficha-anamnese.dto.ts
+export interface CreateFichaAnamneseDto {
+    id_utente: number;
+    estadoTabagico?: string;
+    antecedentes?: string;
+    peso?: number;
+    altura?: number;
+    alergias?: string[]; 
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\anamnese\ficha-anamnese-response.dto.ts
+import { AlergiaResponseDto } from '../alergia/alergia-response.dto';
+
+export interface FichaAnamneseResponseDto {
+    id_ficha: number;
+    id_utente: number;
+    estadoTabagico: string | null;
+    antecedentes: string | null;
+    peso: number | null;
+    altura: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    alergias: AlergiaResponseDto[]; // Lista de alergias associadas a esta ficha de anamnese
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\carat\carat-response.dto.ts
+import { RespostaCaratResponseDto } from '../respostacarat/respostacarat-response.dto';
+
+export interface CaratResponseDto {
+    id: number;
+    utenteId: number;
+    scoreTotal: number;
+    scoreViasSuperiores: number;
+    scoreViasInferiores: number;
+    nivelControlo: string;
+    recomendacoes: string | null;
+    proximoPassoSugerido: string | null;
+    dataAvaliacao: Date;
+    
+    respostas?: RespostaCaratResponseDto[]; 
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\carat\create-carat.dto.ts
+import { CreateRespostaCaratDto } from '../respostacarat/create-respostacarat.dto'; // <-- Adicionar este import
+
+export interface CreateAvaliacaoCaratDto {
+    id_utente: number;
+    scoreTotal: number;
+    scoreViasSuperiores: number;
+    scoreViasInferiores: number;
+    nivelControlo: string;
+    recomendacoes?: string;
+    proximoPassoSugerido?: string;
+    
+    respostas: CreateRespostaCaratDto[]; // Fica a usar o DTO que acabaste de criar
+}
+
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\configuracaoLimiares\configuracao-response.dto.ts
+export interface ConfiguracaoLimiaresResponseDto {
+    id_configuracao: number;
+    id_administrador: number;
+    limiar_score: number;
+    delta_deterorizacao: number;
+    ultima_atualizaÃ§Ã£o: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\configuracaoLimiares\create-configuracao.dto.ts
+export interface CreateConfiguracaoLimiaresDto {
+    id_administrador: number;
+    limiar_score: number;
+    delta_deterorizacao: number; 
+    ultima_atualizaÃ§Ã£o?: string; // ter a certeza se isto faz sentido ou se Ã© melhor deixar o backend tratar disso
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\exame\create-exame.dto.ts
+export interface CreateExameDto {
+    id_utente: number;
+    tipoExame: string;               
+    id_intervencao_clinica: number; 
+    dataSolicitacao?: string;        
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\exame\exame-response.dto.ts
+export interface ExameResponseDto {
+    id_exame: number;
+    id_utente: number;
+    id_intervencao_clinica: number | null;
+    tipoExame: string;
+    dataSolicitacao: string;
+    resultado: string | null;        // ComeÃ§a a null atÃ© o laboratÃ³rio/mÃ©dico preencher
+    concluido: boolean;              // ComeÃ§a a false na base de dados
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\fhir\observation\ObservationDTO.ts
+export type ObservationDTO = {
+
+  id: string;
+
+  status: string;
+
+  code: string;
+
+  display: string;
+
+  value: number | string;
+
+  unit: string;
+
+  effectiveDateTime: string;
+
+  subject: string;
+
+};
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\fichapossuialergia\create-fichapossui-alergia.dto.ts
+export interface CreateFichaPossuiAlergiaDto {
+    id_ficha_anamnese: number;
+    id_alergia: number;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\fichapossuialergia\fichapossui-alergia-response.dto.ts
+export interface FichaPossuiAlergiaResponseDto {
+    id_utente_alergia: number;   
+    id_ficha_anamnese: number;
+    id_alergia: number;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\intervencaoClinica\create-intervencao.dto.ts
+export interface CreateIntervencaoDto {
+    id_utente: number;       
+    id_medico: number;
+    id_alerta?: number;      
+    notasMedicas?: string;   
+    acoesTomadas?: string;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\intervencaoClinica\intervencao-response.dto.ts
+export interface IntervencaoResponseDto {
+    id_intervencao: number;    // A chave primÃ¡ria (PK) desta tabela
+    id_utente: number;         // FK para o utente
+    id_medico: number;         // FK para o mÃ©dico
+    notasMedicas: string;
+    diagnostico: string | null;
+    dataIntervencao: Date;     // Gerado automaticamente pelo sistema no momento da consulta
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\logauditoria\create-logauditoria.dto.ts
+export interface CreateLogAuditoriaDto {
+    id_utilizador?: number;
+    tipoAcao: string;
+    entidadeAfetada: string;
+    id_registo_afetado?: number;
+    dataHora?: string; 
+    valorAntigo?: string; 
+    valorNovo?: string;  
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\logauditoria\logauditoria-response.dto.ts
+export interface LogAuditoriaResponseDto {
+    id_log_auditoria: number;
+    id_utilizador: number | null;
+    tipoAcao: string;
+    entidadeAfetada: string;
+    id_registo_afetado: number | null;
+    dataHora: string | null;
+    valorAntigo: string | null;
+    valorNovo: string | null;
+    createdAt: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\medicacao\create-medicacao.dto.ts
+export interface CreateMedicacaoDto {
+    id_utente: number;
+    id_intervencao_clinica: number; 
+    nomeMedicacao: string;           
+    dose: string;                    
+    frequencia: string;              
+    dataPrescricao?: string;         
+    dataFinal?: string;              
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\medicacao\medicacao-response.dto.ts
+export interface MedicacaoResponseDto {
+    id_medicacao: number;
+    id_utente: number;
+    id_intervencao_clinica: number | null;
+    nomeMedicacao: string;
+    dose: string;
+    frequencia: string;
+    dataPrescricao: string;
+    dataFinal: string | null;
+    createdAt: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\medico\create-medico.dto.ts
+export interface CreateMedicoDto {
+    id_utilizador: number; // FK -> utilizadores.id
+    especialidade?: string;
+    numCedula?: string;
+    instituicao?: string;
+    
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\medico\medico-response.dto.ts
+import { UtilizadorResponseDto } from '../utilizador/utilizador-response.dto';
+
+export interface MedicoResponseDto {
+    id_medico: number;
+    especialidade: string | null;
+    numCedula: string | null;
+    instituicao: string | null;
+    createdAt: Date;
+    utilizador: UtilizadorResponseDto; // ComposiÃ§Ã£o para incluir os dados do utilizador associado
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\respostacarat\create-respostacarat.dto.ts
+export interface CreateRespostaCaratDto {
+    avaliacaoId?: number; 
+    num_pergunta: number;
+    valor_pontuacao: number;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\respostacarat\respostacarat-response.dto.ts
+export interface RespostaCaratResponseDto {
+    id: number;
+    avaliacaoId: number;
+    num_pergunta: number;
+    valor: number;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\sintomareportado\create-sintomareportado.dto.ts
+export interface CreateSintomaReportadoDto {
+    id_utente: number;
+    tipoSintoma?: string;
+    gravidade?: number;
+    dataSintoma?: string; 
+    numSintoma?: string;
+    descricao?: string;
+    sintomaPresistente?: boolean; 
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\sintomareportado\sintomareportado-response.dto.ts
+export interface SintomaReportadoResponseDto {
+    id_sintoma: number;
+    id_utente: number;
+    tipoSintoma: string | null;
+    gravidade: number | null;
+    dataSintoma: string | null;
+    numSintoma: string | null;
+    descricao: string | null;
+    sintomaPresistente: boolean;
+    createdAt: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\utente\create-utente.dto.ts
+export interface CreateUtenteDto {
+    id_utilizador: number; // FK -> utilizadores.id
+    id_medico: number; // FK -> medicos.id_medico
+    numSaude: string;
+    dataNascimento: string;
+    genero?: string;
+    nif?: number;
+    morada?: string;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\utente\utente-response.dto.ts
+import { UtilizadorResponseDto } from '../utilizador/utilizador-response.dto';
+
+export interface UtenteResponseDto {
+    id_utente: number;
+    id_medico: number | null;
+    numSaude: string | null;
+    dataNascimento: string | null;
+    genero: string | null;
+    nif: number | null;
+    morada: string | null;
+    ativo: boolean;
+    createdAt: Date;
+    utilizador: UtilizadorResponseDto; // ComposiÃ§Ã£o para incluir os dados do utilizador associado
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\utilizador\create-utilizador.dto.ts
+export interface CreateUtilizadorDto {
+    nome: string;
+    email: string;
+    password: string; 
+    perfil: string;
+    telemovel?: string; 
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\dtos\utilizador\utilizador-response.dto.ts
+export interface UtilizadorResponseDto {
+    id: number;
+    nome: string;
+    email: string;
+    perfil: string;
+    ativo: boolean; 
+    telemovel: string ;
+    ultimoLogin: Date ; 
+}
+
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\mappers\fhir-observation.mapper.ts
+import { ObservationDTO } from '../dtos/fhir/observation/ObservationDTO';
+
+export function mapObservation(resource: any): ObservationDTO {
+
+  return {
+
+    id: resource.id,
+
+    status: resource.status,
+
+    code: resource.code?.coding?.[0]?.code || '',
+
+    display: resource.code?.coding?.[0]?.display || resource.code?.text || '',
+
+    value: resource.valueQuantity?.value ?? '',
+
+    unit: resource.valueQuantity?.unit || resource.valueQuantity?.code || '',
+
+    effectiveDateTime: resource.effectiveDateTime || '',
+
+    subject: resource.subject?.reference || ''
+
+  };
+
+}
+
+export function mapObservationHumanData(resource: any): ObservationDTO {
+
+  return {
+
+    id: resource.id,
+
+    status: resource.status,
+
+    code: resource.code?.coding?.[0]?.code || '',
+
+    display: resource.code?.coding?.[0]?.display || resource.code?.text || '',
+
+    value: resource.valueQuantity?.value ?? '',
+
+    unit: resource.valueQuantity?.unit || resource.valueQuantity?.code || '',
+
+    effectiveDateTime: formatarDataPortuguesa(resource.effectiveDateTime),
+
+    subject: resource.subject?.reference || ''
+
+  };
+
+}
+
+function formatarDataPortuguesa(dataFHIR?: string): string {
+
+  if (!dataFHIR) return '';
+
+  return new Date(dataFHIR).toLocaleString('pt-PT', {
+
+    timeZone: 'Europe/Lisbon',
+
+    year: 'numeric',
+
+    month: '2-digit',
+
+    day: '2-digit',
+
+    hour: '2-digit',
+
+    minute: '2-digit'
+
+  });
+
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\middleware\auth.middleware.ts
+// Middleware de autenticaÃ§Ã£o.
+// Interceta pedidos antes de chegarem ao controller, verifica se existe um
+// token JWT no header Authorization, valida esse token e, se for vÃ¡lido,
+// guarda os dados do utilizador em req.user e permite continuar para a rota.
+// Se o token estiver ausente, mal formatado ou invÃ¡lido, devolve erro 401.
+
+import { Request, Response, NextFunction } from 'express';
+import * as jwt from 'jsonwebtoken';
+import { appConfig } from '../config/app.config';
+
+export interface AuthRequest extends Request {
+    user?: {
+        id: number;
+        email: string;
+        role: string;
+    };
+}
+
+export function authMiddleware(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({ erro: 'Token nÃ£o fornecido.' });
+    }
+
+    const [scheme, token] = authHeader.split(' ');
+
+    if (scheme !== 'Bearer' || !token) {
+        return res.status(401).json({ erro: 'Formato do token invÃ¡lido.' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, appConfig.auth.jwtSecret) as {
+            id: number;
+            email: string;
+            role: string;
+        };
+
+        req.user = decoded;
+        next();
+    } catch {
+        return res.status(401).json({ erro: 'Token invÃ¡lido ou expirado.' });
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\middleware\authorization.middleware.ts
+import { Response, NextFunction } from 'express';
+import { AuthRequest } from './auth.middleware';
+
+/**
+ * Middleware de autorizaÃ§Ã£o.
+ * Verifica se o utilizador autenticado tem um dos roles permitidos.
+ * Se nÃ£o tiver, devolve erro 403 (Forbidden).
+ */
+export function requireRole(...roles: string[]) {
+    return (req: AuthRequest, res: Response, next: NextFunction) => {
+        if (!req.user) {
+            return res.status(401).json({ 
+                erro: 'NÃ£o autenticado. Token obrigatÃ³rio.' 
+            });
+        }
+
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({ 
+                erro: `Acesso negado. Roles permitidos: ${roles.join(', ')}` 
+            });
+        }
+
+        next();
+    };
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\administrador.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
+ 
+@Entity("administrador")
+export class Administrador {
+    @PrimaryGeneratedColumn()
+    id_administrador!: number;
+ 
+    @Column()
+    id_utilizador!: number; // FK -> utilizadores.id
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+ 
+    @UpdateDateColumn()
+    updatedAt!: Date;
+}
+ 
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\alergia.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column,} from "typeorm";
+
+@Entity("alergias")
+export class Alergia {
+    @PrimaryGeneratedColumn()
+    id_alergia!: number;
+
+    @Column()
+    nomeAlergia!: string;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\alerta.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+ 
+@Entity("alertas")
+export class Alerta {
+    @PrimaryGeneratedColumn()
+    id_alerta!: number;
+ 
+    @Column()
+    id_utente!: number; // FK -> utentes.id_utente
+ 
+    @Column()
+    id_medico!: number; // FK -> medicos.id_medico
+ 
+    @Column({ nullable: true })
+    id_avaliacao_origem!: number | null; // FK -> avaliacoes_carat.id_avaliacao
+ 
+    @Column()
+    tipo!: string;
+ 
+    @Column({nullable: true })
+    prioridade!: string | null; 
+ 
+    // "NOVO" | "VISTO" | "EM_SEGUIMENTO" | "FECHADO"
+    @Column({ default: "NOVO" })
+    estado!: string;
+ 
+    @Column({ nullable: true })
+    motivo!: string | null; 
+ 
+    @Column({ type: "datetime", nullable: true })         //estas duas parecem iguais
+    dataGeracao!: string;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\avaliacao-carat.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+
+@Entity("avaliacoes-carat")
+export class AvaliacaoCARAT {
+    @PrimaryGeneratedColumn()
+    id!: number;
+
+    @Column({ type: "int" })
+    utenteId!: number; // LigaÃ§Ã£o manual ao ID do Utente
+
+    @Column({ type: "int" })
+    scoreTotal!: number;
+
+    @Column({ type: "int" })
+    scoreViasSuperiores!: number;
+
+    @Column({ type: "int" })
+    scoreViasInferiores!: number;
+
+    @Column({ type: "varchar", length: 50 })
+    nivelControlo!: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    recomendacoes!: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    proximoPassoSugerido!: string;
+
+    @CreateDateColumn()
+    dataAvaliacao!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\avaliacao.entity.ts
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\configuracaolimiares.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+
+@Entity("configuracao_limiares")
+export class ConfiguracaoLimiares {
+    @PrimaryGeneratedColumn()
+    id_configuracao!: number;
+
+    @Column({ nullable: true })
+    id_administrador!: number; // FK -> administradores.id_administrador
+
+    @Column({ type: "int", default: 20 })
+    limiar_score!: number;
+
+    @Column({ type: "int", nullable: true })
+    limiar_delta_deterioracao!: number;
+
+    @Column({ type: "datetime", nullable: true })
+    ultima_atualizacao!: string;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\exame.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+ 
+@Entity("exames")
+export class Exame {
+    @PrimaryGeneratedColumn()
+    id_exame!: number;
+ 
+    @Column()
+    id_utente!: number; // FK -> utentes.id_utente
+ 
+    @Column({ nullable: true })
+    id_intervencao_clinica!: number; // FK -> intervencoes_clinicas.id_intervencao
+
+    @Column({ nullable: true })
+    tipoExame!: string;
+ 
+    @Column({ type: "date", nullable: true })
+    dataSolicitacao!: string;
+ 
+    @Column({ nullable: true })
+    resultado!: string;
+ 
+    @Column({ default: false })
+    concluido!: boolean;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+}
+ 
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\fichaanamnese.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
+
+@Entity("fichas_anamnese")
+export class FichaAnamnese {
+    @PrimaryGeneratedColumn()
+    id_ficha!: number;
+
+    @Column()
+    id_utente!: number; // FK -> utentes.id_utente (one-to-one)
+
+    @Column({ nullable: true })
+    estadoTabagico!: string;  //estiloVida
+
+    @Column({ nullable: true })
+    antecedentes!: string;
+
+    @Column({ type: "float", nullable: true })
+    peso!: number;
+
+    @Column({ type: "float", nullable: true })
+    altura!: number;
+
+    @CreateDateColumn()
+    createdAt!: Date;
+
+    @UpdateDateColumn()
+    updatedAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\fichapossuialergias.entity.ts
+import {Entity, PrimaryGeneratedColumn ,Column,} from "typeorm";
+
+// Tabela de ligaÃ§Ã£o entre FichaAnamnese e Alergia
+@Entity("ficha_possui_alergias")
+export class FichaPossuiAlergias {
+    @PrimaryGeneratedColumn()
+    id_utente_alergia!: number;
+
+    @Column()
+    id_ficha_anamnese!: number; // FK -> fichas_anamnese.id_ficha
+
+    @Column()
+    id_alergia!: number; // FK -> alergias.id_alergia
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\intervencaoclinica.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+
+@Entity("intervencoes_clinicas")
+export class IntervencaoClinica {
+    @PrimaryGeneratedColumn()
+    id_intervencao!: number;
+
+    @Column()
+    id_medico!: number; // FK -> medicos.id_medico
+
+    @Column()
+    id_utente!: number; //FK -> utentes.id
+
+    @Column({nullable: true})
+    id_alerta!: number; // FK -> alertas.id_alerta
+
+    @Column({ type: "datetime" })
+    dataRegisto!: string;
+
+    @Column({ nullable: true })
+    notasMedicas!: string;
+
+    @Column({ nullable: true })
+    acaoTomada!: string;
+
+    @CreateDateColumn()
+    createdAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\logauditoria.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+
+@Entity("logs_auditoria")
+export class LogAuditoria {
+    @PrimaryGeneratedColumn()
+    id_log_auditoria!: number;
+
+    @Column({ nullable: true })
+    id_utilizador!: number; // FK -> utilizadores.id
+
+    @Column()
+    tipoAcao!: string; // "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT"
+
+    @Column()
+    entidadeAfetada!: string; // Ex: "AvaliacaoCARAT" | "Alerta" | "Utilizador"
+
+    @Column({ nullable: true })
+    id_registo_afetado!: number; // ID do registo afetado
+
+    @Column({ type: "datetime", nullable: true })
+    dataHora!: string;
+
+    @Column({ nullable: true })
+    valorAntigo!: string;
+
+    @Column({ nullable: true })
+    valorNovo!: string;
+
+    @CreateDateColumn()
+    createdAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\medicacao.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+
+@Entity("medicacoes")
+export class Medicacao {
+    @PrimaryGeneratedColumn()
+    id_medicacao!: number;
+
+    @Column()
+    id_utente!: number; // FK -> utentes.id_utente
+
+    @Column({ nullable: true })
+    id_intervencao_clinica!: number; // FK -> intervencoes_clinicas.id_intervencao
+
+    @Column()
+    nomeMedicacao!: string;
+
+    @Column({ nullable: true })
+    dose!: string;
+
+    @Column({ nullable: true })
+    frequencia!: string;
+
+    @Column({ type: "date", nullable: true })
+    dataPrescricao!: string;
+
+    @Column({ type: "date", nullable: true })
+    dataFinal!: string;
+
+    @CreateDateColumn()
+    createdAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\medico.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
+ 
+@Entity("medicos")
+export class Medico {
+    @PrimaryGeneratedColumn()
+    id_medico!: number;
+ 
+    @Column()
+    id_utilizador!: number; // FK -> utilizadores.id
+ 
+    @Column({ nullable: true })
+    especialidade!: string;
+ 
+    @Column({ nullable: true })
+    numCedula!: string;
+ 
+    @Column({ nullable: true })
+    instituicao!: string;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+ 
+    @UpdateDateColumn()
+    updatedAt!: Date;
+}
+ 
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\respostacarat.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+
+@Entity("respostas_carat")
+export class RespostaCarat {
+    @PrimaryGeneratedColumn()
+    id!: number;
+
+    @Column({ type: "int" })
+    avaliacaoId!: number; 
+
+    @Column({ type: "int" })
+    num_pergunta!: number; // 1 a 10
+
+    @Column({ type: "int" })
+    valor!: number; // O valor da resposta escolhida
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\sintomareportado.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,} from "typeorm";
+
+@Entity("sintomas_reportados")
+export class SintomaReportado {
+    @PrimaryGeneratedColumn()
+    id_sintoma!: number;
+
+    @Column()
+    id_utente!: number; // FK -> utentes.id_utente
+
+    @Column({ nullable: true })
+    tipoSintoma!: string;
+
+    @Column({ type: "int", nullable: true })
+    gravidade!: number;
+
+    @Column({ type: "datetime", nullable: true })
+    dataSintoma!: string;
+
+    @Column({ nullable: true })
+    numSintoma!: string;
+
+    @Column({ nullable: true }) //Notas adicionais
+    descricao!: string;
+
+    @Column({ default: false })
+    sintomaPresistente!: boolean;
+
+    @CreateDateColumn()
+    createdAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\utente.entity.ts
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,} from "typeorm";
+ 
+@Entity("utentes")
+export class Utente {
+
+    @PrimaryGeneratedColumn()
+    id_utente!: number;
+ 
+    @Column()
+    id_utilizador!: number; // FK -> utilizadores.id
+ 
+    @Column({ nullable: true })
+    id_medico!: number; // FK -> medicos.id_medico
+ 
+    @Column({ type: "date", nullable: true })
+    dataNascimento!: string;
+ 
+    @Column({ nullable: true })
+    morada!: string;
+ 
+    @Column({ nullable: true })
+    genero!: string;
+ 
+    @Column({ nullable: true })
+    numSaude!: string;
+ 
+    @Column({ nullable: true })
+    nif!: number;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+ 
+    @UpdateDateColumn()
+    updatedAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\models\utilizador.entity.ts
+import {Entity,PrimaryGeneratedColumn,Column,CreateDateColumn,UpdateDateColumn,} from "typeorm";
+ 
+@Entity("utilizadores")
+export class Utilizador {
+    @PrimaryGeneratedColumn()
+    id!: number;
+ 
+    @Column()
+    nome!: string;
+
+    @Column({ unique: true })
+    email!: string;
+
+    @Column()
+    password!: string;
+
+    @Column()
+    perfil!: string; // "UTENTE" | "MEDICO" | "ADMIN"
+ 
+    @Column({ default: true })
+    ativo!: boolean;
+ 
+    @Column({ nullable: true })
+    telemovel!: string;
+ 
+    @Column({ nullable: true, type: "date" })
+    ultimoLogin!: string;
+ 
+    @CreateDateColumn()
+    createdAt!: Date;
+ 
+    @UpdateDateColumn()
+    updatedAt!: Date;
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\alertas.routes.ts
+import { Router } from 'express';
+import { AppDataSource } from '../database/database';
+import { Alerta } from '../models/alerta.entity';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/authorization.middleware';
+
+const routes = Router();
+
+// Protegido: Apenas MEDICO pode aceder
+// Listar alertas
+routes.get('/', authMiddleware, requireRole('MEDICO'), async (req, res) => {
+    try {
+        const alertaRepo = AppDataSource.getRepository(Alerta);
+        const alertas = await alertaRepo.find({ 
+            relations: ['utente']
+        });
+        res.json(alertas);
+    } catch (err) {
+        console.error("Erro ao buscar alertas:", err);
+        res.status(500).json({ erro: "Erro ao buscar alertas" });
+    }
+});
+
+// Protegido: Apenas MEDICO pode aceder
+// Atualizar estado do alerta para lido
+routes.patch('/:id/ler', authMiddleware, requireRole('MEDICO'), async (req, res) => {
+    try {
+        const idParam = req.params.id;
+        if (!idParam) {
+            return res.status(400).json({ erro: 'ID do alerta Ã© obrigatÃ³rio.' });
+        }
+        
+        const alertaRepo = AppDataSource.getRepository(Alerta);
+        const alertaId = Number(idParam);
+        
+        await alertaRepo.update(alertaId, { estado: 'VISTO' });
+        
+        res.json({ mensagem: "Alerta atualizado com sucesso" });
+    } catch (err) {
+        console.error("Erro ao atualizar alerta:", err);
+        res.status(500).json({ erro: "Erro ao atualizar alerta" });
+    }
+});
+
+export default routes;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\auth.routes.ts
+import { Router } from 'express';
+import { LoginController } from '../controllers/login.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
+
+const router = Router();
+const controller = new LoginController();
+
+// Endpoint de login
+router.post('/login', controller.login.bind(controller));
+
+// Endpoint de registo (serÃ¡ implementado depois)
+// router.post('/registro', controller.registro.bind(controller));
+
+// Endpoint para obter dados do utilizador autenticado
+// router.get('/perfil', authMiddleware, controller.perfil.bind(controller));
+
+export default router;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\avaliacao.routes.ts
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\carat.routes.ts
+import { Router } from 'express';
+import { CaratController } from '../controllers/carat.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/authorization.middleware';
+
+const routes = Router();
+const controller = new CaratController();
+
+// Protegido: Apenas UTENTE e MEDICO podem aceder
+routes.get('/', authMiddleware, requireRole('UTENTE', 'MEDICO'), controller.listar.bind(controller));
+routes.post('/submeter', authMiddleware, requireRole('UTENTE', 'MEDICO'), controller.criar.bind(controller));
+
+export default routes;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\exame.routes.ts
+import { Router } from 'express';
+import { ExameController } from '../controllers/exame.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/authorization.middleware';
+
+const routes = Router();
+const controller = new ExameController();
+
+// Protegido: Apenas MEDICO pode aceder
+routes.get('/', authMiddleware, requireRole('MEDICO'), controller.listar.bind(controller));
+routes.post('/', authMiddleware, requireRole('MEDICO'), controller.criar.bind(controller));
+
+export default routes;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\fhir.routes.ts
+import { Router } from 'express';
+import { getObservationsFromFhir } from '../services/fhir.service';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/authorization.middleware';
+
+const router = Router();
+
+// Protegido: Apenas UTENTE e MEDICO podem aceder
+router.get('/observations', authMiddleware, requireRole('UTENTE', 'MEDICO'), async (req, res) => {
+  try {
+    const code = typeof req.query.code === 'string'
+      ? req.query.code
+      : '8310-5';
+
+    const patient = typeof req.query.patient === 'string'
+      ? req.query.patient
+      : undefined;
+
+    const observations = await getObservationsFromFhir(code, patient);
+
+    res.json(observations);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      erro: 'Erro ao consultar servidor FHIR.'
+    });
+  }
+});
+
+export default router;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\routes\utente.routes.ts
+import { Router } from 'express';
+import { UtenteController } from '../controllers/utente.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/authorization.middleware';
+
+const routes = Router();
+const controller = new UtenteController();
+
+// Protegido: Apenas MEDICO e ADMIN podem aceder
+routes.get('/', authMiddleware, requireRole('MEDICO', 'ADMIN'), controller.listar.bind(controller));
+routes.post('/', authMiddleware, requireRole('MEDICO', 'ADMIN'), controller.criar.bind(controller));
+
+export default routes;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\administrador.service.ts
+import { AppDataSource } from '../database/database';
+import { Administrador } from '../models/administrador.entity';
+import { CreateAdministradorDto } from '../dtos/administrador/create-administrador.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class AdministradorService {
+    private repo = AppDataSource.getRepository(Administrador);
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Associa um utilizador recÃ©m-criado Ã  tabela de Administradores
+     */
+    async criarAdministrador(dados: CreateAdministradorDto, id_utilizador_que_criou?: number): Promise<Administrador> {
+        // 1. Criar a entidade com base no ER
+        const novoAdmin = this.repo.create({
+            id_utilizador: dados.id_Utilizador
+        });
+
+        // 2. Guardar na BD
+        const adminGuardado = await this.repo.save(novoAdmin);
+
+        // 3. Registar o Log de Auditoria (Requisito NÃ£o Funcional do RelatÃ³rio)
+        await this.logService.registarLog({
+            id_utilizador: id_utilizador_que_criou || adminGuardado.id_utilizador, // Quem executou a aÃ§Ã£o
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Administrador',
+            id_registo_afetado: adminGuardado.id_administrador,
+            valorNovo: JSON.stringify({ id_utilizador: adminGuardado.id_utilizador })
+        });
+
+        return adminGuardado;
+    }
+
+    /**
+     * Retorna o perfil de administrador atravÃ©s do ID de utilizador associado
+     */
+    async buscarPorIdUtilizador(id_utilizador: number): Promise<Administrador | null> {
+        return await this.repo.findOneBy({ id_utilizador: id_utilizador });
+    }
+
+    /**
+     * Lista todos os administradores registados
+     */
+    async listarAdministradores(): Promise<Administrador[]> {
+        return await this.repo.find();
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\alergia.service.ts
+import { AppDataSource } from '../database/database';
+import { Alergia } from '../models/alergia.entity';
+
+export class AlergiaService {
+    private repo = AppDataSource.getRepository(Alergia);
+
+    // Procura uma alergia pelo nome, ou cria se nÃ£o existir (encapsulamos a lÃ³gica aqui!)
+    async encontrarOuCriar(nomeAlergia: string): Promise<Alergia> {
+        const nomeLimpo = nomeAlergia.trim();
+        let alergia = await this.repo.findOneBy({ nomeAlergia: nomeLimpo });
+
+        if (!alergia) {
+            const novaAlergia = this.repo.create({ nomeAlergia: nomeLimpo });
+            alergia = await this.repo.save(novaAlergia);
+        }
+
+        return alergia;
+    }
+
+    // Para o Frontend poder listar todas as alergias disponÃ­veis
+    async listarTodas(): Promise<Alergia[]> {
+        return await this.repo.find();
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\alerta.service.ts
+import { AppDataSource } from '../database/database';
+import { Alerta } from '../models/alerta.entity';
+import { CreateAlertaDto } from '../dtos/alerta/create-alerta.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class AlertaService {
+    private repo = AppDataSource.getRepository(Alerta);
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Chamado automaticamente pelo Motor CARAT (via InjeÃ§Ã£o de DependÃªncias)
+     */
+    async gerarAlerta(dados: CreateAlertaDto): Promise<Alerta> {
+        const novoAlerta = this.repo.create({
+            id_utente: dados.id_utente,
+            id_medico: dados.id_medico,
+            id_avaliacao_origem: dados.id_avaliacao_origem ?? null, 
+            tipo: dados.tipo,
+            prioridade: dados.prioridade ?? 'MÃ‰DIA',                
+            motivo: dados.motivo ?? null                            
+        });
+
+        const alertaGuardado = await this.repo.save(novoAlerta);
+
+        // Como foi gerado pelo sistema, podemos deixar o utilizador a null ou passar ID do utente
+        await this.logService.registarLog({
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Alerta',
+            id_registo_afetado: alertaGuardado.id_alerta,
+            valorNovo: JSON.stringify(alertaGuardado)
+        });
+
+        return alertaGuardado;
+    }
+
+    /**
+     * Endpoint do Dashboard do MÃ©dico: GET /doctors/:id/alerts
+     */
+    async listarAlertasPorMedico(id_medico: number): Promise<Alerta[]> {
+        return await this.repo.find({ 
+            where: { id_medico: id_medico },
+            order: { createdAt: 'DESC' } // Mais recentes primeiro
+        });
+    }
+
+    /**
+     * MÃ©dico altera o estado do alerta (ex: de PENDENTE para LIDO ou TRATADO)
+     */
+    async atualizarEstado(id_alerta: number, novoEstado: string, id_medico_que_alterou: number): Promise<Alerta> {
+        const alerta = await this.repo.findOneBy({ id_alerta: id_alerta });
+        if (!alerta) throw new Error("Alerta nÃ£o encontrado.");
+
+        const estadoAntigo = alerta.estado;
+        alerta.estado = novoEstado;
+        const alertaAtualizado = await this.repo.save(alerta);
+
+        await this.logService.registarLog({
+            id_utilizador: id_medico_que_alterou,
+            tipoAcao: 'UPDATE',
+            entidadeAfetada: 'Alerta',
+            id_registo_afetado: id_alerta,
+            valorAntigo: JSON.stringify({ estado: estadoAntigo }),
+            valorNovo: JSON.stringify({ estado: alertaAtualizado.estado })
+        });
+
+        return alertaAtualizado;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\auth.services.ts
+/*Esta classe AuthService Ã© responsÃ¡vel por autenticar um utilizador.
+
+Ou seja, recebe:
+	â€¢	email
+	â€¢	password
+
+e verifica se:
+	1.	o utilizador existe na BD
+	2.	a password estÃ¡ correta
+
+Se tudo correr bem, gera um token JWT que poderÃ¡ depois ser usado nas rotas protegidas.*/
+
+import * as jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { AppDataSource } from '../database/database';
+import { Utilizador } from '../models/utilizador.entity';
+import { appConfig } from '../config/app.config';
+
+export class AuthService {
+    async login(email: string, password: string): Promise<string> {
+        const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        
+        // Procura o utilizador na BD pelo email
+        const utilizador = await utilizadorRepo.findOne({ 
+            where: { email } 
+        });
+
+        if (!utilizador) {
+            throw new Error('Credenciais invÃ¡lidas.');
+        }
+
+        // Verifica se a password estÃ¡ correta
+        const passwordValida = await bcrypt.compare(password, utilizador.password);
+
+        if (!passwordValida) {
+            throw new Error('Credenciais invÃ¡lidas.');
+        }
+
+        // Verifica se o utilizador estÃ¡ ativo
+        if (!utilizador.ativo) {
+            throw new Error('Utilizador inativo.');
+        }
+
+        // Gera o token JWT com os dados do utilizador
+        const token = jwt.sign(
+            {
+                id: utilizador.id,
+                email: utilizador.email,
+                role: utilizador.perfil
+            },
+            appConfig.auth.jwtSecret,
+            { expiresIn: '24h' }
+        );
+
+        return token;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\avaliacao.service.ts
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\carat.service.ts
+import { AppDataSource } from '../database/database';
+import { AvaliacaoCARAT } from '../models/avaliacao-carat.entity';
+import { RespostaCarat } from '../models/respostacarat.entity';
+import { CreateAvaliacaoCaratDto } from '../dtos/carat/create-carat.dto'; 
+import { CaratResponseDto } from '../dtos/carat/carat-response.dto';
+import { Utente } from '../models/utente.entity';
+import { ConfiguracaoLimiares } from '../models/configuracaolimiares.entity';
+import { AlertaService } from './alerta.service';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class CaratService {
+    private repo = AppDataSource.getRepository(AvaliacaoCARAT);
+    private limiarRepo = AppDataSource.getRepository(ConfiguracaoLimiares);
+    private utenteRepo = AppDataSource.getRepository(Utente);
+    private alertaService = new AlertaService();
+    private logService = new LogAuditoriaService();
+
+    async submeterAvaliacao(dados: CreateAvaliacaoCaratDto, id_utilizador_que_submeteu: number): Promise<CaratResponseDto> {
+        console.log("DADOS RECEBIDOS NO SERVICE:", dados);
+
+        // 1. Validar a existÃªncia do Utente
+        const utenteLogado = await this.utenteRepo.findOne({
+            where: { id_utente: dados.id_utente }
+        });
+        if (!utenteLogado) {
+            throw new Error("Utente nÃ£o encontrado no sistema.");
+        }
+
+        // 2. Buscar ConfiguraÃ§Ãµes de Limiares na Base de Dados
+        let scoreCorte = 24; // Valor padrÃ£o por omissÃ£o
+        let config: ConfiguracaoLimiares | null = null;
+        try {
+            config = await this.limiarRepo.findOne({ where: {}, order: { id_configuracao: 'DESC' } });
+            if (config) {
+                scoreCorte = config.limiar_score;
+            }
+        } catch (e) {
+            console.log("A usar score de corte padrÃ£o (24)");
+        }
+
+        // 3. Processar Array de Respostas (Substitui o hardcoded antigo)
+        let scoreSuperiores = 0;
+        let scoreInferiores = 0;
+
+        for (const resp of dados.respostas) {
+            const num = Number(resp.num_pergunta);
+            const pontos = Number(resp.valor_pontuacao);
+
+            if (num >= 1 && num <= 4) {
+                scoreSuperiores += pontos;
+            } else if (num >= 5 && num <= 10) {
+                scoreInferiores += pontos;
+            }
+        }
+        const scoreTotal = scoreSuperiores + scoreInferiores;
+
+        // 4. Algoritmo do Requisito RF10 (Alerta de DeterioraÃ§Ã£o ClÃ­nica)
+        const ultimaAvaliacao = await this.repo.findOne({
+            where: { utenteId: utenteLogado.id_utente },
+            order: { dataAvaliacao: 'DESC' }
+        });
+
+        let dispararAlertaDeterioracao = false;
+        let deltaQueda = 0;
+
+        if (ultimaAvaliacao) {
+            deltaQueda = ultimaAvaliacao.scoreTotal - scoreTotal;
+            // No vosso model estÃ¡ mapeado com caracteres especiais devido ao encoding: limiar_delta_deterorizaÃƒÂ§ÃƒÂ£o
+            const deltaPermitido = config?.limiar_delta_deterioracao || 4; 
+            
+            if (deltaQueda >= deltaPermitido) {
+                dispararAlertaDeterioracao = true;
+            }
+        }
+
+        // 5. Definir NÃ­vel de Controlo e RecomendaÃ§Ãµes ClÃ­nicas
+        let nivelControlo = "Asma NÃ£o Controlada";
+        let recomendacoes = "NecessÃ¡ria revisÃ£o da tÃ©cnica inalatÃ³ria e adesÃ£o terapÃªutica.";
+        let proximoPassoSugerido = "Agendar consulta de revisÃ£o urgente.";
+
+        if (scoreTotal >= scoreCorte) {
+            nivelControlo = "Asma e Rinite Controladas";
+            recomendacoes = "Manter a medicaÃ§Ã£o atual e vigilÃ¢ncia periÃ³dica.";
+            proximoPassoSugerido = "Reavaliar em 6 meses.";
+        }
+
+        // 6. Persistir AvaliaÃ§Ã£o Principal na Base de Dados
+        const avaliacaoGuardada = await this.repo.save(this.repo.create({
+            utenteId: utenteLogado.id_utente,
+            scoreTotal,
+            scoreViasSuperiores: scoreSuperiores,
+            scoreViasInferiores: scoreInferiores,
+            nivelControlo,
+            recomendacoes,
+            proximoPassoSugerido,
+            dataAvaliacao: new Date()
+        }));
+
+        // 7. Persistir Cada Resposta Individual (Resolve o Problema de PersistÃªncia)
+        const respostaRepo = AppDataSource.getRepository(RespostaCarat);
+        for (const resp of dados.respostas) {
+            await respostaRepo.save(respostaRepo.create({
+                avaliacaoId: avaliacaoGuardada.id,
+                num_pergunta: resp.num_pergunta,
+                valor: resp.valor_pontuacao 
+            }));
+        }
+
+        // 8. Gatilho de Alerta 1: Controlo Insuficiente (Score abaixo do limiar)
+        if (scoreTotal < scoreCorte) {
+            await this.alertaService.gerarAlerta({
+                id_utente: utenteLogado.id_utente,
+                id_medico: utenteLogado.id_medico || 1,
+                id_avaliacao_origem: avaliacaoGuardada.id,
+                tipo: "CRÃTICO - CONTROL INSUFICIENTE",
+                prioridade: scoreTotal <= 15 ? 'ALTA' : 'MÃ‰DIA',
+                motivo: `ALERTA: Utente com score ${scoreTotal} (Abaixo do limiar de ${scoreCorte}).`
+            });
+        }
+
+        // 9. Gatilho de Alerta 2: DeterioraÃ§Ã£o Abrupta (RF10)
+        if (dispararAlertaDeterioracao) {
+            await this.alertaService.gerarAlerta({
+                id_utente: utenteLogado.id_utente,
+                id_medico: utenteLogado.id_medico || 1,
+                id_avaliacao_origem: avaliacaoGuardada.id,
+                tipo: "AVISO - DETERIORAÃ‡ÃƒO CLÃNICA",
+                prioridade: 'ALTA',
+                motivo: `ALERTA RF10: Queda abrupta detetada! O score desceu ${deltaQueda} pontos face Ã  Ãºltima avaliaÃ§Ã£o.`
+            });
+        }
+
+        // 10. Registar Log de Auditoria ObrigatÃ³rio do Sistema
+        await this.logService.registarLog({
+            id_utilizador: id_utilizador_que_submeteu,
+            tipoAcao: "CREATE",
+            entidadeAfetada: "AvaliacaoCARAT",
+            id_registo_afetado: avaliacaoGuardada.id,
+            valorNovo: JSON.stringify({ scoreTotal, nivelControlo, deterioracao: dispararAlertaDeterioracao })
+        });
+
+        return avaliacaoGuardada;
+    }
+
+    // MÃ©todo auxiliar para listar que as vossas rotas usam
+    async listarAvaliacoes(): Promise<AvaliacaoCARAT[]> {
+        return await this.repo.find({
+            order: { dataAvaliacao: 'DESC' }
+        });
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\configuracaolimiares.service.ts
+import { AppDataSource } from '../database/database';
+import { ConfiguracaoLimiares } from '../models/configuracaolimiares.entity';
+import { CreateConfiguracaoLimiaresDto } from '../dtos/configuracaoLimiares/create-configuracao.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class ConfiguracaoLimiaresService {
+    private repo = AppDataSource.getRepository(ConfiguracaoLimiares);
+    private logService = new LogAuditoriaService();
+
+    async obterLimiarAtual(): Promise<number> {
+        // Ordena pela chave primÃ¡ria (id_configuracao) para apanhar o Ãºltimo inserido
+        const config = await this.repo.find({ 
+            order: { id_configuracao: 'DESC' }, 
+            take: 1 
+        });
+        
+        const ultimaConfig = config[0];
+        if (ultimaConfig?.limiar_score) {
+           return ultimaConfig.limiar_score;
+        }
+        return 20;
+    }
+
+    async atualizarLimiar(dados: CreateConfiguracaoLimiaresDto, id_admin_que_alterou: number): Promise<ConfiguracaoLimiares> {
+        const novaConfig = this.repo.create({
+            limiar_score: dados.limiar_score,
+            id_administrador: id_admin_que_alterou 
+        });
+
+        const configGuardada = await this.repo.save(novaConfig);
+
+        await this.logService.registarLog({
+            id_utilizador: id_admin_que_alterou,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'ConfiguracaoLimiares',
+            id_registo_afetado: configGuardada.id_configuracao,
+            valorNovo: JSON.stringify({ limiar_score: configGuardada.limiar_score })
+        });
+
+        return configGuardada;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\dashboard.service.ts
+import { AppDataSource } from '../database/database';
+import { Utente } from '../models/utente.entity';
+import { AvaliacaoCARAT } from '../models/avaliacao-carat.entity';
+import { Alerta } from '../models/alerta.entity';
+import { Exame } from '../models/exame.entity';
+import { Medicacao } from '../models/medicacao.entity';
+import { SintomaReportado } from '../models/sintomareportado.entity';
+import { IntervencaoClinica } from '../models/intervencaoclinica.entity';
+import { LogAuditoriaService } from './logauditoria.service';
+import { Utilizador } from '../models/utilizador.entity';
+
+export class DashboardService {
+    // 1. Ligar aos RepositÃ³rios de todos os MÃ³dulos
+    private utenteRepo = AppDataSource.getRepository(Utente);
+    private caratRepo = AppDataSource.getRepository(AvaliacaoCARAT);
+    private alertaRepo = AppDataSource.getRepository(Alerta);
+    private exameRepo = AppDataSource.getRepository(Exame);
+    private medicacaoRepo = AppDataSource.getRepository(Medicacao);
+    private sintomaRepo = AppDataSource.getRepository(SintomaReportado);
+    private intervencaoRepo = AppDataSource.getRepository(IntervencaoClinica);
+    private utilizadorRepo = AppDataSource.getRepository(Utilizador);
+    
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Retorna uma visÃ£o consolidada de todo o histÃ³rico do utente (UC7)
+     */
+    async obterHistoricoCompletoUtente(id_utente: number, id_medico_que_consulta: number): Promise<any> {
+        
+        // 2. Verificar se o utente existe
+        const utente = await this.utenteRepo.findOne({ where: { id_utente: id_utente } });
+        if (!utente) {
+            throw new Error("Utente nÃ£o encontrado no sistema.");
+        }
+
+        const utilizador = await this.utilizadorRepo.findOne({ where: { id: utente.id_utilizador } });
+
+        
+        const [
+            avaliacoesCarat,
+            alertas,
+            exames,
+            medicacoes,
+            sintomas,
+            intervencoes
+        ] = await Promise.all([
+            this.caratRepo.find({ where: { utenteId: id_utente }, order: { dataAvaliacao: 'DESC' } }),
+            this.alertaRepo.find({ where: { id_utente: id_utente }, order: { createdAt: 'DESC' } }),
+            this.exameRepo.find({ where: { id_utente: id_utente } }), // Ajustar data/order se tiverem
+            this.medicacaoRepo.find({ where: { id_utente: id_utente } }),
+            this.sintomaRepo.find({ where: { id_utente: id_utente } }),
+            this.intervencaoRepo.find({ where: { id_utente: id_utente } }) 
+        ]);
+
+        // 4. Registar Log de Auditoria (Saber que o mÃ©dico X visualizou a ficha do utente Y)
+        await this.logService.registarLog({
+            id_utilizador: id_medico_que_consulta,
+            tipoAcao: "READ",
+            entidadeAfetada: "Ficha_Global_Utente",
+            id_registo_afetado: id_utente,
+            valorNovo: "MÃ©dico consultou o histÃ³rico clÃ­nico e dashboard do utente."
+        });
+
+        // 5. Montar o Objeto JSON Consolidado (O Dashboard)
+        return {
+            dados_pessoais: {
+                nome: utilizador ? utilizador.nome : 'Nome nÃ£o definido', // Agora vai buscar o nome ao Utilizador!
+                n_sns: utente.numSaude,
+                data_nascimento: utente.dataNascimento
+            },
+            resumo_clinico: {
+                total_alertas_ativos: alertas.filter(a => a.estado === 'PENDENTE' || a.estado === 'NOVO').length,
+                ultima_avaliacao_carat: avaliacoesCarat.length > 0 ? avaliacoesCarat[0] : null,
+                ultimo_sintoma: sintomas.length > 0 ? sintomas[sintomas.length - 1] : null,
+            },
+            historico_detalhado: {
+                avaliacoes_carat: avaliacoesCarat,
+                alertas: alertas,
+                exames_prescritos: exames,
+                medicacao_ativa: medicacoes,
+                sintomas_reportados: sintomas,
+                intervencoes_clinicas: intervencoes
+            }
+        };
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\exame.service.ts
+import { AppDataSource } from '../database/database';
+import { Exame } from '../models/exame.entity';
+import { CreateExameDto } from '../dtos/exame/create-exame.dto';
+import { ExameResponseDto } from '../dtos/exame/exame-response.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class ExameService {
+    private repo = AppDataSource.getRepository(Exame);
+    private logService = new LogAuditoriaService();
+
+    async criarExame(dados: CreateExameDto, id_medico_que_solicitou: number): Promise<ExameResponseDto> {
+        
+        const jaExiste = await this.repo.findOneBy({
+            tipoExame: dados.tipoExame,
+            id_utente: dados.id_utente,
+            id_intervencao_clinica: dados.id_intervencao_clinica
+        });
+        
+        if (jaExiste) {
+            throw new Error("JÃ¡ existe um exame igual registado para este utente.");
+        }
+
+        const novoExame = this.repo.create({
+                id_utente: dados.id_utente,
+                tipoExame: dados.tipoExame,
+                id_intervencao_clinica: dados.id_intervencao_clinica,
+                dataSolicitacao: dados.dataSolicitacao ?? new Date().toISOString().split('T')[0]
+
+        });
+
+        const exameGuardado = await this.repo.save(novoExame);
+
+        await this.logService.registarLog({
+            id_utilizador: id_medico_que_solicitou,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Exame',
+            id_registo_afetado: exameGuardado.id_exame,
+            valorNovo: JSON.stringify({ tipoExame: dados.tipoExame })
+        });
+
+        return this.toResponseDto(exameGuardado);
+    }
+
+    async listarExames(): Promise<ExameResponseDto[]> {
+        const exames = await this.repo.find({ order: { dataSolicitacao: 'DESC' } });
+        return exames.map(exame => this.toResponseDto(exame));
+    }
+
+    async listarPorUtente(id_utente: number): Promise<ExameResponseDto[]> {
+        const exames = await this.repo.find({ 
+            where: { id_utente: id_utente },
+            order: { dataSolicitacao: 'DESC' }
+        });
+        return exames.map(exame => this.toResponseDto(exame));
+    }
+
+    private toResponseDto(exame: Exame): ExameResponseDto {
+        return {
+            id_exame: exame.id_exame,
+            id_utente: exame.id_utente,
+            id_intervencao_clinica: exame.id_intervencao_clinica ?? null,
+            tipoExame: exame.tipoExame,
+            dataSolicitacao: exame.dataSolicitacao,
+            resultado: exame.resultado ?? null,
+            concluido: exame.concluido
+        } as ExameResponseDto;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\fhir.service.ts
+import { ObservationDTO } from '../dtos/fhir/observation/ObservationDTO';
+
+import { mapObservation, mapObservationHumanData } from '../mappers/fhir-observation.mapper';
+
+const FHIR_BASE_URL = 'https://fhir.hl7.pt/r5/fhir';
+
+export async function getObservationsFromFhir(
+
+  code: string = '8310-5',
+
+  patient?: string
+
+): Promise<ObservationDTO[]> {
+
+  let url = `${FHIR_BASE_URL}/Observation?code=${encodeURIComponent(code)}`;
+
+  if (patient) {
+
+    url += `&subject=Patient/${patient}`;
+
+  }
+
+  const resposta = await fetch(url);
+
+  if (!resposta.ok) {
+
+    throw new Error(`Erro FHIR: ${resposta.status}`);
+
+  }
+
+  const bundle = await resposta.json();
+
+  return bundle.entry?.map((entry: any) => mapObservation(entry.resource)) || [];
+
+  //return bundle.entry?.map((entry: any) => mapObservationHumanData(entry.resource)) || [];
+
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\ficha-possui-alergias.service.ts
+import { AppDataSource } from '../database/database';
+import { FichaPossuiAlergias } from '../models/ficha_possui_alergias.entity';
+
+export class FichaPossuiAlergiasService {
+    private repo = AppDataSource.getRepository(FichaPossuiAlergias);
+
+    async criarLigacao(idFicha: number, idAlergia: number): Promise<FichaPossuiAlergias> {
+        const ligacao = this.repo.create({
+            id_ficha_anamnese: idFicha,
+            id_alergia: idAlergia
+        });
+        
+        return await this.repo.save(ligacao);
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\fichaanamnese.service.ts
+import { AppDataSource } from '../database/database';
+import { FichaAnamnese } from '../models/fichaanamnese.entity';
+import { CreateFichaAnamneseDto } from '../dtos/anamnese/create-ficha-anamnese.dto';
+import { FichaAnamneseResponseDto } from '../dtos/anamnese/ficha-anamnese-response.dto';
+import { AlergiaService } from './alergia.service';
+import { FichaPossuiAlergiasService } from './ficha-possui-alergias.service';
+import { AlergiaResponseDto } from '../dtos/alergia/alergia-response.dto';
+
+export class FichaAnamneseService {
+    private fichaRepo = AppDataSource.getRepository(FichaAnamnese);
+    
+    private alergiaService = new AlergiaService();
+    private ligacaoService = new FichaPossuiAlergiasService();
+
+    async criar(dados: CreateFichaAnamneseDto): Promise<FichaAnamneseResponseDto> {
+        
+        const novaFicha = this.fichaRepo.create({
+            id_utente: dados.id_utente,
+            estadoTabagico: dados.estadoTabagico,
+            antecedentes: dados.antecedentes,
+            peso: dados.peso,
+            altura: dados.altura
+        });
+        const fichaGuardada = await this.fichaRepo.save(novaFicha);
+
+        // Criar array para devolver as alergias
+        let alergiasDevolvidas: AlergiaResponseDto[] = [];
+
+        if (dados.alergias && dados.alergias.length > 0) {
+            for (const nomeAlergia of dados.alergias) {
+                const alergia = await this.alergiaService.encontrarOuCriar(nomeAlergia);
+                
+                await this.ligacaoService.criarLigacao(fichaGuardada.id_ficha, alergia.id_alergia);
+
+                alergiasDevolvidas.push({
+                    id_alergia: alergia.id_alergia,
+                    nomeAlergia: alergia.nomeAlergia
+                });
+            }
+        }
+
+        return {
+            id_ficha: fichaGuardada.id_ficha,
+            id_utente: fichaGuardada.id_utente,
+            estadoTabagico: fichaGuardada.estadoTabagico || null,
+            antecedentes: fichaGuardada.antecedentes || null,
+            peso: fichaGuardada.peso || null,
+            altura: fichaGuardada.altura || null,
+            createdAt: fichaGuardada.createdAt,
+            updatedAt: fichaGuardada.updatedAt,
+            alergias: alergiasDevolvidas // Agora a resposta estÃ¡ completa!
+        };
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\intervencaoclinica.service.ts
+import { AppDataSource } from '../database/database';
+import { IntervencaoClinica } from '../models/intervencaoclinica.entity';
+import { CreateIntervencaoDto } from '../dtos/intervencaoClinica/create-intervencao.dto';
+import { IntervencaoResponseDto } from '../dtos/intervencaoClinica/intervencao-response.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class IntervencaoClinicaService {
+    private repo = AppDataSource.getRepository(IntervencaoClinica);
+    private logService = new LogAuditoriaService();
+
+    async registarIntervencao(dados: CreateIntervencaoDto, id_medico_que_registou: number): Promise<IntervencaoResponseDto> {
+        const nova = this.repo.create({
+            id_utente: dados.id_utente,
+            id_medico: dados.id_medico,
+            id_alerta: dados.id_alerta,
+            notasMedicas: dados.notasMedicas,
+            acaoTomada: dados.acoesTomadas, // Mapeado corretamente para a BD
+            dataRegisto: new Date().toISOString()
+        });
+        const guardada = await this.repo.save(nova);
+
+        await this.logService.registarLog({
+            id_utilizador: id_medico_que_registou,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'IntervencaoClinica',
+            id_registo_afetado: guardada.id_intervencao,
+            valorNovo: JSON.stringify({ notasMedicas: dados.notasMedicas })
+        });
+
+        return this.toResponseDto(guardada);
+    }
+
+    private toResponseDto(intervencao: IntervencaoClinica): IntervencaoResponseDto {
+        return {
+            id_intervencao: intervencao.id_intervencao,
+            id_utente: intervencao.id_utente,
+            id_medico: intervencao.id_medico,
+            notasMedicas: intervencao.notasMedicas || '',
+            diagnostico: null,
+            dataIntervencao: new Date(intervencao.dataRegisto)
+        } as IntervencaoResponseDto;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\logauditoria.service.ts
+import { AppDataSource } from '../database/database';
+import { LogAuditoria } from '../models/logauditoria.entity';
+import { CreateLogAuditoriaDto } from '../dtos/logauditoria/create-logauditoria.dto';
+
+export class LogAuditoriaService {
+    private repo = AppDataSource.getRepository(LogAuditoria);
+
+    /**
+     * Regista uma nova aÃ§Ã£o no sistema (CREATE, UPDATE, DELETE, LOGIN)
+     */
+    async registarLog(dados: CreateLogAuditoriaDto): Promise<LogAuditoria> {
+        const novoLog = this.repo.create({
+            id_utilizador: dados.id_utilizador,
+            tipoAcao: dados.tipoAcao,
+            entidadeAfetada: dados.entidadeAfetada,
+            id_registo_afetado: dados.id_registo_afetado,
+            dataHora: dados.dataHora || new Date().toISOString(), // Se nÃ£o vier data, assume agora
+            valorAntigo: dados.valorAntigo ? JSON.stringify(dados.valorAntigo) : undefined,
+            valorNovo: dados.valorNovo ? JSON.stringify(dados.valorNovo) : undefined
+        });
+
+        return await this.repo.save(novoLog);
+    }
+
+    /**
+     * Permite ao Administrador ver o histÃ³rico de logs
+     */
+    async listarLogs(): Promise<LogAuditoria[]> {
+        return await this.repo.find({
+            order: { createdAt: 'DESC' } // Mostra os mais recentes primeiro
+        });
+    }
+
+    /**
+     * Permite ver o histÃ³rico de um utilizador especÃ­fico (ex: o que o MÃ©dico X andou a fazer)
+     */
+    async listarLogsPorUtilizador(id_utilizador: number): Promise<LogAuditoria[]> {
+        return await this.repo.find({
+            where: { id_utilizador: id_utilizador },
+            order: { createdAt: 'DESC' }
+        });
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\medicacao.service.ts
+import { AppDataSource } from '../database/database';
+import { Medicacao } from '../models/medicacao.entity';
+import { CreateMedicacaoDto } from '../dtos/medicacao/create-medicacao.dto';
+import { MedicacaoResponseDto } from '../dtos/medicacao/medicacao-response.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class MedicacaoService {
+    private repo = AppDataSource.getRepository(Medicacao);
+    private logService = new LogAuditoriaService();
+
+    async adicionarMedicacao(dados: CreateMedicacaoDto, id_utilizador: number): Promise<MedicacaoResponseDto> {
+        const novaMedicacao = this.repo.create(dados);
+        const guardada = await this.repo.save(novaMedicacao);
+
+        await this.logService.registarLog({
+            id_utilizador: id_utilizador,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Medicacao',
+            id_registo_afetado: guardada.id_medicacao,
+            valorNovo: JSON.stringify({ nomeMedicacao: dados.nomeMedicacao, dose: dados.dose })
+        });
+
+        return this.toResponseDto(guardada);
+    }
+
+    async listarPorUtente(id_utente: number): Promise<MedicacaoResponseDto[]> {
+        const lista = await this.repo.find({ where: { id_utente: id_utente } });
+        return lista.map(m => this.toResponseDto(m));
+    }
+
+    private toResponseDto(medicacao: Medicacao): MedicacaoResponseDto {
+        return {
+            id_medicacao: medicacao.id_medicacao,
+            id_utente: medicacao.id_utente,
+            id_intervencao_clinica: medicacao.id_intervencao_clinica,
+            nomeMedicacao: medicacao.nomeMedicacao,
+            dose: medicacao.dose,
+            frequencia: medicacao.frequencia,
+            dataPrescricao: medicacao.dataPrescricao || '',
+            dataFinal: medicacao.dataFinal || null,
+            createdAt: medicacao.createdAt
+        } as MedicacaoResponseDto;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\medico.service.ts
+import { AppDataSource } from '../database/database';
+import { Medico } from '../models/medico.entity';
+import { CreateMedicoDto } from '../dtos/medico/create-medico.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class MedicoService {
+    private repo = AppDataSource.getRepository(Medico);
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Cria o perfil profissional do MÃ©dico e guarda na tabela 'medicos'
+     */
+    async criarMedico(dados: CreateMedicoDto, id_admin_que_criou: number): Promise<Medico> {
+        // 1. Mapeamento direto para a tabela baseando na Entidade
+        const novoMedico = this.repo.create({
+            id_utilizador: dados.id_utilizador,
+            especialidade: dados.especialidade
+            // Nota: Se no ER tiverem adicionado 'numCedula' ou 'instituicao', deves adicionar aqui tambÃ©m, ex:
+            // numCedula: dados.numCedula
+        });
+
+        // 2. Guardar na BD
+        const medicoGuardado = await this.repo.save(novoMedico);
+
+        // 3. Auditoria obrigatÃ³ria
+        await this.logService.registarLog({
+            id_utilizador: id_admin_que_criou,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Medico',
+            id_registo_afetado: medicoGuardado.id_medico,
+            valorNovo: JSON.stringify(medicoGuardado)
+        });
+
+        return medicoGuardado;
+    }
+
+    /**
+     * Lista todos os mÃ©dicos. Fundamental para a interface onde o Utente ou Admin escolhem um mÃ©dico.
+     */
+    async listarMedicos(): Promise<Medico[]> {
+        return await this.repo.find();
+    }
+
+    /**
+     * Retorna a ficha de mÃ©dico atravÃ©s do ID de utilizador (Usado durante o Login para saber quem Ã©)
+     */
+    async buscarPorIdUtilizador(id_utilizador: number): Promise<Medico | null> {
+        return await this.repo.findOneBy({ id_utilizador: id_utilizador });
+    }
+
+    /**
+     * Busca os detalhes de um mÃ©dico especÃ­fico (para o Dashboard do Utente ver o contacto do mÃ©dico)
+     */
+    async buscarPorId(id_medico: number): Promise<Medico | null> {
+        return await this.repo.findOneBy({ id_medico: id_medico });
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\prescricao.service.ts
+import { AppDataSource } from '../database/database';
+import { Prescricao } from '../models/prescricao.entity';
+import { CreatePrescricaoDto } from '../dtos/prescricao/create-prescricao.dto';
+import { PrescricaoResponseDto } from '../dtos/prescricao/prescricao-response.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class PrescricaoService {
+    private repo = AppDataSource.getRepository(Prescricao);
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Cria a prescriÃ§Ã£o com validaÃ§Ã£o anti-duplicados e gera auditoria
+     */
+    async criarPrescricao(dados: CreatePrescricaoDto, id_medico_que_prescreveu: number): Promise<PrescricaoResponseDto> {
+        
+        // 1. A TUA REGRA DE NEGÃ“CIO: Evitar prescriÃ§Ãµes duplicadas...
+        // Mas adicionÃ¡mos o id_utente para garantir que nÃ£o bloqueamos o medicamento se for para pessoas diferentes!
+        const jaExiste = await this.repo.findOneBy({
+            medicamento: dados.medicamento,
+            dose: dados.dose,
+            medico_nome: dados.medico_nome,
+            id_utente: dados.id_utente 
+        });
+
+        if (jaExiste) {
+            throw new Error('JÃ¡ existe uma prescriÃ§Ã£o igual registada no sistema para este utente.');
+        }
+
+        // 2. Criar a nova prescriÃ§Ã£o
+        const nova = this.repo.create({
+            ...dados,
+            dataCriacao: new Date(),
+        });
+
+        const guardada = await this.repo.save(nova);
+
+        // 3. A MINHA ARQUITETURA: Auditoria ObrigatÃ³ria
+        await this.logService.registarLog({
+            id_utilizador: id_medico_que_prescreveu,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Prescricao',
+            id_registo_afetado: guardada.id_prescricao || (guardada as any).id,
+            valorNovo: JSON.stringify({ medicamento: dados.medicamento, dose: dados.dose })
+        });
+
+        // 4. Devolve usando o DTO de forma limpa
+        return this.toResponseDto(guardada);
+    }
+
+    /**
+     * Lista todas as prescriÃ§Ãµes do sistema
+     */
+    async listarTodas(): Promise<PrescricaoResponseDto[]> {
+        const prescricoes = await this.repo.find({ order: { dataCriacao: 'DESC' } });
+        return prescricoes.map((prescricao) => this.toResponseDto(prescricao));
+    }
+
+    /**
+     * Para listar o histÃ³rico no Dashboard do Utente e MÃ©dico (RF7)
+     */
+    async listarPorUtente(id_utente: number): Promise<PrescricaoResponseDto[]> {
+        const prescricoes = await this.repo.find({
+            where: { id_utente: id_utente },
+            order: { dataCriacao: 'DESC' }
+        });
+        return prescricoes.map((prescricao) => this.toResponseDto(prescricao));
+    }
+
+    /**
+     * Mapeamento final para o Frontend
+     */
+    private toResponseDto(prescricao: Prescricao): PrescricaoResponseDto {
+        return {
+            id_prescricao: prescricao.id_prescricao || (prescricao as any).id,
+            id_utente: prescricao.id_utente,
+            medicamento: prescricao.medicamento,
+            dose: prescricao.dose,
+            medico_nome: prescricao.medico_nome,
+            dataCriacao: prescricao.dataCriacao // ATENÃ‡ÃƒO: Mantive a data porque o Dashboard precisa dela para o histÃ³rico!
+        } as PrescricaoResponseDto;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\respostacarat.service.ts
+import { AppDataSource } from '../database/database';
+import { RespostaCarat } from '../models/respostacarat.entity';
+
+export class RespostaCaratService {
+    private repo = AppDataSource.getRepository(RespostaCarat);
+
+    /**
+     * Guarda individualmente uma resposta associada a uma avaliaÃ§Ã£o
+     */
+    async criarResposta(id_avaliacao: number, num_pergunta: number, valor_pontuacao: number): Promise<RespostaCarat> {
+        const novaResposta = this.repo.create({
+            id_avaliacao: id_avaliacao,
+            num_pergunta: num_pergunta,
+            valor_pontuacao: valor_pontuacao
+        });
+
+        return await this.repo.save(novaResposta);
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\sintomareportado.service.ts
+import { AppDataSource } from '../database/database';
+import { SintomaReportado } from '../models/sintomareportado.entity';
+import { CreateSintomaReportadoDto } from '../dtos/sintomareportado/create-sintomareportado.dto';
+import { SintomaReportadoResponseDto } from '../dtos/sintomareportado/sintomareportado-response.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+import { AlertaService } from './alerta.service';
+import { UtenteService } from './utente.service';
+
+export class SintomaReportadoService {
+    private repo = AppDataSource.getRepository(SintomaReportado);
+    private logService = new LogAuditoriaService();
+    private alertaService = new AlertaService();
+    private utenteService = new UtenteService();
+
+    async reportarSintoma(dados: CreateSintomaReportadoDto, id_utilizador_que_reportou: number): Promise<SintomaReportadoResponseDto> {
+        
+        
+        const utente = await this.utenteService.buscarPorId(dados.id_utente);
+        if (!utente) {
+            throw new Error("Utente nÃ£o encontrado no sistema.");
+        }
+
+        
+        const dataDoSintoma = dados.dataSintoma || new Date().toISOString();
+        const novoSintoma = this.repo.create({
+            ...dados,
+            dataSintoma: dataDoSintoma 
+        });
+
+        const sintomaGuardado = await this.repo.save(novoSintoma);
+
+       
+        //gatilho 1  (RF14)
+    
+        if (dados.gravidade && Number(dados.gravidade) >= 4) {
+            if (utente.id_medico) {
+                await this.alertaService.gerarAlerta({
+                    id_utente: utente.id_utente,
+                    id_medico: utente.id_medico,
+                    id_avaliacao_origem: sintomaGuardado.id_sintoma,
+                    tipo: 'CRÃTICO - SINTOMA GRAVE',
+                    prioridade: 'ALTA',
+                    motivo: `Utente reportou sintoma de gravidade elevada (NÃ­vel ${dados.gravidade}): ${dados.descricao || dados.tipoSintoma}`
+                });
+            }
+        }
+
+        
+        // GATILHO 2  (UC5)
+        
+        
+        
+        const historico = await this.repo.find({
+            where: { id_utente: dados.id_utente },
+            order: { dataSintoma: 'DESC' } 
+        });
+
+        const diasComSintomas = [...new Set(historico.map(s => {
+            return s.dataSintoma ? new Date(s.dataSintoma).toISOString().split('T')[0] : null;
+        }).filter(d => d !== null))];
+
+       
+        const hoje = new Date();
+        const ontem = new Date(); ontem.setDate(hoje.getDate() - 1);
+        const anteontem = new Date(); anteontem.setDate(hoje.getDate() - 2);
+
+        const hojeStr = hoje.toISOString().split('T')[0];
+        const ontemStr = ontem.toISOString().split('T')[0];
+        const anteontemStr = anteontem.toISOString().split('T')[0];
+
+      
+        if (diasComSintomas.includes(hojeStr) && diasComSintomas.includes(ontemStr) && diasComSintomas.includes(anteontemStr)) {
+            
+            
+            await this.repo.save(sintomaGuardado);
+
+           
+            if (utente.id_medico) {
+                await this.alertaService.gerarAlerta({
+                    id_utente: utente.id_utente,
+                    id_medico: utente.id_medico,
+                    id_avaliacao_origem: sintomaGuardado.id_sintoma,
+                    tipo: 'AVISO - SINTOMAS PERSISTENTES',
+                    prioridade: 'MÃ‰DIA',
+                    motivo: `O Utente reportou sintomas por 3 dias consecutivos (${anteontemStr} a ${hojeStr}). Requer atenÃ§Ã£o.`
+                });
+            }
+        }
+
+       
+        await this.logService.registarLog({
+            id_utilizador: id_utilizador_que_reportou,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'SintomaReportado',
+            id_registo_afetado: sintomaGuardado.id_sintoma,
+            valorNovo: JSON.stringify({ descricao: dados.descricao, gravidade: dados.gravidade })
+        });
+
+        return this.toResponseDto(sintomaGuardado);
+    }
+
+    async listarPorUtente(id_utente: number): Promise<SintomaReportadoResponseDto[]> {
+        // Corrigido de dataRegisto para dataSintoma
+        const sintomas = await this.repo.find({ where: { id_utente: id_utente }, order: { dataSintoma: 'DESC' } });
+        return sintomas.map(s => this.toResponseDto(s));
+    }
+
+    private toResponseDto(sintoma: SintomaReportado): SintomaReportadoResponseDto {
+        return {
+            id_sintoma: sintoma.id_sintoma,
+            id_utente: sintoma.id_utente,
+            tipoSintoma: sintoma.tipoSintoma,
+            gravidade: sintoma.gravidade,
+            dataSintoma: sintoma.dataSintoma,
+            numSintoma: sintoma.numSintoma,
+            descricao: sintoma.descricao,
+            sintomaPresistente: sintoma.sintomaPresistente, 
+            createdAt: sintoma.createdAt
+        } as SintomaReportadoResponseDto;
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\utente.service.ts
+import { AppDataSource } from '../database/database';
+import { Utente } from '../models/utente.entity';
+import { CreateUtenteDto } from '../dtos/utente/create-utente.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+
+export class UtenteService {
+    private repo = AppDataSource.getRepository(Utente);
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Cria os dados demogrÃ¡ficos e clÃ­nicos do Utente na base de dados
+     */
+    async criarUtente(dados: CreateUtenteDto, id_utilizador_que_criou: number): Promise<Utente> {
+        // 1. Mapear EXATAMENTE com as colunas definidas no utente.entity.ts
+        const novoUtente = this.repo.create({
+            id_utilizador: dados.id_utilizador,
+            id_medico: dados.id_medico, // Pode ser undefined no inÃ­cio
+            dataNascimento: dados.dataNascimento,
+            morada: dados.morada,
+            genero: dados.genero,
+            numSaude: dados.numSaude,
+            nif: dados.nif
+        });
+
+        // 2. Gravar o Utente
+        const utenteGuardado = await this.repo.save(novoUtente);
+
+        // 3. Auditoria
+        await this.logService.registarLog({
+            id_utilizador: id_utilizador_que_criou,
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Utente',
+            id_registo_afetado: utenteGuardado.id_utente,
+            valorNovo: JSON.stringify(utenteGuardado)
+        });
+
+        return utenteGuardado;
+    }
+
+    /**
+     * Associa (ou atualiza) o mÃ©dico de famÃ­lia do utente. 
+     * Implementa as regras de negÃ³cio de acompanhamento do vosso RelatÃ³rio.
+     */
+    async associarMedico(id_utente: number, id_medico: number, id_admin_ou_medico_que_alterou: number): Promise<Utente> {
+        const utente = await this.repo.findOneBy({ id_utente: id_utente });
+        
+        if (!utente) {
+            throw new Error("Utente nÃ£o encontrado no sistema.");
+        }
+
+        const valorAntigo = utente.id_medico;
+        utente.id_medico = id_medico;
+        
+        const utenteAtualizado = await this.repo.save(utente);
+
+        // Auditoria da transiÃ§Ã£o de responsabilidade clÃ­nica
+        await this.logService.registarLog({
+            id_utilizador: id_admin_ou_medico_que_alterou,
+            tipoAcao: 'UPDATE',
+            entidadeAfetada: 'Utente',
+            id_registo_afetado: utenteAtualizado.id_utente,
+            valorAntigo: JSON.stringify({ id_medico: valorAntigo }),
+            valorNovo: JSON.stringify({ id_medico: utenteAtualizado.id_medico })
+        });
+
+        return utenteAtualizado;
+    }
+
+    /**
+     * Lista utentes. Se for passado o id_medico, serve para o "Dashboard do MÃ©dico" 
+     * ver apenas os seus prÃ³prios doentes.
+     */
+    async listarUtentes(id_medico?: number): Promise<Utente[]> {
+        if (id_medico) {
+            return await this.repo.find({ where: { id_medico: id_medico } });
+        }
+        return await this.repo.find();
+    }
+
+    /**
+     * Localiza a ficha do Utente usando o ID de Utilizador dele
+     */
+    async buscarPorIdUtilizador(id_utilizador: number): Promise<Utente | null> {
+        return await this.repo.findOneBy({ id_utilizador: id_utilizador });
+    }
+
+    /**
+     * Procura um utente pelo seu ID de Utente (usado muito nas avaliaÃ§Ãµes CARAT e Exames)
+     */
+    async buscarPorId(id_utente: number): Promise<Utente | null> {
+        return await this.repo.findOneBy({ id_utente: id_utente });
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\services\utilizador.service.ts
+import { AppDataSource } from '../database/database';
+import { Utilizador } from '../models/utilizador.entity';
+import { CreateUtilizadorDto } from '../dtos/utilizador/create-utilizador.dto';
+import { LogAuditoriaService } from './logauditoria.service';
+import bcrypt from 'bcryptjs';
+
+export class UtilizadorService {
+    private repo = AppDataSource.getRepository(Utilizador);
+    // InjeÃ§Ã£o de dependÃªncia do serviÃ§o de logs (1 Entidade = 1 Service)
+    private logService = new LogAuditoriaService();
+
+    /**
+     * Cria um utilizador base (com password encriptada) e regista o log de auditoria
+     */
+    async criarUtilizador(dados: CreateUtilizadorDto, id_admin_que_criou?: number): Promise<Utilizador> {
+        // 1. Verificar se o email jÃ¡ existe para evitar crash da Base de Dados
+        const utilizadorExistente = await this.repo.findOneBy({ email: dados.email });
+        if (utilizadorExistente) {
+            throw new Error("JÃ¡ existe um utilizador registado com este email.");
+        }
+
+        // 2. Encriptar a password antes de guardar
+        const passwordHash = await bcrypt.hash(dados.password, 10);
+
+        // 3. Criar a entidade
+        const novoUtilizador = this.repo.create({
+            nome: dados.nome,
+            email: dados.email,
+            password: passwordHash,
+            perfil: dados.perfil,
+            telemovel: dados.telemovel,
+            ativo: true // Por defeito, contas novas vÃªm ativas
+        });
+
+        // 4. Guardar na BD
+        const utilizadorGuardado = await this.repo.save(novoUtilizador);
+
+        // 5. Registar a aÃ§Ã£o no Log de Auditoria
+        await this.logService.registarLog({
+            id_utilizador: id_admin_que_criou || utilizadorGuardado.id, // Se o Admin criou, fica o ID dele, se foi auto-registo, fica o ID do prÃ³prio
+            tipoAcao: 'CREATE',
+            entidadeAfetada: 'Utilizador',
+            id_registo_afetado: utilizadorGuardado.id,
+            valorNovo: JSON.stringify({ email: utilizadorGuardado.email, perfil: utilizadorGuardado.perfil })
+        });
+
+        return utilizadorGuardado;
+    }
+
+    /**
+     * Usado no Login (Auth Service) para encontrar o utilizador
+     */
+    async buscarPorEmail(email: string): Promise<Utilizador | null> {
+        return await this.repo.findOneBy({ email: email });
+    }
+
+    /**
+     * Usado para procurar um utilizador pelo seu ID
+     */
+    async buscarPorId(id: number): Promise<Utilizador | null> {
+        return await this.repo.findOneBy({ id: id });
+    }
+
+    /**
+     * Atualiza a data do Ãºltimo login (chamado pelo Login Controller)
+     */
+    async registarUltimoLogin(id: number): Promise<void> {
+        const utilizador = await this.buscarPorId(id);
+        if (utilizador) {
+            utilizador.ultimoLogin = new Date().toISOString().split('T')[0]; // Guarda no formato YYYY-MM-DD
+            await this.repo.save(utilizador);
+        }
+    }
+}
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\src\app.ts
+import express from 'express';
+import path from 'path';
+import bcrypt from 'bcryptjs';
+import { AppDataSource } from './database/database';
+import { Exame } from './models/exame.entity';
+import { Utente } from './models/utente.entity';
+import { Utilizador } from './models/utilizador.entity';
+import exameRoutes from './routes/exame.routes';
+import caratRoutes from './routes/carat.routes';
+import utenteRoutes from './routes/utente.routes';
+import fhirRoutes from './routes/fhir.routes';
+import alertasRoutes from './routes/alertas.routes';
+import authRoutes from './routes/auth.routes';
+
+
+const app = express();
+
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.json());
+app.use('/auth', authRoutes);
+
+app.use('/exames', exameRoutes);
+app.use('/pedidos-exames', exameRoutes);
+app.use('/carat', caratRoutes);
+app.use('/utentes', utenteRoutes);
+app.use('/fhir', fhirRoutes);
+app.use('/alertas', alertasRoutes);
+
+async function start() {
+    try {
+        // Se jÃ¡ estiver ligado, nÃ£o tenta ligar outra vez
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+            console.log("Base de dados conectada!");
+        }
+
+
+        const exameRepo = AppDataSource.getRepository(Exame);
+        if (await exameRepo.count() === 0) {
+            const hoje = new Date();
+            const dataSolicitacao: string = hoje.toISOString().split('T')[0] || '2024-01-01';
+            await exameRepo.save({ 
+                tipoExame: 'RX Torax', 
+                id_utente: 1, 
+                dataSolicitacao: dataSolicitacao 
+            });
+        }
+
+        const utenteRepo = AppDataSource.getRepository(Utente);
+        if (await utenteRepo.count() === 0) {
+            console.log("A criar utente de teste...");
+            await utenteRepo.save({
+                id_utilizador: 1,
+                dataNascimento: '1985-01-01',
+                morada: 'Rua de Teste, Porto',
+                genero: 'Masculino',
+                numSaude: '123456789',
+                nif: 123456789
+            });
+            console.log("Utente de teste criado!");
+        }
+
+        // Criar utilizadores de teste (UTENTE, MEDICO, ADMIN)
+        const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        if (await utilizadorRepo.count() === 0) {
+            console.log("A criar utilizadores de teste...");
+
+            // Hash das passwords
+            const passwordUtenteHash = await bcrypt.hash('utente123', 10);
+            const passwordMedicoHash = await bcrypt.hash('medico123', 10);
+            const passwordAdminHash = await bcrypt.hash('admin123', 10);
+
+            await utilizadorRepo.save([
+                {
+                    nome: 'JoÃ£o Silva - Utente',
+                    email: 'utente@teste.pt',
+                    password: passwordUtenteHash,
+                    perfil: 'UTENTE',
+                    ativo: true,
+                    telemovel: '912345678'
+                },
+                {
+                    nome: 'Dr. AntÃ³nio Pereira - MÃ©dico',
+                    email: 'medico@teste.pt',
+                    password: passwordMedicoHash,
+                    perfil: 'MEDICO',
+                    ativo: true,
+                    telemovel: '917654321'
+                },
+                {
+                    nome: 'Administrador do Sistema',
+                    email: 'admin@teste.pt',
+                    password: passwordAdminHash,
+                    perfil: 'ADMIN',
+                    ativo: true,
+                    telemovel: '918765432'
+                }
+            ]);
+
+            console.log("Utilizadores de teste criados!");
+            console.log("\nðŸ“‹ Credenciais de Teste:");
+            console.log("  UTENTE: utente@teste.pt / utente123");
+            console.log("  MEDICO: medico@teste.pt / medico123");
+            console.log("  ADMIN:  admin@teste.pt / admin123\n");
+        }
+
+        // Tenta iniciar o servidor. Se a porta 3000 estiver ocupada, ele avisa.
+        app.listen(3000, () => {
+            console.log("Servidor a correr na porta 3000");
+        });
+
+    } catch (err) {
+        console.error("Erro ao iniciar:", err);
+    }
+}
+
+
+export default app;
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\public\exames.html
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>exames</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    h1 { margin-bottom: 24px; }
+    h2 { margin-top: 32px; }
+    form { display: flex; flex-direction: column; gap: 8px; max-width: 400px; }
+    input { padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 8px 16px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #005bb5; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+    th { background: #f5f5f5; }
+    .erro { color: red; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function FormularioExame({ onCriada }) {
+      const [nome, setNome] = useState('');
+      const [codigo, setCodigo] = useState('');
+      const [medicoNome, setMedicoNome] = useState('');
+      const [erro, setErro] = useState('');
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        setErro('');
+        const resposta = await fetch('/exames', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, codigo, medico_nome: medicoNome }),
+        });
+        if (resposta.ok) {
+          setNome('');
+          setCodigo('');
+          setMedicoNome('');
+          onCriada();
+        } else {
+          const dados = await resposta.json();
+          setErro(dados.erro || 'Erro ao criar exame');
+        }
+      }
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome do exame" required />
+          <input value={codigo} onChange={e => setCodigo(e.target.value)} placeholder="CÃ³digo" required />
+          <input value={medicoNome} onChange={e => setMedicoNome(e.target.value)} placeholder="Nome do mÃ©dico" required />
+          <button type="submit">Criar exame</button>
+          {erro && <p className="erro">{erro}</p>}
+        </form>
+      );
+    }
+
+    function ListaExames({ exames }) {
+      if (exames.length === 0) return <p>Nenhum exame registado.</p>;
+      return (
+        <table>
+          <thead>
+            <tr><th>#</th><th>Nome</th><th>CÃ³digo</th><th>MÃ©dico</th><th>Data de CriaÃ§Ã£o</th></tr>
+          </thead>
+          <tbody>
+            {exames.map(e => (
+              <tr key={e.id}>
+                <td>{e.id}</td>
+                <td>{e.nome}</td>
+                <td>{e.codigo}</td>
+                <td>{e.medico_nome}</td>
+                <td>{e.dataCriacao || 'nÃ£o exposta'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+
+    function App() {
+      const [exames, setExames] = useState([]);
+
+      async function buscarExames() {
+        const resposta = await fetch('/exames');
+        const dados = await resposta.json();
+        console.log('Dados recebidos:', dados);
+        setExames(dados);
+      }
+
+      useEffect(() => { buscarExames(); }, []);
+
+      return (
+        <div>
+          <h1>Sistema de Exames</h1>
+          <h2>Novo Exame</h2>
+          <FormularioExame onCriada={buscarExames} />
+          <h2>Exames Registados</h2>
+          <ListaExames exames={exames} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\public\index.html
+<head></head>
+<body><a href="exames.html">Ver exames</a>
+</body><a href="prescricao.html">Ver prescriÃ§Ãµes</a>
+</body>
+// Este ficheiro Ã© o ponto de entrada da aplicaÃ§Ã£o React. Ele renderiza o componente App dentro do elemento com id "root".  
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\public\index2.html
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistema ClÃ­nico SaudINOB</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    nav {
+      width: 220px;
+      background: #1f2937;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    nav h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    nav button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #374151;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    nav button:hover {
+      background: #4b5563;
+    }
+
+    main {
+      flex: 1;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .pagina {
+      display: none;
+    }
+
+    .pagina.ativa {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 400px;
+    }
+
+    input, select,
+    button.form-btn {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .erro {
+      color: red;
+    }
+
+    /* Estilos especÃ­ficos para o QuestionÃ¡rio CARAT */
+    .carat-pergunta {
+      margin-bottom: 16px;
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .carat-pergunta label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .carat-pergunta select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    .carat-resultados {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 6px;
+      display: none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <nav>
+    <h2>Menu</h2>
+    <button onclick="mostrarPagina('pagina-inicio')">InÃ­cio</button>
+    <button onclick="mostrarPagina('pagina-utentes')">Gerir Utentes</button>
+    <button onclick="mostrarPagina('pagina-carat')">QuestionÃ¡rio CARAT</button>
+    <button onclick="mostrarPagina('pagina-prescricoes')">PrescriÃ§Ãµes</button>
+    <button onclick="mostrarPagina('pagina-exames')">Exames</button>
+    <button onclick="mostrarPagina('pagina-fhir')">Consulta FHIR</button>
+    <button onclick="mostrarPagina('pagina-alertas'); buscarAlertas();" >Consulta Alertas</button>
+  </nav>
+
+  <main>
+    <section id="pagina-inicio" class="pagina ativa">
+      
+      <h1>Sistema ClÃ­nico SaudINOB</h1>
+      <p>Bem-vindo ao sistema. Escolha uma funcionalidade no menu lateral.</p>
+    </section>
+
+    <section id="pagina-utentes" class="pagina">
+      <h1>Gerir Utentes</h1>
+
+      <h2>Registar Novo Utente</h2>
+      <form id="formUtente">
+        <input id="utenteNome" placeholder="Nome Completo" required />
+        <input id="utenteEmail" type="email" placeholder="Email" required />
+        <input id="utentePassword" type="password" placeholder="Password de Acesso" required />
+        <input id="utenteNumero" placeholder="NÃºmero de Utente (SNS)" required />
+        <label style="font-size: 13px; color: #555; margin-top: 4px;">Data de Nascimento:</label>
+        <input id="utenteDataNascimento" type="date" required />
+        
+        <select id="utenteSexo">
+          <option value="" disabled selected>Selecione o GÃ©nero...</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Feminino">Feminino</option>
+          <option value="Outro">Outro</option>
+        </select>
+        <input id="utenteNif" placeholder="NIF (Opcional)" />
+        <input id="utenteTelefone" placeholder="Telefone (Opcional)" />
+        <input id="utenteMorada" placeholder="Morada (Opcional)" />
+
+        <button class="form-btn" type="submit" style="background: #10b981; color: white; border: none; cursor: pointer; border-radius: 4px; padding: 10px; margin-top: 5px;">Registar Utente</button>
+        <p id="erroUtente" class="erro"></p>
+      </form>
+
+      <h2 style="margin-top: 40px;">Lista de Utentes</h2>
+      <button onclick="buscarUtentes()" style="padding: 6px 12px; cursor: pointer;">Atualizar Lista</button>
+      <div id="listaUtentes">
+        <p>A carregar utentes...</p>
+      </div>
+    </section>
+
+    <section id="pagina-carat" class="pagina">
+      <h1>QuestionÃ¡rio CARAT</h1>
+      <p>Nas Ãºltimas 4 semanas, por causa da sua asma/rinite/alergia, em mÃ©dia, quantas vezes teve:</p>
+
+      <form id="formCarat">
+        
+        <div class="carat-pergunta" style="background: #e0f2fe; border-color: #bae6fd;">
+          <label>Selecione o Utente que estÃ¡ a responder:</label>
+          <select id="caratUtenteId" required>
+            <option value="" >A carregar utentes da Base de Dados...</option>
+          </select>
+        </div>
+
+        <h3 style="color: #4b5563;">Vias AÃ©reas Superiores</h3>
+        <div class="carat-pergunta"><label>1. Nariz entupido? *</label><select id="caratQ1" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>2. Espirros? *</label><select id="caratQ2" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>3. ComichÃ£o no nariz? *</label><select id="caratQ3" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>4. Corrimento/pingo do nariz? *</label><select id="caratQ4" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+
+        <h3 style="color: #4b5563; margin-top: 30px;">Vias AÃ©reas Inferiores</h3>
+        <div class="carat-pergunta"><label>5. Falta de ar/dispneia? *</label><select id="caratQ5" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>6. Chiadeira no peito/pieira? *</label><select id="caratQ6" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>7. Aperto no peito com esforÃ§o fÃ­sico? *</label><select id="caratQ7" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>8. CansaÃ§o/dificuldade em fazer as suas actividades ou tarefas do dia-a-dia? *</label><select id="caratQ8" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+        <div class="carat-pergunta"><label>9. Acordou durante a noite por causa da sua asma/rinite/alergia? *</label><select id="caratQ9" required><option value="" disabled selected>Selecione uma opÃ§Ã£o...</option><option value="3">Nunca</option><option value="2">AtÃ© 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+
+        <p style="margin-top: 30px; font-weight: bold;">Nas Ãºltimas 4 semanas, por causa da sua asma/rinite/alergia, quantas vezes teve que:</p>
+        <div class="carat-pergunta">
+          <label>10. Aumentar a utilizaÃ§Ã£o dos seus medicamentos? *</label>
+          <select id="caratQ10" required>
+            <option value="" disabled selected>Selecione uma opÃ§Ã£o...</option>
+            <option value="3">NÃ£o estou a tomar medicamentos / Nunca</option>
+            <option value="2">Menos de 7 dias</option>
+            <option value="1">7 ou mais dias</option>
+            <option value="0">Todos os dias</option>
+          </select>
+        </div>
+
+        <button onclick="submeterAvaliacao(event)" class="form-btn" type="button" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 10px; background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 6px;">Submeter AvaliaÃ§Ã£o e Calcular Score</button>
+      </form>
+      <h2 style="margin-top: 40px;">HistÃ³rico de AvaliaÃ§Ãµes CARAT</h2>
+      <button onclick="buscarHistoricoCarat()" style="padding: 6px 12px; cursor: pointer;">Atualizar HistÃ³rico</button>
+      <div style="width: 100%; margin: 20px 0; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+  <canvas id="graficoEvolucaoCarat"></canvas>
+</div>
+      <div id="listaCarat">
+          <p>A carregar histÃ³rico...</p>
+        </div>
+
+      <div id="resultadosCarat" class="carat-resultados">
+        <h2 style="margin-top: 0;">Resultados da AvaliaÃ§Ã£o:</h2>
+        <p><strong>PontuaÃ§Ã£o Vias AÃ©reas Superiores (1-4):</strong> <span id="scoreSuperiores">0</span> / 12</p>
+        <p><strong>PontuaÃ§Ã£o Vias AÃ©reas Inferiores (5-10):</strong> <span id="scoreInferiores">0</span> / 18</p>
+        <p style="font-size: 18px; border-top: 1px solid #ccc; padding-top: 10px;">
+          <strong>PontuaÃ§Ã£o Total: <span id="scoreTotal">0</span> / 30</strong>
+        </p>
+        <p><strong>InterpretaÃ§Ã£o ClÃ­nica:</strong> <span id="interpretacaoCarat"></span></p>
+      </div>
+    </section>
+
+    <section id="pagina-prescricoes" class="pagina">
+      <h1>PrescriÃ§Ãµes</h1>
+
+      <h2>Nova PrescriÃ§Ã£o</h2>
+      <form id="formPrescricao">
+        <input id="medicamento" placeholder="Medicamento" required />
+        <input id="dose" placeholder="Dose" required />
+        <input id="medicoNome" placeholder="Nome do mÃ©dico" required />
+        <button class="form-btn" type="submit" style="background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 4px;">Criar prescriÃ§Ã£o</button>
+        <p id="erroPrescricao" class="erro"></p>
+      </form>
+
+      <h2>Lista de PrescriÃ§Ãµes</h2>
+      <div id="listaPrescricoes">
+        <p>A carregar prescriÃ§Ãµes...</p>
+      </div>
+    </section>
+
+    <section id="pagina-exames" class="pagina">
+      <h1>Exames</h1>
+      <button onclick="buscarExames()" style="padding: 6px 12px; cursor: pointer;">Atualizar exames</button>
+      <div id="listaExames">
+        <p>Nenhum exame carregado.</p>
+      </div>
+    </section>
+
+    <section id="pagina-fhir" class="pagina">
+      <h1>Consulta FHIR</h1>
+      <form id="formFhir">
+        <input id="codigoLoinc" value="8310-5" placeholder="CÃ³digo LOINC" required />
+        <button class="form-btn" type="submit" style="background: #0070f3; color: white; border: none; cursor: pointer; border-radius: 4px;">Pesquisar Observation</button>
+      </form>
+
+      <h2>Resultado</h2>
+      <div id="resultadoFhir">
+        <p>Sem resultados.</p>
+      </div>
+    </section>
+
+    <section id="pagina-alertas" class="pagina">
+     <h1>Consulta Alertas</h1>
+       <button onclick="buscarAlertas()">Atualizar Alertas</button>
+  
+      <div id="listaAlertas">
+      <p>Nenhum alerta crÃ­tico registado.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let meuGraficoCarat = null;
+    // --- NAVEGAÃ‡ÃƒO ---
+    function mostrarPagina(idPagina) {
+      document.querySelectorAll('.pagina').forEach(pagina => pagina.classList.remove('ativa'));
+      const paginaAtiva = document.getElementById(idPagina);
+      if (paginaAtiva) {
+        paginaAtiva.classList.add('ativa');
+      }
+    }
+
+    // --- LÃ“GICA DE UTENTES ---
+    async function buscarUtentes() {
+      const container = document.getElementById('listaUtentes');
+      const selectCarat = document.getElementById('caratUtenteId'); // Dropdown do CARAT
+      
+      container.innerHTML = '<p>A carregar utentes...</p>';
+
+      try {
+        const resposta = await fetch('/utentes');
+        const dados = await resposta.json();
+
+        if (!Array.isArray(dados) || dados.length === 0) {
+          container.innerHTML = '<p>Nenhum utente registado no sistema.</p>';
+          selectCarat.innerHTML = '<option value="" disabled selected>Nenhum utente registado.</option>';
+          return;
+        }
+
+        // 1. ConstrÃ³i a Tabela de Utentes
+        let html = `
+          <table>
+            <thead>
+              <tr>
+                <th>ID (UUID)</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>NÂº SNS</th>
+                <th>Data Nascimento</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        // 2. Preenche a tabela e tambÃ©m o Dropdown do formulÃ¡rio CARAT!
+        selectCarat.innerHTML = '<option value="" disabled selected>Selecione o Utente...</option>';
+
+        for (const u of dados) {
+          const idCurto = u.id ? u.id.substring(0, 8) + '...' : '';
+          
+          // Adiciona Ã  Tabela
+          html += `
+            <tr>
+              <td style="font-family: monospace;">${idCurto}</td>
+              <td>${u.nome ?? ''}</td>
+              <td>${u.email ?? ''}</td>
+              <td>${u.numeroUtente ?? ''}</td>
+              <td>${u.dataNascimento ?? ''}</td>
+            </tr>
+          `;
+
+          // Adiciona ao Dropdown do CARAT
+          selectCarat.innerHTML += `<option value="${u.id}">${u.nome} (SNS: ${u.numeroUtente})</option>`;
+        }
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (erro) {
+        container.innerHTML = '<p>Erro ao carregar a lista de utentes.</p>';
+        selectCarat.innerHTML = '<option value="" disabled selected>Erro ao carregar utentes.</option>';
+      }
+    }
+
+    async function criarUtente(event) {
+      event.preventDefault();
+      const erroUtente = document.getElementById('erroUtente');
+      erroUtente.textContent = '';
+
+      const utente = {
+        nome: document.getElementById('utenteNome').value.trim(),
+        email: document.getElementById('utenteEmail').value.trim(),
+        password: document.getElementById('utentePassword').value.trim(),
+        numeroUtente: document.getElementById('utenteNumero').value.trim(),
+        dataNascimento: document.getElementById('utenteDataNascimento').value,
+        sexo: document.getElementById('utenteSexo').value,
+        nif: document.getElementById('utenteNif').value.trim(),
+        telefone: document.getElementById('utenteTelefone').value.trim(),
+        morada: document.getElementById('utenteMorada').value.trim()
+      };
+
+      try {
+        const resposta = await fetch('/utentes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(utente)
+        });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro || 'Erro ao criar utente');
+        }
+
+        document.getElementById('formUtente').reset();
+        await buscarUtentes(); // Atualiza a tabela e a dropdown do CARAT
+        alert('Utente registado com sucesso no sistema!');
+      } catch (erro) {
+        erroUtente.textContent = erro.message;
+      }
+    }
+
+    document.getElementById('formUtente').addEventListener('submit', criarUtente);
+
+    // --- LÃ“GICA DO CARAT (Agora com Fetch ligado Ã  BD!) ---
+    document.getElementById('formCarat').addEventListener('submit', async function(event) {
+      event.preventDefault(); 
+      
+      const utente_id = document.getElementById('caratUtenteId').value;
+      
+      const q1 = parseInt(document.getElementById('caratQ1').value);
+      const q2 = parseInt(document.getElementById('caratQ2').value);
+      const q3 = parseInt(document.getElementById('caratQ3').value);
+      const q4 = parseInt(document.getElementById('caratQ4').value);
+      const q5 = parseInt(document.getElementById('caratQ5').value);
+      const q6 = parseInt(document.getElementById('caratQ6').value);
+      const q7 = parseInt(document.getElementById('caratQ7').value);
+      const q8 = parseInt(document.getElementById('caratQ8').value);
+      const q9 = parseInt(document.getElementById('caratQ9').value);
+      const q10 = parseInt(document.getElementById('caratQ10').value);
+
+      const scoreSuperiores = q1 + q2 + q3 + q4;
+      const scoreInferiores = q5 + q6 + q7 + q8 + q9 + q10;
+      const scoreTotal = scoreSuperiores + scoreInferiores;
+
+      document.getElementById('scoreSuperiores').textContent = scoreSuperiores;
+      document.getElementById('scoreInferiores').textContent = scoreInferiores;
+      document.getElementById('scoreTotal').textContent = scoreTotal;
+
+      const caixaResultados = document.getElementById('resultadosCarat');
+      const textoInterpretacao = document.getElementById('interpretacaoCarat');
+
+      if (scoreTotal > 24) {
+          textoInterpretacao.textContent = "Asma e Rinite Controladas. Excelente! Mantenha a medicaÃ§Ã£o atual e o autocuidado.";
+          caixaResultados.style.backgroundColor = '#dcfce7'; 
+          caixaResultados.style.border = '1px solid #86efac';
+          textoInterpretacao.style.color = '#166534';
+      } else {
+          textoInterpretacao.textContent = "Controlo Insuficiente (Abaixo ou igual a 24). Foi gerado um ALERTA para a equipa mÃ©dica.";
+          caixaResultados.style.backgroundColor = '#fee2e2'; 
+          caixaResultados.style.border = '1px solid #fca5a5';
+          textoInterpretacao.style.color = '#991b1b';
+      }
+
+      caixaResultados.style.display = 'block';
+
+      // Envia os dados para a Base de Dados
+      try {
+        const dadosCarat = {
+          utente_id, // ID real escolhido na Dropdown
+          q1, q2, q3, q4, q5, q6, q7, q8, q9, q10
+        };
+
+        const resposta = await fetch('/carat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dadosCarat)
+        });
+        const dadosRetornados = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(dadosRetornados.erro || 'Erro ao guardar avaliaÃ§Ã£o no servidor.');
+        }
+        const scoreExibicao = dadosRetornados.resultado?.scoreTotal || dadosRetornados.scoreTotal;
+        const rec = dadosRetornados.resultado?.recomendacoes || dadosRetornados.recomendacoes || "Sem recomendaÃ§Ã£o";
+const passo = dadosRetornados.resultado?.proximoPassoSugerido || dadosRetornados.proximoPassoSugerido || "N/A";
+        alert(`Sucesso! A avaliaÃ§Ã£o do utente foi guardada na base de dados (Score: ${scoreExibicao}).`);
+        
+        document.getElementById('formCarat').reset();
+        document.getElementById('scoreSuperiores').textContent = '0';
+        document.getElementById('scoreInferiores').textContent = '0';
+        document.getElementById('scoreTotal').textContent = '0';
+        document.getElementById('resultadosCarat').style.display = 'none';
+        document.getElementById('interpretacaoCarat').innerHTML = `
+    <strong>${dadosRetornados.nivelControlo || (scoreTotal > 24 ? "Controlada" : "NÃ£o Controlada")}</strong><br><br>
+    <div style="font-size: 14px; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 5px; text-align: left;">
+        <strong>RecomendaÃ§Ã£o:</strong> ${rec}<br>
+        <strong>PrÃ³ximo Passo:</strong> ${passo}
+    </div>
+`;
+alert(`AvaliaÃ§Ã£o guardada! Score: ${dadosRetornados.scoreTotal || scoreTotal}`);
+        buscarHistoricoCarat(); 
+      } catch (erro) {
+        console.error(erro);
+        alert('AtenÃ§Ã£o: O questionÃ¡rio foi calculado, mas houve um erro ao guardar na Base de Dados.');
+      }
+    });
+
+    // --- LÃ“GICA DE PRESCRIÃ‡Ã•ES ---
+    async function buscarPrescricoes() {
+      const container = document.getElementById('listaPrescricoes');
+      container.innerHTML = '<p>A carregar prescriÃ§Ãµes...</p>';
+      try {
+        const resposta = await fetch('/prescricoes');
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || dados.length === 0) {
+          container.innerHTML = '<p>Nenhuma prescriÃ§Ã£o registada.</p>';
+          return;
+        }
+        let html = `<table><thead><tr><th>#</th><th>Medicamento</th><th>Dose</th><th>MÃ©dico</th><th>Data de CriaÃ§Ã£o</th></tr></thead><tbody>`;
+        for (const p of dados) {
+          html += `<tr><td>${p.id ?? ''}</td><td>${p.medicamento ?? ''}</td><td>${p.dose ?? ''}</td><td>${p.medico_nome ?? ''}</td><td>${p.dataCriacao ?? ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (erro) {
+        container.innerHTML = '<p>Erro ao carregar prescriÃ§Ãµes.</p>';
+      }
+    }
+
+    async function criarPrescricao(event) {
+      event.preventDefault();
+      const erroPrescricao = document.getElementById('erroPrescricao');
+      erroPrescricao.textContent = '';
+      const medicamento = document.getElementById('medicamento').value.trim();
+      const dose = document.getElementById('dose').value.trim();
+      const medico_nome = document.getElementById('medicoNome').value.trim();
+      try {
+        const resposta = await fetch('/prescricoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicamento, dose, medico_nome })
+        });
+        if (!resposta.ok) throw new Error((await resposta.json()).erro || 'Erro ao criar prescriÃ§Ã£o');
+        document.getElementById('formPrescricao').reset();
+        await buscarPrescricoes();
+      } catch (erro) {
+        erroPrescricao.textContent = erro.message;
+      }
+    }
+    document.getElementById('formPrescricao').addEventListener('submit', criarPrescricao);
+
+    // --- LÃ“GICA DE EXAMES ---
+    async function buscarExames() {
+      const container = document.getElementById('listaExames');
+      container.innerHTML = '<p>A carregar exames...</p>';
+      try {
+        const resposta = await fetch('/exames');
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || dados.length === 0) {
+          container.innerHTML = '<p>Nenhum exame registado.</p>';
+          return;
+        }
+        let html = `<table><thead><tr><th>#</th><th>Nome</th><th>CÃ³digo</th><th>MÃ©dico</th><th>Data de CriaÃ§Ã£o</th></tr></thead><tbody>`;
+        for (const exame of dados) {
+          html += `<tr><td>${exame.id ?? ''}</td><td>${exame.nome ?? ''}</td><td>${exame.codigo ?? ''}</td><td>${exame.medico_nome ?? ''}</td><td>${exame.dataCriacao ?? ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (erro) {
+        container.innerHTML = '<p>Erro ao carregar exames.</p>';
+      }
+    }
+
+    // --- LÃ“GICA FHIR ---
+    async function pesquisarFhir(event) {
+      event.preventDefault();
+      const codigo = document.getElementById('codigoLoinc').value.trim();
+      const resultado = document.getElementById('resultadoFhir');
+      resultado.innerHTML = '<p>A pesquisar...</p>';
+      try {
+        const resposta = await fetch(`/fhir/observations?code=${encodeURIComponent(codigo)}`);
+        if (!resposta.ok) throw new Error('Erro na resposta do servidor');
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || dados.length === 0) {
+          resultado.innerHTML = '<p>Nenhuma Observation encontrada para esse cÃ³digo LOINC.</p>';
+          return;
+        }
+        let html = `<table><thead><tr><th>ID</th><th>CÃ³digo LOINC</th><th>DescriÃ§Ã£o</th><th>Valor</th><th>Unidade</th><th>Data/Hora</th><th>Doente</th><th>Estado</th></tr></thead><tbody>`;
+        for (const obs of dados) {
+          html += `<tr><td>${obs.id ?? ''}</td><td>${obs.code ?? ''}</td><td>${obs.display ?? ''}</td><td>${obs.value ?? ''}</td><td>${obs.unit ?? ''}</td><td>${obs.effectiveDateTime ?? ''}</td><td>${obs.subject ?? ''}</td><td>${obs.status ?? ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        resultado.innerHTML = html;
+      } catch (erro) {
+        resultado.innerHTML = '<p class="erro">Erro ao consultar servidor FHIR.</p>';
+      }
+    }
+    document.getElementById('formFhir').addEventListener('submit', pesquisarFhir);
+
+    // --- INICIALIZAÃ‡ÃƒO DA PÃGINA ---
+    // Ao abrir a pÃ¡gina, vai buscar a informaÃ§Ã£o toda Ã  Base de Dados
+    buscarUtentes();
+    buscarPrescricoes();
+    buscarExames();
+
+    async function buscarHistoricoCarat() {
+  const container = document.getElementById('listaCarat');
+  if (!container) return; // SeguranÃ§a caso a div nÃ£o exista
+
+  container.innerHTML = '<p>A carregar histÃ³rico...</p>';
+
+  try {
+    const resposta = await fetch('/carat');
+    const dados = await resposta.json();
+
+    if (!Array.isArray(dados) || dados.length === 0) {
+      container.innerHTML = '<p>Ainda nÃ£o realizou nenhuma avaliaÃ§Ã£o.</p>';
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Total</th>
+            <th>Sup./Inf.</th>
+            <th>Controlo</th>
+            <th>SugestÃ£o</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const c of dados) {
+      const data = new Date(c.dataAvaliacao).toLocaleDateString('pt-PT');
+      html += `
+        <tr>
+          <td>${data}</td>
+          <td><strong>${c.scoreTotal}</strong></td>
+          <td>${c.scoreSuperiores} / ${c.scoreInferiores}</td>
+          <td>${c.nivelControlo}</td>
+          <td style="font-size: 12px;">${c.proximoPassoSugerido}</td>
+        </tr>
+      `;
+    }
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    
+    // SÃ³ chama o grÃ¡fico se a funÃ§Ã£o existir
+    if (typeof atualizarGrafico === 'function') {
+        atualizarGrafico(dados);
+    }
+    
+  } catch (erro) {
+    console.error("Erro no histÃ³rico:", erro);
+    container.innerHTML = '<p>Erro ao carregar histÃ³rico.</p>';
+  }
+}
+
+// Chamar a funÃ§Ã£o
+buscarHistoricoCarat();
+
+function atualizarGrafico(dados) {
+  const ctx = document.getElementById('graficoEvolucaoCarat').getContext('2d');
+
+  // Organizamos os dados: ordenamos por data (da mais antiga para a mais recente)
+  const dadosOrdenados = [...dados].sort((a, b) => new Date(a.dataAvaliacao) - new Date(b.dataAvaliacao));
+
+  const labels = dadosOrdenados.map(d => new Date(d.dataAvaliacao).toLocaleDateString('pt-PT'));
+  const scores = dadosOrdenados.map(d => d.scoreTotal);
+
+  // Se o grÃ¡fico jÃ¡ existir, destruÃ­mos para criar um novo (evita sobreposiÃ§Ã£o)
+  if (meuGraficoCarat) {
+    meuGraficoCarat.destroy();
+  }
+
+  meuGraficoCarat = new Chart(ctx, {
+    type: 'line', // GrÃ¡fico de linha para mostrar evoluÃ§Ã£o
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'EvoluÃ§Ã£o Score Total CARAT',
+        data: scores,
+        borderColor: '#0070f3',
+        backgroundColor: 'rgba(0, 112, 243, 0.1)',
+        borderWidth: 3,
+        tension: 0.3, // Curva suave na linha
+        fill: true,
+        pointRadius: 5,
+        pointBackgroundColor: '#0070f3'
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          min: 0,
+          max: 30, // Score mÃ¡ximo do CARAT
+          title: { display: true, text: 'PontuaÃ§Ã£o Total' }
+        }
+      }
+    }
+  });
+}
+async function carregarUtentesParaCarat() {
+  const select = document.getElementById('caratUtenteId');
+  if (!select) return;
+  try {
+    const resposta = await fetch('/utentes'); // Assume-se que a rota dos teus colegas Ã© /utentes
+    const utentes = await resposta.json();
+
+    select.innerHTML = '<option value="" >Selecione um Utente...</option>';
+    utentes.forEach(u => {
+      const option = document.createElement('option');
+      option.value = u.id;
+      option.textContent = u.nome;
+      select.appendChild(option);
+    });
+  } catch (erro) {
+    select.innerHTML = '<option value="">Erro ao carregar utentes</option>';
+  }
+}
+
+// Chamar logo no inÃ­cio
+window.onload = () => {
+    carregarUtentesParaCarat();
+};
+
+async function submeterAvaliacao(event) {
+    if (event) event.preventDefault();
+    // 1. Ir buscar o ID do Utente de forma segura
+    const select = document.getElementById('caratUtenteId') || document.getElementById('utenteSelect');
+    const utenteIdValue = select ? select.value.trim() : "";
+    
+    if (!utenteIdValue || utenteIdValue === "") {
+        alert("Erro: Selecione um utente vÃ¡lido.");
+        return;
+    }
+
+        // 2. Recolher as respostas
+        const respostas = [];
+        for (let i = 1; i <= 10; i++) {
+            const elemento = document.getElementById(`caratQ${i}`);
+    
+    if (elemento) {
+        const valor = Number(elemento.value);
+        console.log(`Lido caratQ${i}:`, valor);
+        respostas.push(valor);
+    } else {
+        console.error(`ERRO: Elemento caratQ${i} nÃ£o encontrado!`);
+        respostas.push(0);
+    }
+        }
+
+        // 3. Montar o objeto (Testamos com utenteId que Ã© o padrÃ£o)
+        const dadosParaEnviar = {
+            utente_id: utenteIdValue, 
+            q1: respostas[0],
+            q2: respostas[1],
+            q3: respostas[2],
+            q4: respostas[3],
+            q5: respostas[4],
+            q6: respostas[5],
+            q7: respostas[6],
+            q8: respostas[7],
+            q9: respostas[8],
+            q10: respostas[9]
+        };
+
+        console.log("A enviar para o servidor:", dadosParaEnviar);
+
+
+        try {
+        const response = await fetch('/carat/submeter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosParaEnviar)
+        });
+
+        const resultado = await response.json();
+
+        if (response.ok) {
+            alert("Sucesso! AvaliaÃ§Ã£o guardada.");
+            location.reload(); // Recarrega para limpar o form
+        } else {
+            // Se der erro 400, o 'resultado.erro' terÃ¡ a mensagem do servidor
+            console.error("Erro detalhado do servidor:", resultado);
+            alert("Erro: " + (resultado.erro || "Falha ao guardar."));
+        }
+    } catch (error) {
+        console.error("Erro na ligaÃ§Ã£o:", error);
+        alert("Servidor desligado ou erro de rede.");
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', buscarAlertas);
+
+document.addEventListener('DOMContentLoaded', buscarAlertas);
+
+async function buscarAlertas() {
+    const container = document.getElementById('listaAlertas');
+    try {
+        const response = await fetch('/alertas');
+        const alertas = await response.json();
+
+        if (alertas.length === 0) {
+            container.innerHTML = '<p>Nenhum alerta crÃ­tico registado.</p>';
+            return;
+        }
+
+        let html = `
+            <table style="width: 100%; border-collapse: collapse; background: white; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #eee; text-align: left;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Utente</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">DescriÃ§Ã£o</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Estado</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">AÃ§Ã£o</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        alertas.forEach(alerta => {
+            const dataFormatada = new Date(alerta.dataCriacao).toLocaleString();
+            
+            html += `
+                <tr style="${alerta.lido ? 'background-color: #f9f9f9; color: #888;' : ''}">
+                    <td style="padding: 10px; border: 1px solid #ddd;">${dataFormatada}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${alerta.utente ? alerta.utente.nome : 'Desconhecido'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; color: ${alerta.lido ? '#888' : '#d00'}; font-weight: bold;">${alerta.descricao}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        ${alerta.lido ? 'Lido' : 'Pendente'}
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        ${!alerta.lido ? `
+                            <button onclick="marcarComoLido(${alerta.id})" 
+                                    style="background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                Marcar como lido
+                            </button>
+                        ` : 'ConcluÃ­do'}
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+    } catch (error) {
+        console.error("Erro ao buscar alertas:", error);
+        container.innerHTML = '<p>Erro ao carregar alertas.</p>';
+    }
+}
+
+async function marcarComoLido(id) {
+    try {
+        console.log("A enviar pedido para ID:", id);
+        const response = await fetch(`/alertas/${id}/ler`, {
+            method: 'PATCH'
+        });
+
+        if (response.ok) {
+            await buscarAlertas(); // Atualiza a lista visualmente
+        } else {
+            console.error("Erro no servidor ao marcar como lido");
+        }
+    } catch (error) {
+        console.error("Erro de ligaÃ§Ã£o:", error);
+    }
+}
+  </script>
+</body>
+</html>
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\public\index3.html
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>index3 - Sistema ClÃ­nico</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    nav a { margin-right: 16px; color: #0070f3; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    form { display: flex; flex-direction: column; gap: 10px; max-width: 500px; }
+    input { padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 10px 16px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #005bb5; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f5f5f5; }
+    .error { color: red; margin-top: 12px; }
+    .link-block { display: inline-block; margin-bottom: 16px; color: #0070f3; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>index3 â€” Sistema ClÃ­nico</h1>
+      <p>VersÃ£o que mantÃ©m exames separados em <a href="exames.html">exames.html</a>.</p>
+    </div>
+    <nav>
+      <a href="index.html">Original</a>
+      <a href="index2.html">index2</a>
+      <a href="exames.html">Exames</a>
+    </nav>
+  </header>
+
+  <section>
+    <h2>Nova PrescriÃ§Ã£o</h2>
+    <form id="formPrescricao">
+      <input id="medicamento" placeholder="Medicamento" required />
+      <input id="dose" placeholder="Dose" required />
+      <input id="medicoNome" placeholder="Nome do mÃ©dico" required />
+      <button type="submit">Criar prescriÃ§Ã£o</button>
+      <p id="erroPrescricao" class="error"></p>
+    </form>
+  </section>
+
+  <section>
+    <h2>PrescriÃ§Ãµes Registadas</h2>
+    <button id="btnBuscarPrescricoes">Atualizar prescriÃ§Ãµes</button>
+    <div id="prescricoesContainer"><p>A carregar prescriÃ§Ãµes...</p></div>
+  </section>
+
+  <script>
+    async function buildPrescricoesTable(prescricoes) {
+      if (!Array.isArray(prescricoes) || prescricoes.length === 0) {
+        return '<p>Nenhuma prescriÃ§Ã£o registada.</p>';
+      }
+
+      const rows = prescricoes.map(p => `
+        <tr>
+          <td>${p.id ?? ''}</td>
+          <td>${p.medicamento ?? ''}</td>
+          <td>${p.dose ?? ''}</td>
+          <td>${p.medico_nome ?? ''}</td>
+          <td>${p.dataCriacao ?? 'nÃ£o exposta'}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Medicamento</th>
+              <th>Dose</th>
+              <th>MÃ©dico</th>
+              <th>Data de CriaÃ§Ã£o</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function buscarPrescricoes() {
+      const container = document.getElementById('prescricoesContainer');
+      container.innerHTML = '<p>A carregar prescriÃ§Ãµes...</p>';
+      try {
+        const resposta = await fetch('/prescricoes');
+        if (!resposta.ok) throw new Error('Erro ao carregar prescriÃ§Ãµes');
+        const prescricoes = await resposta.json();
+        container.innerHTML = await buildPrescricoesTable(prescricoes);
+      } catch (erro) {
+        container.innerHTML = `<p class="error">Erro: ${erro.message}</p>`;
+      }
+    }
+
+    async function criarPrescricao(event) {
+      event.preventDefault();
+      const erroPrescricao = document.getElementById('erroPrescricao');
+      erroPrescricao.textContent = '';
+
+      const medicamento = document.getElementById('medicamento').value.trim();
+      const dose = document.getElementById('dose').value.trim();
+      const medico_nome = document.getElementById('medicoNome').value.trim();
+
+      try {
+        const resposta = await fetch('/prescricoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicamento, dose, medico_nome })
+        });
+
+        if (!resposta.ok) {
+          const dados = await resposta.json();
+          throw new Error(dados.erro || 'Erro ao criar prescriÃ§Ã£o');
+        }
+
+        document.getElementById('formPrescricao').reset();
+        buscarPrescricoes();
+      } catch (erro) {
+        erroPrescricao.textContent = erro.message;
+      }
+    }
+
+    document.getElementById('formPrescricao').addEventListener('submit', criarPrescricao);
+    document.getElementById('btnBuscarPrescricoes').addEventListener('click', buscarPrescricoes);
+    buscarPrescricoes();
+  </script>
+</body>
+</html>
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\public\prescricao.html
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>PrescriÃ§Ãµes</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    h1 { margin-bottom: 24px; }
+    h2 { margin-top: 32px; }
+    form { display: flex; flex-direction: column; gap: 8px; max-width: 400px; }
+    input { padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 8px 16px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #005bb5; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+    th { background: #f5f5f5; }
+    .erro { color: red; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function FormularioPrescricao({ onCriada }) {
+      const [medicamento, setMedicamento] = useState('');
+      const [dose, setDose] = useState('');
+      const [medicoNome, setMedicoNome] = useState('');
+      const [erro, setErro] = useState('');
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        setErro('');
+        const resposta = await fetch('/prescricoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicamento, dose, medico_nome: medicoNome }),
+        });
+        if (resposta.ok) {
+          setMedicamento('');
+          setDose('');
+          setMedicoNome('');
+          onCriada();
+        } else {
+          const dados = await resposta.json();
+          setErro(dados.erro || 'Erro ao criar prescriÃ§Ã£o');
+        }
+      }
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <input value={medicamento} onChange={e => setMedicamento(e.target.value)} placeholder="Medicamento" required />
+          <input value={dose} onChange={e => setDose(e.target.value)} placeholder="Dose" required />
+          <input value={medicoNome} onChange={e => setMedicoNome(e.target.value)} placeholder="Nome do mÃ©dico" required />
+          <button type="submit">Criar prescriÃ§Ã£o</button>
+          {erro && <p className="erro">{erro}</p>}
+        </form>
+      );
+    }
+
+    function ListaPrescricoes({ prescricoes }) {
+      if (prescricoes.length === 0) return <p>Nenhuma prescriÃ§Ã£o registada.</p>;
+      return (
+        <table>
+          <thead>
+            <tr><th>#</th><th>Medicamento</th><th>Dose</th><th>MÃ©dico</th><th>Data de CriaÃ§Ã£o</th></tr>
+          </thead>
+          <tbody>
+            {prescricoes.map(p => (
+              <tr key={p.id}>
+                <td>{p.id}</td>
+                <td>{p.medicamento}</td>
+                <td>{p.dose}</td>
+                <td>{p.medico_nome}</td>
+                <td>{p.dataCriacao || 'nÃ£o exposta'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+
+    function App() {
+      const [prescricoes, setPrescricoes] = useState([]);
+
+      async function buscarPrescricoes() {
+        const resposta = await fetch('/prescricoes');
+        const dados = await resposta.json();
+        console.log('Dados recebidos:', dados);
+        setPrescricoes(dados);
+      }
+
+      useEffect(() => { buscarPrescricoes(); }, []);
+
+      return (
+        <div>
+          <h1>Sistema de PrescriÃ§Ãµes</h1>
+          <h2>Nova PrescriÃ§Ã£o</h2>
+          <FormularioPrescricao onCriada={buscarPrescricoes} />
+          <h2>PrescriÃ§Ãµes Registadas</h2>
+          <ListaPrescricoes prescricoes={prescricoes} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
+// FILE: C:\Users\Utilizador\OneDrive\faculdade202526\DesenSoftw\TrabalhoDS_2\Trabalho-DS\public\xpto.html
