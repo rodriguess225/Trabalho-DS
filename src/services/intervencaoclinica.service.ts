@@ -10,8 +10,12 @@ export class IntervencaoClinicaService {
 
     async registarIntervencao(dados: CreateIntervencaoDto, id_medico_que_registou: number): Promise<IntervencaoResponseDto> {
         const nova = this.repo.create({
-            ...dados,
-            dataIntervencao: dados.dataIntervencao || new Date().toISOString()
+            id_utente: dados.id_utente,
+            id_medico: dados.id_medico,
+            id_alerta: dados.id_alerta,
+            notasMedicas: dados.notasMedicas,
+            acaoTomada: dados.acoesTomadas, // Mapeado corretamente para a BD
+            dataRegisto: new Date().toISOString()
         });
         const guardada = await this.repo.save(nova);
 
@@ -19,8 +23,8 @@ export class IntervencaoClinicaService {
             id_utilizador: id_medico_que_registou,
             tipoAcao: 'CREATE',
             entidadeAfetada: 'IntervencaoClinica',
-            id_registo_afetado: guardada.id_intervencao || (guardada as any).id,
-            valorNovo: JSON.stringify({ tipo: dados.tipo, observacoes: dados.observacoes })
+            id_registo_afetado: guardada.id_intervencao,
+            valorNovo: JSON.stringify({ notasMedicas: dados.notasMedicas })
         });
 
         return this.toResponseDto(guardada);
@@ -28,12 +32,12 @@ export class IntervencaoClinicaService {
 
     private toResponseDto(intervencao: IntervencaoClinica): IntervencaoResponseDto {
         return {
-            id_intervencao: intervencao.id_intervencao || (intervencao as any).id,
+            id_intervencao: intervencao.id_intervencao,
             id_utente: intervencao.id_utente,
             id_medico: intervencao.id_medico,
-            tipo: intervencao.tipo,
-            dataIntervencao: intervencao.dataIntervencao,
-            observacoes: intervencao.observacoes
+            notasMedicas: intervencao.notasMedicas || '',
+            diagnostico: null,
+            dataIntervencao: new Date(intervencao.dataRegisto)
         } as IntervencaoResponseDto;
     }
 }

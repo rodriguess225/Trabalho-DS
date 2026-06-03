@@ -13,15 +13,9 @@ export class ExameService {
      */
     async criarExame(dados: CreateExameDto, id_medico_que_solicitou: number): Promise<ExameResponseDto> {
         
-        // 1. A TUA VALIDAÇÃO: Código exato de 4 caracteres
-        if (dados.codigo && dados.codigo.length !== 4) {
-            throw new Error("O código do exame deve ter exatamente 4 caracteres.");
-        }
-
-        // 2. A TUA VALIDAÇÃO: Evitar Duplicados (verifica se já existe para este utente e médico)
+        // 1. Evitar Duplicados (mesmo tipo de exame para o mesmo utente)
         const jaExiste = await this.repo.findOneBy({
-            tipoExame: dados.tipoExame, // ou dados.nome consoante a tua entidade
-            codigo: dados.codigo,
+            tipoExame: dados.tipoExame,
             id_utente: dados.id_utente
         });
         
@@ -31,8 +25,10 @@ export class ExameService {
 
         // 3. Criar a Entidade
         const novoExame = this.repo.create({
-            ...dados,
-            dataSolicitacao: dados.dataSolicitacao || new Date().toISOString().split('T')[0]
+            id_utente: dados.id_utente,
+            tipoExame: dados.tipoExame,
+            id_intervencao_clinica: dados.id_intervencao_clinica,
+            dataSolicitacao: dados.dataSolicitacao ?? new Date().toISOString().split('T')[0]
         });
 
         const exameGuardado = await this.repo.save(novoExame);
@@ -42,8 +38,8 @@ export class ExameService {
             id_utilizador: id_medico_que_solicitou,
             tipoAcao: 'CREATE',
             entidadeAfetada: 'Exame',
-            id_registo_afetado: exameGuardado.id_exame || (exameGuardado as any).id,
-            valorNovo: JSON.stringify({ tipoExame: dados.tipoExame, codigo: dados.codigo })
+            id_registo_afetado: exameGuardado.id_exame,
+            valorNovo: JSON.stringify({ tipoExame: dados.tipoExame })
         });
 
         // 5. Devolver limpo usando o padrão DTO
@@ -74,12 +70,13 @@ export class ExameService {
      */
     private toResponseDto(exame: Exame): ExameResponseDto {
         return {
-            id_exame: exame.id_exame || (exame as any).id,
+            id_exame: exame.id_exame,
             id_utente: exame.id_utente,
-            tipoExame: exame.tipoExame, // ou exame.nome
-            codigo: exame.codigo,
-            medico_nome: exame.medico_nome,
-            dataSolicitacao: exame.dataSolicitacao
-        } as ExameResponseDto;
+            id_intervencao_clinica: exame.id_intervencao_clinica ?? null,
+            tipoExame: exame.tipoExame,
+            dataSolicitacao: exame.dataSolicitacao,
+            resultado: exame.resultado ?? null,
+            concluido: exame.concluido
+        };
     }
 }

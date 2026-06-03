@@ -16,8 +16,8 @@ export class MedicacaoService {
             id_utilizador: id_utilizador,
             tipoAcao: 'CREATE',
             entidadeAfetada: 'Medicacao',
-            id_registo_afetado: guardada.id_medicacao || (guardada as any).id,
-            valorNovo: JSON.stringify({ nome: dados.nome, dosagem: dados.dosagem })
+            id_registo_afetado: guardada.id_medicacao,
+            valorNovo: JSON.stringify({ nomeMedicacao: dados.nomeMedicacao, dose: dados.dose })
         });
 
         return this.toResponseDto(guardada);
@@ -30,12 +30,15 @@ export class MedicacaoService {
 
     private toResponseDto(medicacao: Medicacao): MedicacaoResponseDto {
         return {
-            id_medicacao: medicacao.id_medicacao || (medicacao as any).id,
+            id_medicacao: medicacao.id_medicacao,
             id_utente: medicacao.id_utente,
-            nome: medicacao.nome,
-            dosagem: medicacao.dosagem,
+            id_intervencao_clinica: medicacao.id_intervencao_clinica,
+            nomeMedicacao: medicacao.nomeMedicacao,
+            dose: medicacao.dose,
             frequencia: medicacao.frequencia,
-            ativa: medicacao.ativa // true ou false
+            dataPrescricao: medicacao.dataPrescricao || '',
+            dataFinal: medicacao.dataFinal || null,
+            createdAt: medicacao.createdAt
         } as MedicacaoResponseDto;
     }
 }

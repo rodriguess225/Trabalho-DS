@@ -13,7 +13,7 @@ export class AdministradorService {
     async criarAdministrador(dados: CreateAdministradorDto, id_utilizador_que_criou?: number): Promise<Administrador> {
         // 1. Criar a entidade com base no ER
         const novoAdmin = this.repo.create({
-            id_utilizador: dados.id_utilizador
+            id_utilizador: dados.id_Utilizador
         });
 
         // 2. Guardar na BD

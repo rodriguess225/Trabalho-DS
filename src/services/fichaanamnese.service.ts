@@ -4,17 +4,16 @@ import { CreateFichaAnamneseDto } from '../dtos/anamnese/create-ficha-anamnese.d
 import { FichaAnamneseResponseDto } from '../dtos/anamnese/ficha-anamnese-response.dto';
 import { AlergiaService } from './alergia.service';
 import { FichaPossuiAlergiasService } from './ficha-possui-alergias.service';
+import { AlergiaResponseDto } from '../dtos/alergia/alergia-response.dto';
 
 export class FichaAnamneseService {
     private fichaRepo = AppDataSource.getRepository(FichaAnamnese);
     
-    // Injetamos os outros serviços em vez de repositórios
     private alergiaService = new AlergiaService();
     private ligacaoService = new FichaPossuiAlergiasService();
 
     async criar(dados: CreateFichaAnamneseDto): Promise<FichaAnamneseResponseDto> {
         
-        // 1. Criar a ficha base
         const novaFicha = this.fichaRepo.create({
             id_utente: dados.id_utente,
             estadoTabagico: dados.estadoTabagico,
@@ -24,26 +23,32 @@ export class FichaAnamneseService {
         });
         const fichaGuardada = await this.fichaRepo.save(novaFicha);
 
-        // 2. Comunicar com os outros Services para tratar das alergias
+        // Criar array para devolver as alergias
+        let alergiasDevolvidas: AlergiaResponseDto[] = [];
+
         if (dados.alergias && dados.alergias.length > 0) {
             for (const nomeAlergia of dados.alergias) {
-                // O AlergiaService trata de descobrir o ID
                 const alergia = await this.alergiaService.encontrarOuCriar(nomeAlergia);
                 
-                // O LigacaoService trata de fazer a ponte
                 await this.ligacaoService.criarLigacao(fichaGuardada.id_ficha, alergia.id_alergia);
+
+                alergiasDevolvidas.push({
+                    id_alergia: alergia.id_alergia,
+                    nomeAlergia: alergia.nomeAlergia
+                });
             }
         }
 
         return {
             id_ficha: fichaGuardada.id_ficha,
             id_utente: fichaGuardada.id_utente,
-            estadoTabagico: fichaGuardada.estadoTabagico,
-            antecedentes: fichaGuardada.antecedentes,
-            peso: fichaGuardada.peso,
-            altura: fichaGuardada.altura,
+            estadoTabagico: fichaGuardada.estadoTabagico || null,
+            antecedentes: fichaGuardada.antecedentes || null,
+            peso: fichaGuardada.peso || null,
+            altura: fichaGuardada.altura || null,
             createdAt: fichaGuardada.createdAt,
-            updatedAt: fichaGuardada.updatedAt
+            updatedAt: fichaGuardada.updatedAt,
+            alergias: alergiasDevolvidas // Agora a resposta está completa!
         };
     }
 }

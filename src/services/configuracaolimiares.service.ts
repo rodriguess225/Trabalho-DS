@@ -18,8 +18,9 @@ export class ConfiguracaoLimiaresService {
             take: 1 
         });
         
-        if (config.length > 0 && config[0].limiar_score) {
-            return config[0].limiar_score;
+        const ultimaConfig = config[0];
+        if (ultimaConfig?.limiar_score) {
+            return ultimaConfig.limiar_score;
         }
         return 20; // Padrão clínico: score <= 20 indica asma mal controlada
     }
