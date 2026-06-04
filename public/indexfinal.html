@@ -45,15 +45,27 @@
             Injetar Dados de Teste (Seeder)
         </button>
     </div>
+
     <div id="register-screen" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
         <div class="login-box" style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px;">
             <h2 style="margin-top: 0; text-align: center; color: #1f2937;">Novo Utente</h2>
             <p style="text-align: center; color: #6b7280; font-size: 14px;">Preencha os seus dados.</p>
             
-            <form id="formRegisto" style="display: flex; flex-direction: column; gap: 15px;">
+          <form id="formRegisto" style="display: flex; flex-direction: column; gap: 15px;">
                 <input type="text" id="regNome" placeholder="Nome Completo" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="email" id="regEmail" placeholder="Email" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="password" id="regPassword" placeholder="Password" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                
+                <input type="text" id="regNif" placeholder="NIF" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" id="regNumSaude" placeholder="Nº de Utente de Saúde" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <select id="regGenero" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; color: #6b7280; background: white;">
+                    <option value="" disabled selected>Selecione o Género...</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+                <input type="text" id="regMorada" placeholder="Morada Completa" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="date" id="regDataNasc" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; color: #6b7280;">
                 
                 <button type="submit" style="background: #10b981; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Registar-me</button>
                 <p id="regErro" style="color: #ef4444; font-size: 13px; text-align: center; font-weight: bold; margin: 0;"></p>
@@ -66,21 +78,21 @@
     </div>
 
     <div id="app-screen" class="hidden">
-     <nav id="menu-lateral" style="display: flex; flex-direction: column; height: 100vh; padding: 20px; background: #1f2937; color: white;">
-    <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
-    <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
-    
-    <button onclick="mostrarPagina('pagina-dashboard')" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Dashboard</button>
-    
-    <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Módulo CARAT</button>
-    
-    <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Prescrições</button>
-    
-    <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
-    
-    <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
-</nav>
-       <main>
+        <nav id="menu-lateral" style="display: flex; flex-direction: column; height: 100vh; padding: 20px; background: #1f2937; color: white;">
+            <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
+            <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
+            
+            <button onclick="mostrarPagina('pagina-dashboard')" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Dashboard</button>
+            
+            <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Módulo CARAT</button>
+            
+            <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Prescrições</button>
+            
+            <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
+            
+            <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
+        </nav>
+        <main>
             <div id="pagina-dashboard" class="pagina">
                 <h1>Painel de Controlo</h1>
                 <p>O login foi feito com sucesso. A sessão está autenticada.</p>
@@ -88,10 +100,10 @@
                     <strong>Sistema Operacional:</strong> Navegue no menu lateral para aceder aos módulos clínicos.
                 </div>
                 <div id="resultadoCaratNoDashboard" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 8px; background: #f3f4f6; border: 1px solid #d1d5db;">
-                <h3 style="margin-top: 0;">Última Avaliação CARAT:</h3>
-                <p><strong>Pontuação Total:</strong> <span id="dashScoreTotal">0</span> / 30</p>
-                <p><strong>Nível de Controlo:</strong> <span id="dashNivelControlo"></span></p>
-            </div>
+                    <h3 style="margin-top: 0;">Última Avaliação CARAT:</h3>
+                    <p><strong>Pontuação Total:</strong> <span id="dashScoreTotal">0</span> / 30</p>
+                    <p><strong>Nível de Controlo:</strong> <span id="dashNivelControlo"></span></p>
+                </div>
             </div>
             
             <div id="pagina-carat" class="pagina hidden">
@@ -126,6 +138,7 @@
                     <p><strong>Diagnóstico:</strong> <span id="interpretacaoCarat"></span></p>
                 </div>
             </div>
+            
             <div id="pagina-prescricoes" class="pagina hidden">
                 <h1>As Minhas Prescrições</h1>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -138,229 +151,340 @@
                         </tr>
                     </thead>
                     <tbody id="tabela-prescricoes-body">
-                        </tbody>
+                    </tbody>
                 </table>
-                <div id="pagina-alertas" class="pagina hidden">
+            </div>
+
+            <div id="pagina-alertas" class="pagina hidden">
                 <h1>Alertas Clínicos</h1>
                 <p>Lista de situações que requerem atenção médica:</p>
                 <div id="listaAlertas" style="margin-top: 20px;">
                     <p>A carregar alertas...</p>
                 </div>
             </div>
-            </div>
         </main>
     </div>
 
-    
-       <script>
-    // --- 1. FUNÇÕES AUXILIARES ---
-    async function fetchAutenticado(url, options = {}) {
-        const token = localStorage.getItem('token');
-        const headers = {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` }),
-            ...(options.headers || {})
-        };
-        const response = await fetch(url, { ...options, headers });
-        if (response.status === 401 || response.status === 403) {
-            logout();
-            alert("Sessão expirada. Faça login novamente.");
-            return null;
-        }
-        return response;
-    }
+    <script>
+        // --- 1. FUNÇÕES AUXILIARES ---
+        async function fetchAutenticado(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` }),
+                ...(options.headers || {})
+            };
 
-    function mostrarRegisto() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('register-screen').style.display = 'flex';
-    }
-
-    function mostrarLogin() {
-        document.getElementById('register-screen').style.display = 'none';
-        document.getElementById('login-screen').style.display = 'flex';
-    }
-
-    // --- 2. LÓGICA DE LOGIN (A QUE TE FALTAVA) ---
-    document.getElementById('formLogin').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const erroEl = document.getElementById('loginErro');
-
-        try {
-            const res = await fetch('/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userEmail', email);
-                entrarNaApp();
-            } else {
-                erroEl.textContent = "Email ou password incorretos.";
-            }
-        } catch (err) {
-            alert("Erro de conexão ao servidor.");
-        }
-    });
-
-    // --- 3. LÓGICA DE REGISTO ---
-    document.getElementById('formRegisto').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nome = document.getElementById('regNome').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
-
-        try {
-            const res = await fetch('/auth/registar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, email, password })
-            });
-
-            if (res.ok) {
-                alert("Conta registada com sucesso!");
-                document.getElementById('formRegisto').reset();
-                mostrarLogin();
-            } else {
-                const data = await res.json();
-                alert("Erro: " + (data.erro || "Falha ao registar"));
-            }
-        } catch (err) {
-            alert("Erro de conexão!");
-        }
-    });
-
-    // --- 4. CONTROLO DE ECRÃS E SESSÃO ---
-    function entrarNaApp() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
-        document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
-        
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
-        const btnCarat = document.getElementById('btn-carat');
-        const btnAlertas = document.getElementById('btn-alertas');
-
-        if (tokenData.role === 'UTENTE') {
-            btnCarat.classList.remove('hidden');
-            btnAlertas.classList.remove('hidden');
-        } else {
-            btnCarat.classList.add('hidden');
-            btnAlertas.classList.remove('hidden');
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userEmail');
-        location.reload(); // Recarrega a página para voltar ao Login
-    }
-
-    function mostrarPagina(id) {
-        document.querySelectorAll('.pagina').forEach(p => p.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    // Verifica se já existe login ao carregar
-    if (localStorage.getItem('token')) {
-        entrarNaApp();
-    }
-
-    // --- 5. SEEDER, CARAT E PRESCRIÇÕES (Mantidos iguais) ---
-    async function povoarBaseDados() {
-        const resposta = await fetch('/seeder/povoar', { method: 'POST' });
-        const dados = await resposta.json();
-        alert(resposta.ok ? "Sucesso: " + dados.mensagem : "Aviso: " + dados.erro);
-    }
-
-// --- 5. LÓGICA DO CARAT ---
-    document.getElementById('formCarat').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
-
-        try {
-            const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
-            if (!resUtente || !resUtente.ok) return;
-            const utenteData = await resUtente.json();
-            const id_utente_real = utenteData.id_utente;
-
-            const respostasArray = [];
-            for (let i = 1; i <= 10; i++) {
-                const el = document.getElementById(`caratQ${i}`);
-                if (el) respostasArray.push({ num_pergunta: i, valor_pontuacao: Number(el.value) });
-            }
-
-            const response = await fetchAutenticado('/carat/submeter', {
-                method: 'POST',
-                body: JSON.stringify({ id_utente: id_utente_real, respostas: respostasArray })
-            });
-
-            if (response && response.ok) {
-                const resultado = await response.json();
-                document.getElementById('dashScoreTotal').textContent = resultado.avaliacao.scoreTotal;
-                document.getElementById('dashNivelControlo').textContent = resultado.avaliacao.nivelControlo;
-                document.getElementById('resultadoCaratNoDashboard').classList.remove('hidden');
-                document.getElementById('formCarat').reset();
-                alert("Avaliação submetida!");
-                mostrarPagina('pagina-dashboard');
-            }
-        } catch (error) { alert("Erro ao submeter CARAT."); }
-    });
-
-    // --- 6. CARREGAR PRESCRIÇÕES ---
-    async function carregarPrescricoes() {
-        const tbody = document.getElementById('tabela-prescricoes-body');
-        tbody.innerHTML = '<tr><td colspan="4">A carregar...</td></tr>';
-        const tokenData = JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
-        
-        try {
-            const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
-            const utente = await resUtente.json();
-            const res = await fetchAutenticado(`/medicacoes/utente/${utente.id_utente}`);
-            const prescricoes = await res.json();
+            const response = await fetch(url, { ...options, headers });
             
-            tbody.innerHTML = prescricoes.length ? '' : '<tr><td colspan="4">Sem prescrições.</td></tr>';
-            prescricoes.forEach(p => {
-                tbody.innerHTML += `<tr>
-                    <td style="padding: 12px;">${p.nomeMedicacao}</td>
-                    <td style="padding: 12px;">${p.dose}</td>
-                    <td style="padding: 12px;">Dr. House</td>
-                    <td style="padding: 12px;">${new Date(p.dataPrescricao).toLocaleDateString()}</td>
-                </tr>`;
-            });
-        } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Erro.</td></tr>'; }
-    }
+            if (response.status === 401 || response.status === 403) {
+                logout(); 
+                alert("A sua sessão expirou ou não tem permissões. Faça login novamente.");
+                return null;
+            }
+            return response;
+        }
 
-    // --- 7. CARREGAR ALERTAS ---
-    async function carregarAlertas() {
-        const container = document.getElementById('listaAlertas');
-        const token = localStorage.getItem('token');
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
+        function mostrarRegisto() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('register-screen').style.display = 'flex';
+        }
 
-        try {
-            const res = await fetchAutenticado(`/alertas/medico/${tokenData.id}`); // Ajusta se precisares do ID do médico
-            const alertas = await res.json();
-            container.innerHTML = alertas.length ? '' : '<p>Sem alertas.</p>';
-            alertas.forEach(a => {
-                container.innerHTML += `<div style="padding:10px; border:1px solid #ccc; margin-bottom:5px;">
-                    Alerta: ${a.descricao} - Estado: ${a.estado}
-                    <button onclick="atualizarAlerta(${a.id}, 'RESOLVIDO')">Resolver</button>
-                </div>`;
-            });
-        } catch (e) { container.innerHTML = 'Erro ao carregar.'; }
-    }
+        function mostrarLogin() {
+            document.getElementById('register-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
 
-    async function atualizarAlerta(id, estado) {
-        await fetchAutenticado(`/alertas/${id}/estado`, { method: 'PATCH', body: JSON.stringify({ estado }) });
-        carregarAlertas();
-    }</script>
+        // --- 2. LÓGICA DE LOGIN ---
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const erroEl = document.getElementById('loginErro');
+            erroEl.textContent = "";
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', email);
+                    entrarNaApp();
+                } else {
+                    const data = await res.json();
+                    erroEl.textContent = data.erro || "Email ou password incorretos.";
+                }
+            } catch (err) {
+                alert("Erro de conexão ao servidor.");
+            }
+        });
+
+      // --- 3. LÓGICA DE REGISTO ---
+        document.getElementById('formRegisto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('regNome').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            const nif = document.getElementById('regNif').value;
+            const morada = document.getElementById('regMorada').value;
+            const dataNascimento = document.getElementById('regDataNasc').value;
+            
+            const genero = document.getElementById('regGenero').value;
+            const numSaude = document.getElementById('regNumSaude').value;
+
+            const erroEl = document.getElementById('regErro');
+            erroEl.style.color = "#3b82f6";
+            erroEl.textContent = "A criar conta...";
+
+            try {
+                const res = await fetch('/auth/registar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, email, password, nif, morada, dataNascimento, genero, numSaude })
+                });
+
+                if (res.ok) {
+                    erroEl.textContent = "";
+                    alert("Conta registada com sucesso!");
+                    document.getElementById('formRegisto').reset();
+                    mostrarLogin();
+                } else {
+                    const data = await res.json();
+                    erroEl.style.color = "#ef4444";
+                    erroEl.textContent = data.erro || "Falha ao registar.";
+                    alert("Erro: " + (data.erro || "Falha ao registar"));
+                }
+            } catch (err) {
+                console.error(err);
+                erroEl.style.color = "#ef4444";
+                erroEl.textContent = "Erro de conexão!";
+                alert("Erro de conexão!");
+            }
+        });
+
+        // --- 4. CONTROLO DE ECRÃS E SESSÃO ---
+        function entrarNaApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
+            
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const btnCarat = document.getElementById('btn-carat');
+            const btnAlertas = document.getElementById('btn-alertas');
+
+            if (tokenData.role === 'UTENTE') {
+                btnCarat.classList.remove('hidden');    
+                btnAlertas.classList.remove('hidden');  
+            } else {
+                btnCarat.classList.add('hidden');       
+                btnAlertas.classList.remove('hidden');  
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app-screen').classList.add('hidden');
+        }
+
+        function mostrarPagina(id) {
+            document.querySelectorAll('.pagina').forEach(p => p.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // Verifica se já existe login ao carregar a página
+        if (localStorage.getItem('token')) {
+            entrarNaApp();
+        }
+
+        // --- 5. SEEDER (Injetar Dados na BD) ---
+        async function povoarBaseDados() {
+            try {
+                const resposta = await fetch('/seeder/povoar', { method: 'POST' });
+                const dados = await resposta.json();
+                if (resposta.ok) {
+                    alert("Sucesso: " + dados.mensagem);
+                } else {
+                    alert("Aviso: " + dados.erro);
+                }
+            } catch (erro) {
+                alert("Erro ao tentar povoar a base de dados.");
+            }
+        }
+
+        // --- 6. MÓDULO CARAT ---
+        document.getElementById('formCarat').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            if (tokenData.role !== 'UTENTE') {
+                alert("Acesso Negado.");
+                return;
+            }
+
+            try {
+                const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+                if (!resUtente || !resUtente.ok) return;
+                const utenteData = await resUtente.json();
+                const id_utente_real = utenteData.id_utente;
+
+                const respostasArray = [];
+                for (let i = 1; i <= 10; i++) {
+                    const elemento = document.getElementById(`caratQ${i}`);
+                    if (elemento) {
+                        respostasArray.push({
+                            num_pergunta: i,
+                            valor_pontuacao: Number(elemento.value)
+                        });
+                    }
+                }
+
+                const response = await fetchAutenticado('/carat/submeter', {
+                    method: 'POST',
+                    body: JSON.stringify({ id_utente: id_utente_real, respostas: respostasArray })
+                });
+
+                if (!response) return;
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('dashScoreTotal').textContent = resultado.avaliacao.scoreTotal;
+                    document.getElementById('dashNivelControlo').textContent = resultado.avaliacao.nivelControlo;
+                    document.getElementById('resultadoCaratNoDashboard').classList.remove('hidden');
+
+                    document.getElementById('formCarat').reset();
+                    document.getElementById('resultadosCarat').classList.add('hidden');
+
+                    alert("Avaliação submetida com sucesso.");
+                    mostrarPagina('pagina-dashboard');
+                } else {
+                    alert("Erro: " + (resultado.erro || "Falha ao guardar."));
+                }
+            } catch (error) {
+                alert("Erro de rede.");
+            }
+        });
+
+        // --- 7. CARREGAR PRESCRIÇÕES ---
+        async function carregarPrescricoes() {
+            const tbody = document.getElementById('tabela-prescricoes-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar prescrições...</td></tr>';
+
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            try {
+                const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+                if (!resUtente || !resUtente.ok) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar perfil.</td></tr>';
+                    return;
+                }
+                const utenteData = await resUtente.json();
+                
+                const resposta = await fetchAutenticado(`/medicacoes/utente/${utenteData.id_utente}`);
+                if (!resposta || !resposta.ok) throw new Error("Erro na resposta do servidor");
+
+                const prescricoes = await resposta.json();
+                tbody.innerHTML = '';
+
+                if (prescricoes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem prescrições registadas.</td></tr>';
+                    return;
+                }
+
+                prescricoes.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = "1px solid #e5e7eb";
+                    tr.innerHTML = `
+                        <td style="padding: 12px;">${p.nomeMedicacao}</td>
+                        <td style="padding: 12px;">${p.dose}</td>
+                        <td style="padding: 12px;">Dr. House</td>
+                        <td style="padding: 12px;">${p.dataPrescricao ? new Date(p.dataPrescricao).toLocaleDateString() : 'N/A'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (erro) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        // --- 8. CARREGAR ALERTAS ---
+        async function carregarAlertas() {
+            const container = document.getElementById('listaAlertas');
+            container.innerHTML = '<p>A procurar alertas...</p>';
+
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            try {
+                let idParaPesquisa = null;
+                let ehMedico = false;
+
+                const resMedico = await fetchAutenticado(`/medicos/utilizador/${tokenData.id}`);
+                if (resMedico && resMedico.ok) {
+                    const medicoData = await resMedico.json();
+                    idParaPesquisa = medicoData.id_medico;
+                    ehMedico = true;
+                }
+
+                if (!ehMedico) {
+                    container.innerHTML = '<p>Apenas médicos podem aceder à lista de alertas.</p>';
+                    return;
+                }
+
+                const resposta = await fetchAutenticado(`/alertas/medico/${idParaPesquisa}`);
+                if (!resposta || !resposta.ok) throw new Error("Erro ao aceder aos alertas");
+
+                const alertas = await resposta.json();
+
+                if (alertas.length === 0) {
+                    container.innerHTML = '<p>Não existem alertas registados no momento.</p>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                alertas.forEach(a => {
+                    container.innerHTML += `<div style="padding:10px; border:1px solid #ccc; margin-bottom:5px; background: white; border-radius: 4px;">
+                        <strong>Alerta:</strong> ${a.descricao} — <strong>Estado:</strong> ${a.estado}
+                        <button onclick="atualizarAlerta(${a.id}, 'RESOLVIDO')" style="margin-left: 10px; padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Resolver</button>
+                    </div>`;
+                });
+
+            } catch (erro) {
+                container.innerHTML = '<p>Sem alertas disponíveis ou erro de carregamento.</p>';
+            }
+        }
+
+        async function atualizarAlerta(idAlerta, novoEstado) {
+            try {
+                const resposta = await fetchAutenticado(`/alertas/${idAlerta}/estado`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ estado: novoEstado })
+                });
+
+                if (resposta && resposta.ok) {
+                    alert("Estado do alerta updated.");
+                    carregarAlertas();
+                }
+            } catch (erro) {
+                alert("Erro ao atualizar o alerta.");
+            }
+        }
+    </script>
 </body>
-</html> 
+</html>

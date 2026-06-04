@@ -27,10 +27,10 @@ export class AuthService {
             telemovel: dados.telemovel
         });
 
-        // Guardamos o utilizador numa variável
+        // Guardar o utilizador numa variável
         const userGuardado = await this.utilizadorRepo.save(novoUtilizador);
 
-        // Devolvemos o utilizador 
+        // Devolver o utilizador 
         return { 
             mensagem: 'Utilizador registado com sucesso!',
             utilizador: userGuardado 
@@ -52,7 +52,7 @@ export class AuthService {
             throw new Error('Credenciais inválidas.');
         }
 
-        // Atualizar o último login (opcional, mas bom para os teus registos)
+        // Atualizar o último login 
         user.ultimoLogin = new Date().toISOString();
         await this.utilizadorRepo.save(user);
 
@@ -61,7 +61,7 @@ export class AuthService {
             {
                 id: user.id,
                 email: user.email,
-                role: user.perfil // O teu middleware de autorização usa req.user.role
+                role: user.perfil 
             },
             appConfig.auth.jwtSecret as jwt.Secret,
             { expiresIn: appConfig.auth.expiresIn as any }
@@ -82,22 +82,25 @@ async registarUtente(dados: any) {
         // 2. Encriptar a password
         const hashPassword = await bcrypt.hash(dados.password, 10);
 
-      // 3. Criar a conta de Login
+        // 3. Criar a conta de Login (Tabela Principal)
+        
         const novoUtilizador = utilizadorRepo.create({
             nome: dados.nome, 
             email: dados.email,
             password: hashPassword,
             perfil: 'UTENTE' 
-        } as any);
+        });
         
-        const utilSalvo: any = await utilizadorRepo.save(novoUtilizador);
-        
+        const utilSalvo = await utilizadorRepo.save(novoUtilizador);
 
-       // 4. Criar o Perfil Clínico Associado
+       // 4. Criar o Perfil Clínico Associado (Tabela Secundária)
         const novoUtente = utenteRepo.create({
-            nome: dados.nome, 
-            id_utilizador: utilSalvo.id_utilizador, 
-            dataNascimento: new Date('1990-01-01') 
+            id_utilizador: utilSalvo.id,
+            nif: Number(dados.nif), 
+            morada: dados.morada,
+            genero: dados.genero,   
+            numSaude: dados.numSaude, 
+            dataNascimento: dados.dataNascimento 
         } as any); 
         
         await utenteRepo.save(novoUtente);
