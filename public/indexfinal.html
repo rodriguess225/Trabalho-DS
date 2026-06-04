@@ -94,6 +94,7 @@
             <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
             
             <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
+            <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Os Meus Utentes</button>
         </nav>
         <main>
           <div id="pagina-dashboard" class="pagina">
@@ -172,6 +173,21 @@
                 <div id="listaAlertas" style="margin-top: 20px;">
                     <p>A carregar alertas...</p>
                 </div>
+            </div>
+            <div id="pagina-utentes-medico" class="pagina hidden">
+                <h1>Os Meus Utentes</h1>
+                <p>Selecione um utente para ver o histórico clínico e prescrever medicação.</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background-color: #f3f4f6; text-align: left;">
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Nome do Utente</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Nº de Saúde</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Ações Clínicas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-utentes-body">
+                        </tbody>
+                </table>
             </div>
         </main>
     </div>
@@ -280,35 +296,48 @@
         });
 
         async function entrarNaApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
-            
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            
-            const tokenData = JSON.parse(atob(token.split('.')[1]));
-            const btnCarat = document.getElementById('btn-carat');
-            const btnAlertas = document.getElementById('btn-alertas');
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-screen').classList.remove('hidden');
+    document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
+    
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+    
+    // Declaramos os elementos apenas UMA vez
+    const btnCarat = document.getElementById('btn-carat');
+    const btnAlertas = document.getElementById('btn-alertas');
+    const btnUtentesMedico = document.getElementById('btn-utentes-medico');
+    const dashboardUtente = document.getElementById('dashboard-utente');
 
-            if (tokenData.role === 'UTENTE') {
-                btnCarat.classList.remove('hidden');    
-                btnAlertas.classList.remove('hidden');  
-                
-                try {
-                    const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
-                    if (resUtente && resUtente.ok) {
-                        const utenteData = await resUtente.json();
-                        carregarGraficoDashboard(utenteData.id_utente); 
-                    }
-                } catch (err) {
-                    console.error("Erro ao obter perfil do utente para o gráfico:", err);
-                }
-            } else {
-                btnCarat.classList.add('hidden');       
-                btnAlertas.classList.remove('hidden');  
+    // Lógica de visibilidade baseada no papel (role)
+    if (tokenData.role === 'UTENTE') {
+        if(btnCarat) btnCarat.classList.remove('hidden');
+        if(btnAlertas) btnAlertas.classList.remove('hidden');
+        if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
+        if(dashboardUtente) dashboardUtente.classList.remove('hidden');
+
+        try {
+            const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+            if (resUtente && resUtente.ok) {
+                const utenteData = await resUtente.json();
+                carregarGraficoDashboard(utenteData.id_utente); 
             }
+        } catch (err) {
+            console.error("Erro ao obter perfil do utente:", err);
         }
+
+    } else if (tokenData.role === 'MEDICO') {
+        if(btnCarat) btnCarat.classList.add('hidden');
+        if(btnAlertas) btnAlertas.classList.remove('hidden');
+        if(btnUtentesMedico) btnUtentesMedico.classList.remove('hidden');
+        if(dashboardUtente) dashboardUtente.classList.add('hidden');
+        
+        mostrarPagina('pagina-alertas');
+        carregarAlertas();
+    }
+}
 
         function logout() {
             localStorage.removeItem('token');
@@ -580,6 +609,49 @@ let meuGrafico = null;
                 console.error("Erro fatal no gráfico:", erro);
             }
         }
+        async function entrarNaApp() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-screen').classList.remove('hidden');
+    document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
+    
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+    
+    // Declaramos os elementos apenas UMA vez
+    const btnCarat = document.getElementById('btn-carat');
+    const btnAlertas = document.getElementById('btn-alertas');
+    const btnUtentesMedico = document.getElementById('btn-utentes-medico');
+    const dashboardUtente = document.getElementById('dashboard-utente');
+
+    // Lógica de visibilidade baseada no papel (role)
+    if (tokenData.role === 'UTENTE') {
+        if(btnCarat) btnCarat.classList.remove('hidden');
+        if(btnAlertas) btnAlertas.classList.remove('hidden');
+        if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
+        if(dashboardUtente) dashboardUtente.classList.remove('hidden');
+
+        try {
+            const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+            if (resUtente && resUtente.ok) {
+                const utenteData = await resUtente.json();
+                carregarGraficoDashboard(utenteData.id_utente); 
+            }
+        } catch (err) {
+            console.error("Erro ao obter perfil do utente:", err);
+        }
+
+    } else if (tokenData.role === 'MEDICO') {
+        if(btnCarat) btnCarat.classList.add('hidden');
+        if(btnAlertas) btnAlertas.classList.remove('hidden');
+        if(btnUtentesMedico) btnUtentesMedico.classList.remove('hidden');
+        if(dashboardUtente) dashboardUtente.classList.add('hidden');
+        
+        mostrarPagina('pagina-alertas');
+        carregarAlertas();
+    }
+}
     </script>
 </body>
 </html>
