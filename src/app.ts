@@ -81,8 +81,6 @@ if (require.main === module) {
         const utilizadorRepo = AppDataSource.getRepository(Utilizador);
         const medicoRepo = AppDataSource.getRepository(Medico);
         
-      
-        
         app.listen(3000, () =>
             console.log("Servidor (TypeORM + SQLite) a correr na porta 3000")
         );
