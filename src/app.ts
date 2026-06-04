@@ -115,7 +115,7 @@ if (require.main === module) {
                 cedulaProfissional: '12345',
                 id_utilizador: userMedico.id // <--- CORREÇÃO: Passar apenas o ID!
             });
-            console.log('✅ SEED: Primeiro Médico criado com sucesso!');
+            console.log(' SEED: Primeiro Médico criado com sucesso!');
         }
         app.listen(3000, () =>
             console.log("Servidor (TypeORM + SQLite) a correr na porta 3000")
