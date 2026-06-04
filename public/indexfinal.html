@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
+<head>
     <meta charset="UTF-8">
     <title>SaudINOB - Sistema Clínico</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
     <style>
         /* CSS Base para separar Login da Aplicação */
         body { font-family: sans-serif; margin: 0; background: #f3f4f6; }
@@ -93,16 +97,24 @@
             <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
         </nav>
         <main>
-            <div id="pagina-dashboard" class="pagina">
+          <div id="pagina-dashboard" class="pagina">
                 <h1>Painel de Controlo</h1>
-                <p>O login foi feito com sucesso. A sessão está autenticada.</p>
-                <div style="background: #dcfce7; padding: 15px; border-radius: 8px; color: #166534; border: 1px solid #86efac;">
+                <div style="background: #dcfce7; padding: 15px; border-radius: 8px; color: #166534; border: 1px solid #86efac; margin-bottom: 20px;">
                     <strong>Sistema Operacional:</strong> Navegue no menu lateral para aceder aos módulos clínicos.
                 </div>
-                <div id="resultadoCaratNoDashboard" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 8px; background: #f3f4f6; border: 1px solid #d1d5db;">
-                    <h3 style="margin-top: 0;">Última Avaliação CARAT:</h3>
-                    <p><strong>Pontuação Total:</strong> <span id="dashScoreTotal">0</span> / 30</p>
-                    <p><strong>Nível de Controlo:</strong> <span id="dashNivelControlo"></span></p>
+
+                <div id="dashboard-utente"> 
+                    
+                    <div id="resultadoCaratNoDashboard" class="hidden" style="padding: 20px; border-radius: 8px; background: #f3f4f6; border: 1px solid #d1d5db; margin-bottom: 20px;">
+                        <h3 style="margin-top: 0;">Última Avaliação CARAT:</h3>
+                        <p><strong>Pontuação Total:</strong> <span id="dashScoreTotal">0</span> / 30</p>
+                        <p><strong>Nível de Controlo:</strong> <span id="dashNivelControlo"></span></p>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h3>Evolução do Controlo da Asma/Rinite</h3>
+                        <canvas id="graficoCarat" width="400" height="150"></canvas>
+                    </div>
                 </div>
             </div>
             
@@ -284,6 +296,9 @@
             if (tokenData.role === 'UTENTE') {
                 btnCarat.classList.remove('hidden');    
                 btnAlertas.classList.remove('hidden');  
+                fetchAutenticado(`/utentes/utilizador/${tokenData.id}`)
+                    .then(r => r.json())
+                    .then(u => carregarGraficoDashboard(u.id_utente));
             } else {
                 btnCarat.classList.add('hidden');       
                 btnAlertas.classList.remove('hidden');  
@@ -483,6 +498,70 @@
                 }
             } catch (erro) {
                 alert("Erro ao atualizar o alerta.");
+            }
+        }
+
+let meuGrafico = null; 
+
+        async function carregarGraficoDashboard(id_utente) {
+            try {
+                console.log("A pedir dados do gráfico para o utente:", id_utente); // Para vermos no F12
+                
+                const res = await fetchAutenticado(`/carat/utente/${id_utente}`);
+                if (!res || !res.ok) {
+                    console.error("Erro do servidor:", res.status);
+                    return;
+                }
+                
+                const avaliacoes = await res.json();
+                console.log("Avaliações recebidas:", avaliacoes); // Para vermos no F12
+                
+                const ctx = document.getElementById('graficoCarat').getContext('2d');
+
+                // SE A CONTA FOR NOVA E NÃO TIVER AVALIAÇÕES
+                if (!avaliacoes || avaliacoes.length === 0) {
+                    ctx.font = "14px Arial";
+                    ctx.fillStyle = "#6b7280";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Sem avaliações. Preencha o CARAT para ver a evolução.", 200, 75);
+                    return;
+                }
+
+                const labelsDatas = avaliacoes.map(a => new Date(a.createdAt || a.dataAvaliacao).toLocaleDateString());
+                const dadosScores = avaliacoes.map(a => a.scoreTotal);
+
+                if (meuGrafico) meuGrafico.destroy();
+
+                meuGrafico = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labelsDatas,
+                        datasets: [
+                            {
+                                label: 'Score CARAT',
+                                data: dadosScores,
+                                borderColor: '#0070f3',
+                                backgroundColor: 'rgba(0, 112, 243, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Limiar de Controlo (24)',
+                                data: Array(avaliacoes.length).fill(24),
+                                borderColor: '#ef4444',
+                                borderDash: [5, 5],
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: { scales: { y: { min: 0, max: 30 } } }
+                });
+
+            } catch (erro) {
+                console.error("Erro fatal no gráfico:", erro);
             }
         }
     </script>

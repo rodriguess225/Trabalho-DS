@@ -148,4 +148,25 @@ export class CaratService {
             order: { dataAvaliacao: 'DESC' }
         });
     }
+
+  async obterHistoricoUtente(id_utente: number) {
+        try {
+            const caratRepo = AppDataSource.getRepository(AvaliacaoCARAT);
+
+            const historico = await caratRepo.find({
+                where: { utenteId: id_utente } as any
+            });
+
+            historico.sort((a: any, b: any) => {
+                const dataA = new Date(a.createdAt || a.dataAvaliacao || a.id).getTime();
+                const dataB = new Date(b.createdAt || b.dataAvaliacao || b.id).getTime();
+                return dataA - dataB;
+            });
+
+            return historico;
+        } catch (error) {
+            console.error("ERRO NO TYPEORM (obterHistorico):", error);
+            throw new Error("Erro na BD");
+        }
+    }
 }
