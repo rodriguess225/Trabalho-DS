@@ -8,7 +8,7 @@ export class ExameService {
     private repo = AppDataSource.getRepository(Exame);
     private logService = new LogAuditoriaService();
 
-    async criarExame(dados: CreateExameDto, id_medico_que_solicitou: number): Promise<ExameResponseDto> {
+   async criarExame(dados: CreateExameDto, id_medico_que_solicitou: number): Promise<ExameResponseDto> {
         
         const jaExiste = await this.repo.findOneBy({
             tipoExame: dados.tipoExame,
@@ -20,15 +20,18 @@ export class ExameService {
             throw new Error("Já existe um exame igual registado para este utente.");
         }
 
-        const novoExame = this.repo.create({
-                id_utente: dados.id_utente,
-                tipoExame: dados.tipoExame,
-                id_intervencao_clinica: dados.id_intervencao_clinica,
-                dataSolicitacao: dados.dataSolicitacao ?? new Date().toISOString().split('T')[0]
+        // 1. Isolar num objeto 'any' para o TypeScript não bloquear no 'create'
+        const dadosParaCriar: any = {
+            id_utente: dados.id_utente,
+            tipoExame: dados.tipoExame,
+            id_intervencao_clinica: dados.id_intervencao_clinica,
+            dataSolicitacao: dados.dataSolicitacao || new Date().toISOString().split('T')[0]
+        };
 
-        });
+        const novoExame = this.repo.create(dadosParaCriar);
 
-        const exameGuardado = await this.repo.save(novoExame);
+        // 2. Duplo cast para forçar o TypeScript a reconhecer o objeto único e os seus campos
+        const exameGuardado = (await this.repo.save(novoExame)) as unknown as Exame;
 
         await this.logService.registarLog({
             id_utilizador: id_medico_que_solicitou,

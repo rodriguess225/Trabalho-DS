@@ -11,23 +11,23 @@ export class Alerta {
     @Column()
     id_medico!: number; // FK -> medicos.id_medico
  
-    @Column({ nullable: true })
+  @Column({ type: "int", nullable: true })
     id_avaliacao_origem!: number | null; // FK -> avaliacoes_carat.id_avaliacao
  
     @Column()
     tipo!: string;
  
-    @Column({nullable: true })
-    prioridade!: string | null; 
+    @Column({ type: "varchar", length: 50, nullable: true })
+prioridade!: string | null;
  
     // "NOVO" | "VISTO" | "EM_SEGUIMENTO" | "FECHADO"
     @Column({ default: "NOVO" })
     estado!: string;
  
-    @Column({ nullable: true })
-    motivo!: string | null; 
+    @Column({ type: "varchar", length: 255, nullable: true })
+motivo!: string | null;
  
-    @Column({ type: "datetime", nullable: true })         //estas duas parecem iguais
+    @Column({ type: "datetime", nullable: true })         
     dataGeracao!: string;
  
     @CreateDateColumn()
