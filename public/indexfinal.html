@@ -88,7 +88,7 @@
     <button onclick="mostrarPagina('pagina-dashboard')" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Dashboard</button>
     
     <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Módulo CARAT</button>
-    
+    <button id="btn-perfil-utente" onclick="mostrarPagina('pagina-perfil-utente'); carregarPerfilUtente();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">O Meu Perfil & Sintomas</button>
     <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Prescrições</button>
     
     <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
@@ -104,23 +104,124 @@
                     <strong>Sistema Operacional:</strong> Navegue no menu lateral para aceder aos módulos clínicos.
                 </div>
 
-                <div id="dashboard-utente"> 
+               <div id="dashboard-utente"> 
                     
+                    <div id="alerta-perigo-utente" class="hidden" style="background: #fee2e2; padding: 15px; border-radius: 8px; color: #991b1b; border: 1px solid #fca5a5; margin-bottom: 20px;">
+<h3 style="margin-top: 0;">Aviso Clínico</h3>                        <p style="margin-bottom: 0;">O sistema detetou valores preocupantes na sua última avaliação. Por favor, consulte o seu médico.</p>
+                    </div>
+
                     <div id="resultadoCaratNoDashboard" class="hidden" style="padding: 20px; border-radius: 8px; background: #f3f4f6; border: 1px solid #d1d5db; margin-bottom: 20px;">
                         <h3 style="margin-top: 0;">Última Avaliação CARAT:</h3>
                         <p><strong>Pontuação Total:</strong> <span id="dashScoreTotal">0</span> / 30</p>
                         <p><strong>Nível de Controlo:</strong> <span id="dashNivelControlo"></span></p>
                     </div>
 
-                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
                         <h3>Evolução do Controlo da Asma/Rinite</h3>
                         <canvas id="graficoCarat" width="400" height="150"></canvas>
                     </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h3 style="margin-top: 0;">Histórico de Avaliações</h3>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e5e7eb; background: #f9fafb;">
+                                    <th style="padding: 10px;">Data</th>
+                                    <th style="padding: 10px;">Score Total</th>
+                                    <th style="padding: 10px;">Nível de Controlo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-historico-utente">
+                                </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div id="pagina-perfil-utente" class="pagina hidden">
+                <h1>O Meu Perfil</h1>
+                <p>Mantenha os seus dados atualizados e registe sintomas diários.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <h3 style="margin-top: 0; color: #1f2937;">Atualizar Dados Pessoais</h3>
+                       <form id="formAtualizarDados" onsubmit="atualizarDadosUtente(event)">
+                            <input type="hidden" id="meuUtenteId">
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 14px; font-weight: bold;">Morada Completa:</label>
+                                    <input type="text" id="perfilMorada" placeholder="Ex: Rua Direita, nº 10" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 14px; font-weight: bold;">Telemóvel / Contacto:</label>
+                                    <input type="text" id="perfilContacto" placeholder="Ex: 912345678" style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 14px; font-weight: bold;">Nº Utente (SNS):</label>
+                                    <input type="text" id="perfilNumSaude" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 14px; font-weight: bold;">NIF:</label>
+                                    <input type="number" id="perfilNif" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 14px; font-weight: bold;">Data de Nascimento:</label>
+                                    <input type="date" id="perfilDataNasc" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 14px; font-weight: bold;">Género:</label>
+                                    <select id="perfilGenero" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Feminino">Feminino</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" style="background: #10b981; color: white; border: none; padding: 10px; border-radius: 4px; width: 100%; font-weight: bold; cursor: pointer;">Guardar Alterações</button>
+                        </form>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <h3 style="margin-top: 0; color: #1f2937;">Registo Rápido de Sintomas</h3>
+                        <p style="font-size: 13px; color: #6b7280; margin-top: 0;">Sente-se mal hoje? Registe o sintoma para o seu médico acompanhar.</p>
+                        
+                        <form id="formRegistarSintoma" onsubmit="registarSintomaDiario(event)">
+                            <label style="font-size: 14px; font-weight: bold;">Tipo de Sintoma:</label>
+                            <select id="sintomaTipo" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                <option value="" disabled selected>Selecione um sintoma...</option>
+                                <option value="Falta de ar (Dispneia)">Falta de ar (Dispneia)</option>
+                                <option value="Chiadeira no peito">Chiadeira no peito</option>
+                                <option value="Tosse com expetoração">Tosse com expetoração</option>
+                                <option value="Espirros">Espirros / Rinite</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+
+                            <label style="font-size: 14px; font-weight: bold;">Gravidade (1 - Ligeiro a 5 - Severo):</label>
+                            <input type="number" id="sintomaGravidade" min="1" max="5" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+
+                            <label style="font-size: 14px; font-weight: bold;">Descrição Opcional:</label>
+                            <input type="text" id="sintomaDescricao" placeholder="Breve descrição..." style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+
+                            <button type="submit" style="background: #0070f3; color: white; border: none; padding: 10px; border-radius: 4px; width: 100%; font-weight: bold; cursor: pointer;">Registar Sintoma</button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
             <div id="pagina-detalhe-utente" class="pagina hidden">
-                <button onclick="mostrarPagina('pagina-utentes-medico')" style="background: #6b7280; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">&larr; Voltar à Lista</button>
-                
+<button onclick="mostrarPagina('pagina-utentes-medico')" ...>Voltar à Lista</button>                
                 <h1 id="detalhe-nome-utente" style="margin-top: 0; color: #1f2937;">A carregar perfil...</h1>
                 <p style="color: #4b5563; font-size: 14px; margin-bottom: 20px;">
                     <strong>Nº SNS:</strong> <span id="detalhe-sns"></span> | 
@@ -159,8 +260,7 @@
                     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                         
                         <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                            <h4 style="margin-top: 0; color: #0070f3;">&plus; Nova Prescrição</h4>
-                            <form id="formNovaPrescricao" onsubmit="submeterPrescricao(event)">
+<h4 style="margin-top: 0; color: #0070f3;">Nova Prescrição</h4>                            <form id="formNovaPrescricao" onsubmit="submeterPrescricao(event)">
                                 <input type="hidden" id="prescUtenteId">
                                 <input type="text" id="prescNome" placeholder="Medicamento (ex: Salbutamol)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                                 <input type="text" id="prescDose" placeholder="Dose (ex: 100 mcg)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
@@ -170,8 +270,7 @@
                         </div>
 
                         <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                            <h4 style="margin-top: 0; color: #0070f3;">&#9998; Registar Nota Clínica</h4>
-                            <form id="formNovaIntervencao" onsubmit="submeterIntervencao(event)">
+<h4 style="margin-top: 0; color: #0070f3;">Registar Nota Clínica</h4>                            <form id="formNovaIntervencao" onsubmit="submeterIntervencao(event)">
                                 <input type="hidden" id="intervUtenteId">
                                 <textarea id="intervNotas" placeholder="Notas médicas da observação..." required style="width: 100%; padding: 8px; margin-bottom: 10px; height: 60px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: sans-serif;"></textarea>
                                 <input type="text" id="intervAcao" placeholder="Ação Tomada (ex: Ajuste de dose)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
@@ -376,6 +475,7 @@
     const btnAlertas = document.getElementById('btn-alertas');
     const btnUtentesMedico = document.getElementById('btn-utentes-medico');
     const dashboardUtente = document.getElementById('dashboard-utente');
+    const btnPerfil = document.getElementById('btn-perfil-utente');
 
     // Lógica de visibilidade baseada no papel (role)
     if (tokenData.role === 'UTENTE') {
@@ -383,6 +483,7 @@
         if(btnAlertas) btnAlertas.classList.remove('hidden');
         if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
         if(dashboardUtente) dashboardUtente.classList.remove('hidden');
+        if(btnPerfil) btnPerfil.classList.remove('hidden');
 
         try {
             const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
@@ -612,70 +713,73 @@ carregarGraficoDashboard(id_utente_real);
             }
         }
 
-let meuGrafico = null; 
+
+       let meuGrafico = null; 
 
         async function carregarGraficoDashboard(id_utente) {
             try {
-                console.log("A pedir dados do gráfico para o utente:", id_utente); // Para vermos no F12
-                
                 const res = await fetchAutenticado(`/carat/utente/${id_utente}`);
-                if (!res || !res.ok) {
-                    console.error("Erro do servidor:", res.status);
-                    return;
-                }
+                if (!res || !res.ok) return;
                 
                 const avaliacoes = await res.json();
-                console.log("Avaliações recebidas:", avaliacoes); // Para vermos no F12
-                
                 const ctx = document.getElementById('graficoCarat').getContext('2d');
+                const tbody = document.getElementById('tabela-historico-utente');
+                const bannerAlerta = document.getElementById('alerta-perigo-utente');
 
-                // SE A CONTA FOR NOVA E NÃO TIVER AVALIAÇÕES
+                // SE NÃO TIVER AVALIAÇÕES
                 if (!avaliacoes || avaliacoes.length === 0) {
                     ctx.font = "14px Arial";
                     ctx.fillStyle = "#6b7280";
                     ctx.textAlign = "center";
                     ctx.fillText("Sem avaliações. Preencha o CARAT para ver a evolução.", 200, 75);
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:10px;">Sem histórico disponível.</td></tr>';
                     return;
                 }
 
+                // 1. DADOS PARA O GRÁFICO
                 const labelsDatas = avaliacoes.map(a => new Date(a.createdAt || a.dataAvaliacao).toLocaleDateString());
                 const dadosScores = avaliacoes.map(a => a.scoreTotal);
 
                 if (meuGrafico) meuGrafico.destroy();
-
                 meuGrafico = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labelsDatas,
                         datasets: [
-                            {
-                                label: 'Score CARAT',
-                                data: dadosScores,
-                                borderColor: '#0070f3',
-                                backgroundColor: 'rgba(0, 112, 243, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Limiar de Controlo (24)',
-                                data: Array(avaliacoes.length).fill(24),
-                                borderColor: '#ef4444',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: false
-                            }
+                            { label: 'Score CARAT', data: dadosScores, borderColor: '#0070f3', backgroundColor: 'rgba(0, 112, 243, 0.1)', borderWidth: 2, fill: true, tension: 0.3 },
+                            { label: 'Limiar (24)', data: Array(avaliacoes.length).fill(24), borderColor: '#ef4444', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false }
                         ]
                     },
                     options: { scales: { y: { min: 0, max: 30 } } }
                 });
 
+                // 2. PREENCHER A TABELA DE HISTÓRICO
+                // Inverte o array para mostrar as mais recentes primeiro
+                const avaliacoesInvertidas = [...avaliacoes].reverse();
+                tbody.innerHTML = avaliacoesInvertidas.map(a => `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 10px;">${new Date(a.createdAt || a.dataAvaliacao).toLocaleDateString()}</td>
+                        <td style="padding: 10px;"><strong>${a.scoreTotal}</strong> / 30</td>
+                        <td style="padding: 10px; color: ${a.scoreTotal < 24 ? '#ef4444' : '#10b981'}; font-weight: bold;">
+                            ${a.nivelControlo || (a.scoreTotal >= 24 ? 'Controlada' : 'Não Controlada')}
+                        </td>
+                    </tr>
+                `).join('');
+
+                // 3. LÓGICA DO BANNER DE ALERTA (RF19)
+                // Se a última avaliação tiver score abaixo de 24, mostra o aviso vermelho
+                const ultimaAvaliacao = avaliacoes[avaliacoes.length - 1];
+                if (ultimaAvaliacao.scoreTotal < 24) {
+                    bannerAlerta.classList.remove('hidden');
+                } else {
+                    bannerAlerta.classList.add('hidden');
+                }
+
             } catch (erro) {
-                console.error("Erro fatal no gráfico:", erro);
+                console.error("Erro no dashboard:", erro);
             }
         }
-        async function entrarNaApp() {
+      async function entrarNaApp() {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app-screen').classList.remove('hidden');
     document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
@@ -685,18 +789,20 @@ let meuGrafico = null;
     
     const tokenData = JSON.parse(atob(token.split('.')[1]));
     
-    // Declaramos os elementos apenas UMA vez
+    // Declaração de todos os elementos do menu lateral
     const btnCarat = document.getElementById('btn-carat');
     const btnAlertas = document.getElementById('btn-alertas');
     const btnUtentesMedico = document.getElementById('btn-utentes-medico');
     const dashboardUtente = document.getElementById('dashboard-utente');
+    const btnPerfilUtente = document.getElementById('btn-perfil-utente'); // Adicionado aqui
 
-    // Lógica de visibilidade baseada no papel (role)
+    // Configuração de visibilidade para o UTENTE
     if (tokenData.role === 'UTENTE') {
         if(btnCarat) btnCarat.classList.remove('hidden');
         if(btnAlertas) btnAlertas.classList.remove('hidden');
         if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
         if(dashboardUtente) dashboardUtente.classList.remove('hidden');
+        if(btnPerfilUtente) btnPerfilUtente.classList.remove('hidden'); // Ativado para o utente
 
         try {
             const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
@@ -708,14 +814,22 @@ let meuGrafico = null;
             console.error("Erro ao obter perfil do utente:", err);
         }
 
+    // Configuração de visibilidade para o MÉDICO
     } else if (tokenData.role === 'MEDICO') {
         if(btnCarat) btnCarat.classList.add('hidden');
         if(btnAlertas) btnAlertas.classList.remove('hidden');
         if(btnUtentesMedico) btnUtentesMedico.classList.remove('hidden');
         if(dashboardUtente) dashboardUtente.classList.add('hidden');
+        if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden'); // Escondido para o médico
         
         mostrarPagina('pagina-alertas');
         carregarAlertas();
+        
+    // Configuração para outros perfis (Administrador)
+    } else {
+        if(btnCarat) btnCarat.classList.add('hidden');
+        if(btnAlertas) btnAlertas.classList.remove('hidden');
+        if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden');
     }
 }
 // --- FUNÇÃO PARA O MÉDICO VER OS SEUS UTENTES ---
@@ -735,7 +849,7 @@ async function carregarMeusUtentes() {
         if (!resMedico || !resMedico.ok) throw new Error("Não foi possível identificar o médico.");
         const medicoData = await resMedico.json();
 
-        // 2. Buscar a lista de utentes (Garante que este endpoint existe no teu backend!)
+        // 2. Buscar a lista de utentes 
         const resUtentes = await fetchAutenticado(`/medicos/${medicoData.id_medico}/utentes`);
         if (!resUtentes || !resUtentes.ok) throw new Error("Erro ao buscar lista de utentes.");
         
@@ -885,9 +999,9 @@ async function submeterIntervencao(event) {
         // 3. Montar o pacote exatamente com os nomes que o controller exige
         const payload = {
             id_utente: parseInt(id_utente),
-            id_medico: medicoData.id_medico, // 🚨 Faltava isto!
+            id_medico: medicoData.id_medico, 
             notasMedicas: document.getElementById('intervNotas').value,
-            acoesTomadas: document.getElementById('intervAcao').value, // 🚨 Faltava o "s" e o "oes"!
+            acoesTomadas: document.getElementById('intervAcao').value, 
             dataRegisto: new Date().toISOString()
         };
 
@@ -907,6 +1021,98 @@ async function submeterIntervencao(event) {
     } catch (e) {
         console.error("Erro:", e);
         alert("Erro de ligação.");
+    }
+}
+
+// --- CARREGAR DADOS DO PERFIL DO UTENTE ---
+async function carregarPerfilUtente() {
+    const token = localStorage.getItem('token');
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+    
+    try {
+        const res = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+        if (!res || !res.ok) throw new Error("Erro ao carregar perfil");
+        
+        const utenteData = await res.json();
+        
+        // Preencher TODOS os campos do ecrã
+        document.getElementById('meuUtenteId').value = utenteData.id_utente;
+        document.getElementById('perfilMorada').value = utenteData.morada || '';
+        document.getElementById('perfilContacto').value = utenteData.contacto || '';
+        document.getElementById('perfilNumSaude').value = utenteData.numSaude || '';
+        document.getElementById('perfilNif').value = utenteData.nif || '';
+        document.getElementById('perfilGenero').value = utenteData.genero || '';
+        
+        // As datas na base de dados costumam vir com horas (ex: 1990-01-01T00:00:00.000Z).
+        // O campo 'date' do HTML só aceita "YYYY-MM-DD", por isso cortamos pelo 'T':
+        if (utenteData.dataNascimento) {
+            document.getElementById('perfilDataNasc').value = utenteData.dataNascimento.split('T')[0];
+        }
+    } catch (e) {
+        console.error("Erro:", e);
+    }
+}
+
+// --- ATUALIZAR DADOS PESSOAIS ---
+async function atualizarDadosUtente(event) {
+    event.preventDefault();
+    const id_utente = document.getElementById('meuUtenteId').value;
+    
+    // Apanhar os campos todos do formulário
+    const payload = {
+        morada: document.getElementById('perfilMorada').value,
+        contacto: document.getElementById('perfilContacto').value,
+        numSaude: document.getElementById('perfilNumSaude').value,
+        nif: parseInt(document.getElementById('perfilNif').value),
+        dataNascimento: document.getElementById('perfilDataNasc').value,
+        genero: document.getElementById('perfilGenero').value
+    };
+
+    try {
+        // Enviar os dados novos para o backend
+        const res = await fetchAutenticado(`/utentes/${id_utente}`, {
+            method: 'PATCH', 
+            body: JSON.stringify(payload)
+        });
+
+        if (res && res.ok) {
+            alert("Dados atualizados com sucesso!");
+        } else {
+            alert("Erro ao atualizar os dados.");
+        }
+    } catch (e) {
+        alert("Erro de ligação ao servidor.");
+    }
+}
+
+// --- REGISTAR SINTOMA DIÁRIO ---
+async function registarSintomaDiario(event) {
+    event.preventDefault();
+    const id_utente = document.getElementById('meuUtenteId').value;
+    
+    const payload = {
+        id_utente: parseInt(id_utente),
+        tipoSintoma: document.getElementById('sintomaTipo').value,
+        gravidade: parseInt(document.getElementById('sintomaGravidade').value),
+        descricao: document.getElementById('sintomaDescricao').value,
+        sintomaPresistente: false, 
+        dataSintoma: new Date().toISOString()
+    };
+
+    try {
+        const res = await fetchAutenticado('/sintomas', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (res && res.ok) {
+            alert("Sintoma registado com sucesso!");
+            document.getElementById('formRegistarSintoma').reset();
+        } else {
+            alert("Erro ao registar sintoma.");
+        }
+    } catch (e) {
+        alert("Erro de ligação ao servidor.");
     }
 }
     </script>
