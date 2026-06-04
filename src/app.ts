@@ -81,41 +81,8 @@ if (require.main === module) {
         const utilizadorRepo = AppDataSource.getRepository(Utilizador);
         const medicoRepo = AppDataSource.getRepository(Medico);
         
-        // 1. SEED DO ADMIN
-        if (await adminRepo.count() === 0) {
-            const passwordAdmin = bcrypt.hashSync('Admin123!', 10);
-            
-            const userAdmin = await utilizadorRepo.save({
-                nome: 'Super Administrador',
-                email: 'admin@clinica.pt',
-                password: passwordAdmin,
-                perfil: 'ADMINISTRADOR' 
-            });
-
-            await adminRepo.save({
-                id_utilizador: userAdmin.id 
-            });
-            console.log('SEED: Primeiro Administrador criado com sucesso!');
-        }
-
-        // 2. SEED DO MÉDICO
-        if (await medicoRepo.count() === 0) {
-            const passwordMedico = bcrypt.hashSync('Medico123!', 10);
-            
-            const userMedico = await utilizadorRepo.save({
-                nome: 'Dr. João Silva',
-                email: 'joao.silva@clinica.pt',
-                password: passwordMedico,
-                perfil: 'MEDICO'
-            });
-
-            await medicoRepo.save({
-                especialidade: 'Pneumologia',
-                numCedula: '12345', 
-                id_utilizador: userMedico.id
-            });
-            console.log('SEED: Primeiro Médico criado com sucesso!');
-        }
+      
+        
         app.listen(3000, () =>
             console.log("Servidor (TypeORM + SQLite) a correr na porta 3000")
         );
