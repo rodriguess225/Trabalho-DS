@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<head>
     <meta charset="UTF-8">
     <title>SaudINOB - Sistema Clínico</title>
     
@@ -280,8 +279,7 @@
             }
         });
 
-        // --- 4. CONTROLO DE ECRÃS E SESSÃO ---
-        function entrarNaApp() {
+        async function entrarNaApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
@@ -296,9 +294,16 @@
             if (tokenData.role === 'UTENTE') {
                 btnCarat.classList.remove('hidden');    
                 btnAlertas.classList.remove('hidden');  
-                fetchAutenticado(`/utentes/utilizador/${tokenData.id}`)
-                    .then(r => r.json())
-                    .then(u => carregarGraficoDashboard(u.id_utente));
+                
+                try {
+                    const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+                    if (resUtente && resUtente.ok) {
+                        const utenteData = await resUtente.json();
+                        carregarGraficoDashboard(utenteData.id_utente); 
+                    }
+                } catch (err) {
+                    console.error("Erro ao obter perfil do utente para o gráfico:", err);
+                }
             } else {
                 btnCarat.classList.add('hidden');       
                 btnAlertas.classList.remove('hidden');  
@@ -337,7 +342,7 @@
             }
         }
 
-        // --- 6. MÓDULO CARAT ---
+      // --- 6. MÓDULO CARAT ---
         document.getElementById('formCarat').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -354,7 +359,9 @@
                 const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
                 if (!resUtente || !resUtente.ok) return;
                 const utenteData = await resUtente.json();
-                const id_utente_real = utenteData.id_utente;
+                
+                // Fallback de segurança para garantir que apanhamos sempre um ID
+                const id_utente_real = utenteData.id_utente || utenteData.id || tokenData.id; 
 
                 const respostasArray = [];
                 for (let i = 1; i <= 10; i++) {
@@ -369,20 +376,29 @@
 
                 const response = await fetchAutenticado('/carat/submeter', {
                     method: 'POST',
-                    body: JSON.stringify({ id_utente: id_utente_real, respostas: respostasArray })
+                    body: JSON.stringify({ 
+                        utenteId: id_utente_real,  
+                        id_utente: id_utente_real, 
+                        respostas: respostasArray 
+                    })
                 });
 
                 if (!response) return;
                 const resultado = await response.json();
 
                 if (response.ok) {
-                    document.getElementById('dashScoreTotal').textContent = resultado.avaliacao.scoreTotal;
-                    document.getElementById('dashNivelControlo').textContent = resultado.avaliacao.nivelControlo;
+                    // Evitar erros caso o backend não devolva logo o objeto "avaliacao" formatado
+                    const score = resultado.avaliacao ? resultado.avaliacao.scoreTotal : resultado.scoreTotal || "N/A";
+                    const controlo = resultado.avaliacao ? resultado.avaliacao.nivelControlo : resultado.nivelControlo || "N/A";
+
+                    document.getElementById('dashScoreTotal').textContent = score;
+                    document.getElementById('dashNivelControlo').textContent = controlo;
                     document.getElementById('resultadoCaratNoDashboard').classList.remove('hidden');
 
                     document.getElementById('formCarat').reset();
                     document.getElementById('resultadosCarat').classList.add('hidden');
 
+carregarGraficoDashboard(id_utente_real);
                     alert("Avaliação submetida com sucesso.");
                     mostrarPagina('pagina-dashboard');
                 } else {

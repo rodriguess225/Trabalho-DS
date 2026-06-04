@@ -151,6 +151,10 @@ export class CaratService {
 
   async obterHistoricoUtente(id_utente: number) {
         try {
+
+            if (!id_utente || isNaN(id_utente)) {
+                return [];
+            }
             const caratRepo = AppDataSource.getRepository(AvaliacaoCARAT);
 
             const historico = await caratRepo.find({
