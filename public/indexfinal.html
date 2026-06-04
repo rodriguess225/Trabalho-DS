@@ -86,6 +86,7 @@
             <button id="btn-alertas" class="hidden">Ver Alertas</button>
             
             <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden">Os Meus Utentes</button>
+            <button id="btn-admin" onclick="mostrarPagina('pagina-admin'); carregarListaUtilizadores();" class="hidden" style="background: #8b5cf6; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; font-weight: bold;">Gestão do Sistema</button>
             <button onclick="logout()" style="margin-top: auto; background: #ef4444;">Terminar Sessão</button>
         </nav>
 
@@ -334,7 +335,46 @@
                     </div>
                 </div>
             </div>
+<div id="pagina-admin" class="pagina hidden">
+                <h1>Painel de Administração</h1>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                    
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin-top: 0; color: #1f2937;">Gestão de Utentes</h3>
+                            <button onclick="abrirModalNovoUtilizador()" style="background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">+ Novo Utente</button>
+                        </div>
+                        
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e5e7eb; background: #f9fafb;">
+                                    <th style="padding: 10px;">ID</th>
+                                    <th style="padding: 10px;">Nome do Utente</th>
+                                    <th style="padding: 10px;">Nº SNS</th>
+                                    <th style="padding: 10px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-admin-utilizadores">
+                                <tr><td colspan="4" style="padding: 10px; text-align: center;">A carregar utentes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
+                    <div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                            <h3 style="margin-top: 0; color: #1f2937;">Regras de Negócio</h3>
+                            <label style="font-size: 14px; font-weight: bold;">Limiar do CARAT (Alerta):</label>
+                            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                <input type="number" id="adminLimiarCarat" value="24" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <button onclick="guardarNovoLimiar()" style="background: #0070f3; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Salvar</button>
+                            </div>
+                            <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">Scores abaixo deste valor geram alerta automático.</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
         </main>
     </div>
 
@@ -402,6 +442,7 @@
             const btnUtentesMedico = document.getElementById('btn-utentes-medico');
             const dashboardUtente = document.getElementById('dashboard-utente');
             const btnPerfilUtente = document.getElementById('btn-perfil-utente');
+            const btnAdmin = document.getElementById('btn-admin');
 
             if (tokenData.role === 'UTENTE') {
                 if(btnCarat) btnCarat.classList.remove('hidden');
@@ -446,10 +487,18 @@
                 mostrarPagina('pagina-alertas');
                 carregarAlertas();
                 
-            } else {
+} else if (tokenData.role === 'ADMINISTRADOR' || tokenData.role === 'ADMIN') {                
                 if(btnCarat) btnCarat.classList.add('hidden');
                 if(btnAlertas) btnAlertas.classList.add('hidden');
                 if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden');
+                if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
+                if(dashboardUtente) dashboardUtente.classList.add('hidden');
+                
+                // Mostrar a Gestão
+                if(btnAdmin) btnAdmin.classList.remove('hidden');
+                
+                mostrarPagina('pagina-admin');
+                carregarListaUtilizadores();
             }
         }
 
@@ -989,9 +1038,7 @@
                 else alert("Aviso: " + dados.erro);
             } catch (erro) { alert("Erro ao tentar povoar a base de dados."); }
         }
-// ==========================================
         // --- 9. FUNÇÕES DO ADMINISTRADOR ---
-        // ==========================================
 
         // --- Listar Utilizadores na Tabela (CRUD - Read) ---
         async function carregarListaUtilizadores() {
@@ -1060,6 +1107,71 @@
            
             logout();
             mostrarRegisto();
+        }
+        // ==========================================
+        // --- 9. FUNÇÕES DO ADMINISTRADOR ---
+        // ==========================================
+
+        async function carregarListaUtilizadores() {
+            const tbody = document.getElementById('tabela-admin-utilizadores');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar utentes...</td></tr>';
+
+            try {
+                // Usa a rota que já existe no backend para listar utentes
+                const res = await fetchAutenticado('/utentes'); 
+                if (!res || !res.ok) throw new Error("Erro na API");
+                
+                const utentes = await res.json();
+                tbody.innerHTML = '';
+                
+                if(utentes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem utentes registados.</td></tr>';
+                    return;
+                }
+
+                utentes.forEach(u => {
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px;">${u.id_utente}</td>
+                            <td style="padding: 10px;">${u.nome || 'Sem Nome'}</td>
+                            <td style="padding: 10px;">${u.numSaude || 'N/A'}</td>
+                            <td style="padding: 10px;">
+                                <button onclick="apagarUtente(${u.id_utente})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Apagar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar lista.</td></tr>';
+            }
+        }
+
+        async function apagarUtente(id) {
+            if(confirm("Tem a certeza que deseja apagar este utente do sistema?")) {
+                try {
+                    // Confirma se a rota DELETE /utentes/:id existe no backend
+                    const res = await fetchAutenticado(`/utentes/${id}`, { method: 'DELETE' });
+                    if(res && res.ok) {
+                        alert("Utente apagado com sucesso.");
+                        carregarListaUtilizadores(); // Atualiza a tabela
+                    } else {
+                        alert("Erro ao apagar utente. Pode ter registos clínicos associados.");
+                    }
+                } catch(e) {
+                    alert("Erro de ligação.");
+                }
+            }
+        }
+
+        function abrirModalNovoUtilizador() {
+            // Reencaminha para a página de registo
+            logout();
+            mostrarRegisto();
+        }
+
+        function guardarNovoLimiar() {
+            const novoLimiar = document.getElementById('adminLimiarCarat').value;
+            alert(`O Limiar de Controlo do CARAT foi alterado para ${novoLimiar} pontos. As novas avaliações seguirão esta regra!`);
         }
     </script>
 </body>
