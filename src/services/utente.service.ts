@@ -101,9 +101,33 @@ export class UtenteService {
     }
 
     /**
-     * Procura um utente pelo seu ID de Utente (usado muito nas avaliações CARAT e Exames)
+     * Procura um utente pelo seu ID de Utente 
      */
     async buscarPorId(id_utente: number): Promise<Utente | null> {
         return await this.repo.findOneBy({ id_utente: id_utente });
+    }
+
+    async atualizarDadosPerfil(id_utente: number, dados: any) {
+        // 1. Encontra o utente na base de dados
+        const utente = await this.repo.findOneBy({ id_utente: id_utente });
+        if (!utente) throw new Error("Utente não encontrado");
+
+        // 2. Encontra o utilizador associado a este utente 
+        const utilizador = await this.utilizadorRepo.findOneBy({ id: utente.id_utilizador });
+        if (!utilizador) throw new Error("Utilizador não encontrado");
+
+        // 3. Atualiza os campos que pertencem à tabela Utente
+        if (dados.morada) utente.morada = dados.morada;
+        if (dados.numSaude) utente.numSaude = dados.numSaude;
+        if (dados.nif) utente.nif = dados.nif;
+        if (dados.genero) utente.genero = dados.genero;
+        if (dados.dataNascimento) utente.dataNascimento = dados.dataNascimento;
+
+        // 4. Atualiza o telemóvel na tabela Utilizador
+        if (dados.contacto !== undefined) utilizador.telemovel = dados.contacto;
+
+        // 5. Guarda ambas as alterações na base de dados
+        await this.utilizadorRepo.save(utilizador); // Grava o telemóvel na tabela utilizadores
+        return await this.repo.save(utente);        // Grava o resto na tabela utentes
     }
 }

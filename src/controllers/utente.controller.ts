@@ -115,4 +115,22 @@ export class UtenteController {
             return res.status(400).json({ erro: error.message });
         }
     }
+    async atualizarPerfil(req: Request, res: Response) {
+        try {
+            const id_utente = parseInt(req.params.id as string);
+            
+            if (isNaN(id_utente)) {
+                return res.status(400).json({ erro: "ID do utente inválido." });
+            }
+
+            const utenteAtualizado = await this.service.atualizarDadosPerfil(id_utente, req.body);
+            
+            return res.json({ 
+                mensagem: "Perfil atualizado com sucesso!", 
+                utente: utenteAtualizado 
+            });
+        } catch (error: any) {
+            return res.status(500).json({ erro: error.message });
+        }
+    }
 }

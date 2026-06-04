@@ -58,7 +58,7 @@
                 <input type="text" id="regNome" placeholder="Nome Completo" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="email" id="regEmail" placeholder="Email" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="password" id="regPassword" placeholder="Password" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                
+                <input type="tel" id="registoContacto" placeholder="Telemóvel" required style="width: 100%; padding: 12px; margin-top: 12px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;">
                 <input type="text" id="regNif" placeholder="NIF" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <input type="text" id="regNumSaude" placeholder="Nº de Utente de Saúde" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <select id="regGenero" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; color: #6b7280; background: white;">
@@ -137,6 +137,12 @@
                     </div>
 
                 </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 5px solid #ef4444;">
+                        <h3 style="margin-top: 0; color: #991b1b;">Os Meus Alertas Ativos</h3>
+                        <ul id="lista-alertas-utente" style="padding-left: 20px; color: #4b5563;">
+                            <li>A carregar alertas...</li>
+                        </ul>
+                    </div>
             </div>
 
 
@@ -809,6 +815,34 @@ carregarGraficoDashboard(id_utente_real);
             if (resUtente && resUtente.ok) {
                 const utenteData = await resUtente.json();
                 carregarGraficoDashboard(utenteData.id_utente); 
+
+
+
+
+                // --- CARREGAR ALERTAS NA VISÃO DO UTENTE ---
+async function carregarAlertasUtente(id_utente) {
+    try {
+        const res = await fetchAutenticado(`/alertas/utente/${id_utente}`); 
+        if (!res.ok) return;
+        const alertas = await res.json();
+        
+        const container = document.getElementById('lista-alertas-utente');
+        const alertasAtivos = alertas.filter(a => a.estado !== 'FECHADO');
+        
+        if (alertasAtivos.length === 0) {
+            container.innerHTML = '<li>Não tem alertas críticos. Continue o bom trabalho!</li>';
+        } else {
+            container.innerHTML = alertasAtivos.map(a => `
+                <li style="margin-bottom: 10px;">
+                    <strong>${a.tipo}</strong>: ${a.motivo} <br>
+                    <small style="color: #6b7280;">(Gerado a: ${new Date(a.dataGeracao).toLocaleDateString()})</small>
+                </li>
+            `).join('');
+        }
+    } catch (e) {
+        console.error("Erro ao carregar alertas do utente:", e);
+    }
+}
             }
         } catch (err) {
             console.error("Erro ao obter perfil do utente:", err);
@@ -1038,8 +1072,7 @@ async function carregarPerfilUtente() {
         // Preencher TODOS os campos do ecrã
         document.getElementById('meuUtenteId').value = utenteData.id_utente;
         document.getElementById('perfilMorada').value = utenteData.morada || '';
-        document.getElementById('perfilContacto').value = utenteData.contacto || '';
-        document.getElementById('perfilNumSaude').value = utenteData.numSaude || '';
+document.getElementById('perfilContacto').value = utenteData.contacto || utenteData.telemovel || '';        document.getElementById('perfilNumSaude').value = utenteData.numSaude || '';
         document.getElementById('perfilNif').value = utenteData.nif || '';
         document.getElementById('perfilGenero').value = utenteData.genero || '';
         
