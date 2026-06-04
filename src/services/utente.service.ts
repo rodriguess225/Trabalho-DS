@@ -17,9 +17,7 @@ export class UtenteService {
     async criarUtente(dados: CreateUtenteDto, id_utilizador_que_criou: number): Promise<Utente> {
         
         // --- 1. LÓGICA DE ATRIBUIÇÃO ALEATÓRIA DO MÉDICO ---
-        let id_medico_final = dados.id_medico;
-
-        // Se o utente não escolheu um médico (vem vazio), sorteamos um!
+        let id_medico_final: number | undefined | null = dados.id_medico;
         if (!id_medico_final) {
             const medicos = await this.medicoRepo.find();
             
