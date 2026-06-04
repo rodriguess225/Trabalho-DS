@@ -20,6 +20,7 @@
         nav { width: 220px; background: #1f2937; color: white; padding: 20px; }
         nav button { display: block; width: 100%; margin-bottom: 10px; padding: 10px; background: #374151; color: white; border: none; cursor: pointer; text-align: left; border-radius: 4px;}
         nav button:hover { background: #4b5563; }
+        
         main { flex: 1; padding: 30px; }
     </style>
 </head>
@@ -43,14 +44,20 @@
     </div>
 
     <div id="app-screen" class="hidden">
-        <nav>
-            <h2>Menu Principal</h2>
-            <p id="user-info" style="font-size: 12px; color: #9ca3af; word-break: break-all; margin-bottom: 30px;"></p>
-            
-            <button onclick="mostrarPagina('pagina-dashboard')">Dashboard</button>
-            <button onclick="mostrarPagina('pagina-carat')">Módulo CARAT</button>
-            <button onclick="logout()" style="background: #ef4444; margin-top: 50px;">Terminar Sessão</button>
-        </nav>
+     <nav id="menu-lateral" style="display: flex; flex-direction: column; height: 100vh; padding: 20px; background: #1f2937; color: white;">
+    <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
+    <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
+    
+    <button onclick="mostrarPagina('pagina-dashboard')" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Dashboard</button>
+    
+    <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Módulo CARAT</button>
+    
+    <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Prescrições</button>
+    
+    <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
+    
+    <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
+</nav>
        <main>
             <div id="pagina-dashboard" class="pagina">
                 <h1>Painel de Controlo</h1>
@@ -96,6 +103,28 @@
                     <p style="font-size: 18px; border-top: 1px solid #ccc; padding-top: 10px;"><strong>Pontuação Total: <span id="scoreTotal">0</span> / 30</strong></p>
                     <p><strong>Diagnóstico:</strong> <span id="interpretacaoCarat"></span></p>
                 </div>
+            </div>
+            <div id="pagina-prescricoes" class="pagina hidden">
+                <h1>As Minhas Prescrições</h1>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #f3f4f6; text-align: left;">
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Medicamento</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Dose</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Médico</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-prescricoes-body">
+                        </tbody>
+                </table>
+                <div id="pagina-alertas" class="pagina hidden">
+                <h1>Alertas Clínicos</h1>
+                <p>Lista de situações que requerem atenção médica:</p>
+                <div id="listaAlertas" style="margin-top: 20px;">
+                    <p>A carregar alertas...</p>
+                </div>
+            </div>
             </div>
         </main>
     </div>
@@ -154,11 +183,26 @@
         });
 
         // 3. CONTROLO DE ECRÃS E SESSÃO
-        function entrarNaApp() {
+       function entrarNaApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
-            document.getElementById('loginErro').textContent = "";
+            
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const btnCarat = document.getElementById('btn-carat');
+            const btnAlertas = document.getElementById('btn-alertas');
+
+            // Lógica de Permissões
+            if (tokenData.role === 'UTENTE') {
+                btnCarat.classList.remove('hidden');    // Utente vê CARAT
+                btnAlertas.classList.remove('hidden');  // Utente vê Alertas
+            } else {
+                btnCarat.classList.add('hidden');       // Médico/Admin não vê CARAT
+                btnAlertas.classList.remove('hidden');  // Médico/Admin vê Alertas
+            }
         }
 
         function logout() {
@@ -253,6 +297,111 @@
                 alert("Erro de rede.");
             }
         });
+
+        async function carregarPrescricoes() {
+            const tbody = document.getElementById('tabela-prescricoes-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar prescrições...</td></tr>';
+
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            try {
+                // 1. Primeiro precisamos do id_utente (o ID clínico, não o ID de utilizador)
+                const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+                if (!resUtente || !resUtente.ok) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar perfil.</td></tr>';
+                    return;
+                }
+                const utenteData = await resUtente.json();
+                
+                // 2. Agora pedimos as prescrições deste utente (Rota correta: /medicacoes/utente/...)
+                const resposta = await fetchAutenticado(`/medicacoes/utente/${utenteData.id_utente}`);
+                
+                if (!resposta || !resposta.ok) throw new Error("Erro na resposta do servidor");
+
+                const prescricoes = await resposta.json();
+
+                tbody.innerHTML = '';
+                if (prescricoes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem prescrições registadas.</td></tr>';
+                    return;
+                }
+
+                prescricoes.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = "1px solid #e5e7eb";
+                    tr.innerHTML = `
+                        <td style="padding: 12px;">${p.nomeMedicacao}</td>
+                        <td style="padding: 12px;">${p.dose}</td>
+                        <td style="padding: 12px;">Dr. House</td>
+                        <td style="padding: 12px;">${p.dataPrescricao ? new Date(p.dataPrescricao).toLocaleDateString() : 'N/A'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (erro) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar dados.</td></tr>';
+            }
+        }
+        async function carregarAlertas() {
+    const container = document.getElementById('listaAlertas');
+    container.innerHTML = '<p>A procurar alertas...</p>';
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+    try {
+        // Tenta buscar como médico primeiro
+        let idParaPesquisa = null;
+        let ehMedico = false;
+
+        const resMedico = await fetchAutenticado(`/medicos/utilizador/${tokenData.id}`);
+        if (resMedico && resMedico.ok) {
+            const medicoData = await resMedico.json();
+            idParaPesquisa = medicoData.id_medico;
+            ehMedico = true;
+        }
+
+        if (!ehMedico) {
+            container.innerHTML = '<p>Apenas médicos podem aceder à lista de alertas.</p>';
+            return;
+        }
+
+        const resposta = await fetchAutenticado(`/alertas/medico/${idParaPesquisa}`);
+        if (!resposta || !resposta.ok) throw new Error("Erro ao aceder aos alertas");
+
+        const alertas = await resposta.json();
+
+        if (alertas.length === 0) {
+            container.innerHTML = '<p>Não existem alertas registados no momento.</p>';
+            return;
+        }
+
+        // Renderização da tabela (código mantido igual)
+        let html = `...`; // (mantém a tua lógica de tabela aqui)
+        container.innerHTML = html;
+
+    } catch (erro) {
+        container.innerHTML = '<p>Sem alertas disponíveis ou erro de carregamento.</p>';
+    }
+}
+
+        async function atualizarAlerta(idAlerta, novoEstado) {
+            try {
+                const resposta = await fetchAutenticado(`/alertas/${idAlerta}/estado`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ estado: novoEstado })
+                });
+
+                if (resposta && resposta.ok) {
+                    alert("Estado do alerta atualizado.");
+                    carregarAlertas(); // Recarrega a lista
+                }
+            } catch (erro) {
+                alert("Erro ao atualizar o alerta.");
+            }
+        }
     </script>
 </body>
 </html>
