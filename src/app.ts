@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import express from 'express';
 import path from 'path';
-
+import bcrypt from 'bcryptjs';
 import { AppDataSource } from './database/database';
 
 // 1. IMPORTAÇÃO DOS MODELOS (ENTIDADES mantivemos aqui para possiveis alterações futuras)
@@ -21,6 +21,7 @@ import { Medicacao } from './models/medicacao.entity';
 import { Exame } from './models/exame.entity';
 import { IntervencaoClinica } from './models/intervencaoclinica.entity';
 import { LogAuditoria } from './models/logauditoria.entity';
+
 
 // 2. IMPORTAÇÃO DAS ROTAS
 import administradorRoutes from './routes/administrador.routes';
@@ -74,7 +75,48 @@ app.use('/seeder', seederRoutes);
 
 // 4. ARRANQUE DA APLICAÇÃO
 if (require.main === module) {
-    AppDataSource.initialize().then(() => {
+    AppDataSource.initialize().then(async () => {
+        
+        const adminRepo = AppDataSource.getRepository(Administrador);
+        const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        
+        if (await adminRepo.count() === 0) {
+            const passwordAdmin = bcrypt.hashSync('Admin123!', 10);
+            
+            const userAdmin = await utilizadorRepo.save({
+                nome: 'Super Administrador',
+                email: 'admin@clinica.pt',
+                password: passwordAdmin,
+                perfil: 'ADMIN' 
+            });
+
+            await adminRepo.save({
+                departamento: 'Direção de Sistemas',
+                id_utilizador: userAdmin.id // <--- CORREÇÃO: Passar apenas o ID! (Se a tua PK do Utilizador for id_utilizador, usa userAdmin.id_utilizador)
+            });
+            console.log('✅ SEED: Primeiro Administrador criado com sucesso!');
+        }
+
+        // 2. SEED DO MÉDICO
+        const medicoRepo = AppDataSource.getRepository(Medico);
+        
+        if (await medicoRepo.count() === 0) {
+            const passwordMedico = bcrypt.hashSync('Medico123!', 10);
+            
+            const userMedico = await utilizadorRepo.save({
+                nome: 'Dr. João Silva',
+                email: 'joao.silva@clinica.pt',
+                password: passwordMedico,
+                perfil: 'MEDICO'
+            });
+
+            await medicoRepo.save({
+                especialidade: 'Pneumologia',
+                cedulaProfissional: '12345',
+                id_utilizador: userMedico.id // <--- CORREÇÃO: Passar apenas o ID!
+            });
+            console.log('✅ SEED: Primeiro Médico criado com sucesso!');
+        }
         app.listen(3000, () =>
             console.log("Servidor (TypeORM + SQLite) a correr na porta 3000")
         );
