@@ -25,17 +25,21 @@
 </head>
 <body>
 
-    <div id="login-screen">
+    <div id="login-screen" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
         <div class="login-box">
             <h2 style="margin-top: 0; text-align: center; color: #1f2937;">SaudINOB</h2>
             <p style="text-align: center; color: #6b7280; font-size: 14px;">Inicie sessão para aceder.</p>
             <form id="formLogin">
-                <input type="email" id="loginEmail" placeholder="Email" required value="admin@clinica.pt"> 
-                <input type="password" id="loginPassword" placeholder="Password" required value="Admin123!">
+                <input type="email" id="loginEmail" placeholder="Email" required value="joao@mail.com"> 
+                <input type="password" id="loginPassword" placeholder="Password" required value="Joao@123">
                 <button type="submit">Entrar no Sistema</button>
                 <p id="loginErro" style="color: #ef4444; font-size: 13px; text-align: center; font-weight: bold; margin-top: 15px;"></p>
             </form>
         </div>
+        
+        <button onclick="povoarBaseDados()" style="margin-top: 30px; background: #f59e0b; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            Injetar Dados de Teste (Seeder)
+        </button>
     </div>
 
     <div id="app-screen" class="hidden">
@@ -47,35 +51,67 @@
             <button onclick="mostrarPagina('pagina-carat')">Módulo CARAT</button>
             <button onclick="logout()" style="background: #ef4444; margin-top: 50px;">Terminar Sessão</button>
         </nav>
-        <main>
+       <main>
             <div id="pagina-dashboard" class="pagina">
                 <h1>Painel de Controlo</h1>
                 <p>O login foi feito com sucesso. A sessão está autenticada.</p>
                 <div style="background: #dcfce7; padding: 15px; border-radius: 8px; color: #166534; border: 1px solid #86efac;">
                     <strong>Sistema Operacional:</strong> Navegue no menu lateral para aceder aos módulos clínicos.
                 </div>
+                <div id="resultadoCaratNoDashboard" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 8px; background: #f3f4f6; border: 1px solid #d1d5db;">
+                <h3 style="margin-top: 0;">Última Avaliação CARAT:</h3>
+                <p><strong>Pontuação Total:</strong> <span id="dashScoreTotal">0</span> / 30</p>
+                <p><strong>Nível de Controlo:</strong> <span id="dashNivelControlo"></span></p>
+            </div>
             </div>
             
             <div id="pagina-carat" class="pagina hidden">
                 <h1>Questionário CARAT</h1>
-                <p>A carregar o questionário...</p>
+                <p>Nas últimas 4 semanas, por causa da sua asma/rinite/alergia, em média, quantas vezes teve:</p>
+
+                <form id="formCarat">
+                    <h3 style="color: #4b5563;">Vias Aéreas Superiores</h3>
+                    <div style="margin-bottom: 12px;"><label>1. Nariz entupido? *</label><br><select id="caratQ1" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>2. Espirros? *</label><br><select id="caratQ2" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>3. Comichão no nariz? *</label><br><select id="caratQ3" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>4. Corrimento/pingo do nariz? *</label><br><select id="caratQ4" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+
+                    <h3 style="color: #4b5563; margin-top: 20px;">Vias Aéreas Inferiores</h3>
+                    <div style="margin-bottom: 12px;"><label>5. Falta de ar/dispneia? *</label><br><select id="caratQ5" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>6. Chiadeira no peito/pieira? *</label><br><select id="caratQ6" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>7. Aperto no peito com esforço físico? *</label><br><select id="caratQ7" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>8. Cansaço/dificuldade em fazer as suas actividades do dia-a-dia? *</label><br><select id="caratQ8" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    <div style="margin-bottom: 12px;"><label>9. Acordou durante a noite por causa da asma/rinite/alergia? *</label><br><select id="caratQ9" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Nunca</option><option value="2">Até 1 ou 2 dias por semana</option><option value="1">Mais de 2 dias por semana</option><option value="0">Quase todos ou todos os dias</option></select></div>
+                    
+                    <h3 style="color: #4b5563; margin-top: 20px;">Medicação</h3>
+                    <div style="margin-bottom: 12px;"><label>10. Aumentar a utilização dos seus medicamentos? *</label><br><select id="caratQ10" required style="width:100%; padding:8px;"><option value="" disabled selected>Selecione uma opção...</option><option value="3">Não estou a tomar medicamentos / Nunca</option><option value="2">Menos de 7 dias</option><option value="1">7 ou mais dias</option><option value="0">Todos os dias</option></select></div>
+
+                    <button type="submit" style="width: 100%; padding: 12px; margin-top: 20px; background: #0070f3; color: white; border: none; font-weight: bold; border-radius: 4px; cursor: pointer;">Submeter Avaliação Clínica</button>
+                </form>
+
+                <div id="resultadosCarat" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 6px;">
+                    <h2 style="margin-top: 0;">Interpretação Clínica:</h2>
+                    <p><strong>Pontuação Vias Aéreas Superiores:</strong> <span id="scoreSuperiores">0</span> / 12</p>
+                    <p><strong>Pontuação Vias Aéreas Inferiores:</strong> <span id="scoreInferiores">0</span> / 18</p>
+                    <p style="font-size: 18px; border-top: 1px solid #ccc; padding-top: 10px;"><strong>Pontuação Total: <span id="scoreTotal">0</span> / 30</strong></p>
+                    <p><strong>Diagnóstico:</strong> <span id="interpretacaoCarat"></span></p>
+                </div>
             </div>
         </main>
     </div>
 
     <script>
-        // 1. A FUNÇÃO MÁGICA: A partir de agora, os nossos fetchs serão feitos através daqui!
+        // 1. A FUNÇÃO MÁGICA (Comunica com o Backend enviando o Token)
         async function fetchAutenticado(url, options = {}) {
             const token = localStorage.getItem('token');
             const headers = {
                 'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` }), // Injeta o token!
+                ...(token && { 'Authorization': `Bearer ${token}` }),
                 ...(options.headers || {})
             };
 
             const response = await fetch(url, { ...options, headers });
             
-            // Se o servidor devolver 401 ou 403, o token expirou ou é inválido. Expulsa o user.
             if (response.status === 401 || response.status === 403) {
                 logout(); 
                 alert("A sua sessão expirou ou não tem permissões. Faça login novamente.");
@@ -84,7 +120,7 @@
             return response;
         }
 
-        // 2. LÓGICA DE LOGIN (Fala com o teu auth.controller)
+        // 2. LÓGICA DE LOGIN
         document.getElementById('formLogin').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -95,7 +131,6 @@
             erroEl.textContent = "A validar credenciais...";
 
             try {
-                // Aqui fazemos um fetch normal porque ainda não temos token
                 const res = await fetch('/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -105,10 +140,8 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    // SUcesso! Guarda o Token JWT
                     localStorage.setItem('token', data.token); 
-                    localStorage.setItem('userEmail', email); // Opcional, só para estética
-                    
+                    localStorage.setItem('userEmail', email);
                     entrarNaApp();
                 } else {
                     erroEl.style.color = "#ef4444";
@@ -140,10 +173,86 @@
             document.getElementById(id).classList.remove('hidden');
         }
 
-        // Ao abrir a página, verifica logo se a pessoa já tem um token válido guardado
+        // Verifica se já existe login ao carregar a página
         if (localStorage.getItem('token')) {
             entrarNaApp();
         }
+
+        // 4. SEEDER (Injetar Dados na BD)
+        async function povoarBaseDados() {
+            try {
+                const resposta = await fetch('/seeder/povoar', { method: 'POST' });
+                const dados = await resposta.json();
+                if (resposta.ok) {
+                    alert("Sucesso: " + dados.mensagem);
+                } else {
+                    alert("Aviso: " + dados.erro);
+                }
+            } catch (erro) {
+                alert("Erro ao tentar povoar a base de dados.");
+            }
+        }
+
+       // 5. MÓDULO CARAT (Lógica Atualizada)
+        document.getElementById('formCarat').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            if (tokenData.role !== 'UTENTE') {
+                alert("Acesso Negado.");
+                return;
+            }
+
+            try {
+                const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+                if (!resUtente || !resUtente.ok) return;
+                const utenteData = await resUtente.json();
+                const id_utente_real = utenteData.id_utente;
+
+                const respostasArray = [];
+                for (let i = 1; i <= 10; i++) {
+                    const elemento = document.getElementById(`caratQ${i}`);
+                    if (elemento) {
+                        respostasArray.push({
+                            num_pergunta: i,
+                            valor_pontuacao: Number(elemento.value)
+                        });
+                    }
+                }
+
+                const response = await fetchAutenticado('/carat/submeter', {
+                    method: 'POST',
+                    body: JSON.stringify({ id_utente: id_utente_real, respostas: respostasArray })
+                });
+
+                if (!response) return;
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    // 1. Preencher o Dashboard
+                    document.getElementById('dashScoreTotal').textContent = resultado.avaliacao.scoreTotal;
+                    document.getElementById('dashNivelControlo').textContent = resultado.avaliacao.nivelControlo;
+                    document.getElementById('resultadoCaratNoDashboard').classList.remove('hidden');
+
+                    // 2. Limpar o formulário
+                    document.getElementById('formCarat').reset();
+                    document.getElementById('resultadosCarat').classList.add('hidden'); // Esconder resultados no CARAT
+
+                    // 3. Mudar para o Dashboard
+                    alert("Avaliação submetida com sucesso.");
+                    mostrarPagina('pagina-dashboard');
+                    
+                } else {
+                    alert("Erro: " + (resultado.erro || "Falha ao guardar."));
+                }
+            } catch (error) {
+                alert("Erro de rede.");
+            }
+        });
     </script>
 </body>
 </html>
