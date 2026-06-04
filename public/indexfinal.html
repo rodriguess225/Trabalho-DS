@@ -118,6 +118,69 @@
                     </div>
                 </div>
             </div>
+            <div id="pagina-detalhe-utente" class="pagina hidden">
+                <button onclick="mostrarPagina('pagina-utentes-medico')" style="background: #6b7280; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">&larr; Voltar à Lista</button>
+                
+                <h1 id="detalhe-nome-utente" style="margin-top: 0; color: #1f2937;">A carregar perfil...</h1>
+                <p style="color: #4b5563; font-size: 14px; margin-bottom: 20px;">
+                    <strong>Nº SNS:</strong> <span id="detalhe-sns"></span> | 
+                    <strong>Data Nasc:</strong> <span id="detalhe-nasc"></span>
+                </p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    
+                    <div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                            <h3 style="margin-top: 0;">Evolução CARAT</h3>
+                            <canvas id="graficoDetalheMedico" width="400" height="200"></canvas>
+                        </div>
+
+                        <div style="background: #fee2e2; padding: 20px; border-radius: 8px; border: 1px solid #fca5a5;">
+                            <h3 style="margin-top: 0; color: #991b1b;">Alertas Ativos</h3>
+                            <ul id="detalhe-alertas" style="color: #991b1b; padding-left: 20px; margin-bottom: 0;"></ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                            <h3 style="margin-top: 0;">Medicação Ativa</h3>
+                            <ul id="detalhe-medicacao" style="padding-left: 20px;"></ul>
+                        </div>
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h3 style="margin-top: 0;">Últimos Sintomas</h3>
+                            <ul id="detalhe-sintomas" style="padding-left: 20px;"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <h3 style="margin-top: 0; color: #1f2937;">Ações Clínicas</h3>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        
+                        <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h4 style="margin-top: 0; color: #0070f3;">&plus; Nova Prescrição</h4>
+                            <form id="formNovaPrescricao" onsubmit="submeterPrescricao(event)">
+                                <input type="hidden" id="prescUtenteId">
+                                <input type="text" id="prescNome" placeholder="Medicamento (ex: Salbutamol)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                <input type="text" id="prescDose" placeholder="Dose (ex: 100 mcg)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                <input type="text" id="prescFreq" placeholder="Frequência (ex: 2x ao dia)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                <button type="submit" style="background: #10b981; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Prescrever Medicação</button>
+                            </form>
+                        </div>
+
+                        <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h4 style="margin-top: 0; color: #0070f3;">&#9998; Registar Nota Clínica</h4>
+                            <form id="formNovaIntervencao" onsubmit="submeterIntervencao(event)">
+                                <input type="hidden" id="intervUtenteId">
+                                <textarea id="intervNotas" placeholder="Notas médicas da observação..." required style="width: 100%; padding: 8px; margin-bottom: 10px; height: 60px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: sans-serif;"></textarea>
+                                <input type="text" id="intervAcao" placeholder="Ação Tomada (ex: Ajuste de dose)" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Gravar Intervenção</button>
+                            </form>
+                        </div>
+                        
+                    </div>
+                </div>
             
             <div id="pagina-carat" class="pagina hidden">
                 <h1>Questionário CARAT</h1>
@@ -689,14 +752,148 @@ async function carregarMeusUtentes() {
                 <td style="padding: 12px; border-bottom: 1px solid #ddd;">${u.nome}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd;">${u.numSaude || 'N/A'}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd;">
-                    <button style="background:#0070f3; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Ver Clínico</button>
-                </td>
+<button onclick="verDetalhesUtente(${u.id_utente})" style="background:#0070f3; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Ver Clínico</button>                </td>
             `;
             tbody.appendChild(tr);
         });
     } catch (err) {
         console.error(err);
         tbody.innerHTML = '<tr><td colspan="3" style="color:red; text-align:center;">Erro ao carregar utentes.</td></tr>';
+    }
+}
+
+// Variável global para o gráfico do médico não se sobrepor
+let graficoMedico = null; 
+
+async function verDetalhesUtente(id_utente) {
+    mostrarPagina('pagina-detalhe-utente');
+    // Injetar o ID do utente nos formulários ocultos
+    document.getElementById('prescUtenteId').value = id_utente;
+    document.getElementById('intervUtenteId').value = id_utente;
+    
+    // Reset visual
+    document.getElementById('detalhe-nome-utente').textContent = "A carregar perfil...";
+    
+    try {
+        const response = await fetchAutenticado(`/dashboard/utente/${id_utente}`);
+        if (!response || !response.ok) throw new Error("Erro ao carregar dados clínicos");
+        
+        const dashboard = await response.json();
+        
+        // 1. Preencher Cabeçalho
+        document.getElementById('detalhe-nome-utente').textContent = dashboard.dados_pessoais.nome;
+        document.getElementById('detalhe-sns').textContent = dashboard.dados_pessoais.n_sns || "N/A";
+        document.getElementById('detalhe-nasc').textContent = dashboard.dados_pessoais.data_nascimento || "N/A";
+
+        // 2. Preencher Alertas Ativos
+        const alertasContainer = document.getElementById('detalhe-alertas');
+        const alertasPendentes = dashboard.historico_detalhado.alertas.filter(a => a.estado !== 'FECHADO');
+        if (alertasPendentes.length === 0) {
+            alertasContainer.innerHTML = '<li>Nenhum alerta crítico ativo.</li>';
+        } else {
+            alertasContainer.innerHTML = alertasPendentes.map(a => `<li><strong>${a.tipo}:</strong> ${a.motivo}</li>`).join('');
+        }
+
+        // 3. Preencher Medicação
+        const medContainer = document.getElementById('detalhe-medicacao');
+        if (dashboard.historico_detalhado.medicacao_ativa.length === 0) {
+            medContainer.innerHTML = '<li>Sem medicação registada.</li>';
+        } else {
+            medContainer.innerHTML = dashboard.historico_detalhado.medicacao_ativa.map(m => `<li><strong>${m.nomeMedicacao}</strong> - ${m.dose} (${m.frequencia})</li>`).join('');
+        }
+
+        // 4. Preencher Sintomas
+        const sintContainer = document.getElementById('detalhe-sintomas');
+        if (dashboard.historico_detalhado.sintomas_reportados.length === 0) {
+            sintContainer.innerHTML = '<li>Nenhum sintoma reportado recentemente.</li>';
+        } else {
+            sintContainer.innerHTML = dashboard.historico_detalhado.sintomas_reportados.slice(0, 3).map(s => `<li>${new Date(s.dataSintoma).toLocaleDateString()}: ${s.tipoSintoma} (Gravidade: ${s.gravidade})</li>`).join('');
+        }
+
+        // 5. Desenhar o Gráfico CARAT
+        const ctx = document.getElementById('graficoDetalheMedico').getContext('2d');
+        if (graficoMedico) graficoMedico.destroy(); // Limpa gráfico anterior
+
+        const avaliacoes = dashboard.historico_detalhado.avaliacoes_carat.sort((a, b) => new Date(a.dataAvaliacao) - new Date(b.dataAvaliacao));
+        
+        graficoMedico = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: avaliacoes.map(a => new Date(a.dataAvaliacao).toLocaleDateString()),
+                datasets: [
+                    { label: 'Score CARAT', data: avaliacoes.map(a => a.scoreTotal), borderColor: '#0070f3', backgroundColor: 'rgba(0, 112, 243, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'Limiar (24)', data: Array(avaliacoes.length).fill(24), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false }
+                ]
+            },
+            options: { scales: { y: { min: 0, max: 30 } } }
+        });
+
+    } catch (error) {
+        console.error("Erro:", error);
+        document.getElementById('detalhe-nome-utente').textContent = "Erro ao carregar dados. Tente novamente.";
+    }
+}
+// --- FUNÇÃO: SUBMETER NOVA PRESCRIÇÃO ---
+async function submeterPrescricao(event) {
+    event.preventDefault();
+    const id_utente = document.getElementById('prescUtenteId').value;
+    
+    const payload = {
+        id_utente: parseInt(id_utente),
+        nomeMedicacao: document.getElementById('prescNome').value,
+        dose: document.getElementById('prescDose').value,
+        frequencia: document.getElementById('prescFreq').value,
+        dataPrescricao: new Date().toISOString()
+    };
+
+    try {
+        const res = await fetchAutenticado('/medicacoes', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (res && res.ok) {
+            alert("Prescrição registada com sucesso!");
+            document.getElementById('formNovaPrescricao').reset();
+            // Recarregar a página para a nova prescrição aparecer na lista
+            verDetalhesUtente(id_utente); 
+        } else {
+            alert("Erro ao registar prescrição no servidor.");
+        }
+    } catch (e) {
+        console.error("Erro:", e);
+        alert("Erro de ligação.");
+    }
+}
+
+// --- FUNÇÃO: SUBMETER NOTA CLÍNICA ---
+async function submeterIntervencao(event) {
+    event.preventDefault();
+    const id_utente = document.getElementById('intervUtenteId').value;
+    
+    const payload = {
+        id_utente: parseInt(id_utente),
+        notasMedicas: document.getElementById('intervNotas').value,
+        acaoTomada: document.getElementById('intervAcao').value,
+        dataRegisto: new Date().toISOString()
+    };
+
+    try {
+        // Assume que a tua rota de criar intervenção é POST /intervencoes
+        const res = await fetchAutenticado('/intervencoes', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (res && res.ok) {
+            alert("Nota clínica gravada com sucesso!");
+            document.getElementById('formNovaIntervencao').reset();
+        } else {
+            alert("Erro ao gravar a nota.");
+        }
+    } catch (e) {
+        console.error("Erro:", e);
+        alert("Erro de ligação.");
     }
 }
     </script>
