@@ -153,8 +153,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div style="margin-top: 20px; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+
+                <div style="margin-top: 20px; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
                     <h3 style="margin-top: 0; color: #1f2937;">Ações Clínicas</h3>
                     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                         
@@ -181,6 +181,8 @@
                         
                     </div>
                 </div>
+            </div>
+           
             
             <div id="pagina-carat" class="pagina hidden">
                 <h1>Questionário CARAT</h1>
@@ -871,15 +873,25 @@ async function submeterIntervencao(event) {
     event.preventDefault();
     const id_utente = document.getElementById('intervUtenteId').value;
     
-    const payload = {
-        id_utente: parseInt(id_utente),
-        notasMedicas: document.getElementById('intervNotas').value,
-        acaoTomada: document.getElementById('intervAcao').value,
-        dataRegisto: new Date().toISOString()
-    };
-
+    // 1. Apanhar os dados de quem está logado
+    const token = localStorage.getItem('token');
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+    
     try {
-        // Assume que a tua rota de criar intervenção é POST /intervencoes
+        // 2. Descobrir o ID real do Médico na Base de Dados
+        const resMedico = await fetchAutenticado(`/medicos/utilizador/${tokenData.id}`);
+        const medicoData = await resMedico.json();
+
+        // 3. Montar o pacote exatamente com os nomes que o controller exige
+        const payload = {
+            id_utente: parseInt(id_utente),
+            id_medico: medicoData.id_medico, // 🚨 Faltava isto!
+            notasMedicas: document.getElementById('intervNotas').value,
+            acoesTomadas: document.getElementById('intervAcao').value, // 🚨 Faltava o "s" e o "oes"!
+            dataRegisto: new Date().toISOString()
+        };
+
+        // 4. Enviar para o servidor
         const res = await fetchAutenticado('/intervencoes', {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -889,7 +901,8 @@ async function submeterIntervencao(event) {
             alert("Nota clínica gravada com sucesso!");
             document.getElementById('formNovaIntervencao').reset();
         } else {
-            alert("Erro ao gravar a nota.");
+            const erroData = await res.json();
+            alert("Erro: " + (erroData.erro || "Falha ao gravar a nota."));
         }
     } catch (e) {
         console.error("Erro:", e);
