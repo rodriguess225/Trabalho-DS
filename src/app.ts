@@ -79,7 +79,9 @@ if (require.main === module) {
         
         const adminRepo = AppDataSource.getRepository(Administrador);
         const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        const medicoRepo = AppDataSource.getRepository(Medico);
         
+        // 1. SEED DO ADMIN
         if (await adminRepo.count() === 0) {
             const passwordAdmin = bcrypt.hashSync('Admin123!', 10);
             
@@ -87,19 +89,16 @@ if (require.main === module) {
                 nome: 'Super Administrador',
                 email: 'admin@clinica.pt',
                 password: passwordAdmin,
-                perfil: 'ADMIN' 
+                perfil: 'ADMINISTRADOR' 
             });
 
             await adminRepo.save({
-                departamento: 'Direção de Sistemas',
-                id_utilizador: userAdmin.id // <--- CORREÇÃO: Passar apenas o ID! (Se a tua PK do Utilizador for id_utilizador, usa userAdmin.id_utilizador)
+                id_utilizador: userAdmin.id 
             });
-            console.log('✅ SEED: Primeiro Administrador criado com sucesso!');
+            console.log('SEED: Primeiro Administrador criado com sucesso!');
         }
 
         // 2. SEED DO MÉDICO
-        const medicoRepo = AppDataSource.getRepository(Medico);
-        
         if (await medicoRepo.count() === 0) {
             const passwordMedico = bcrypt.hashSync('Medico123!', 10);
             
@@ -112,10 +111,10 @@ if (require.main === module) {
 
             await medicoRepo.save({
                 especialidade: 'Pneumologia',
-                cedulaProfissional: '12345',
-                id_utilizador: userMedico.id // <--- CORREÇÃO: Passar apenas o ID!
+                numCedula: '12345', 
+                id_utilizador: userMedico.id
             });
-            console.log(' SEED: Primeiro Médico criado com sucesso!');
+            console.log('SEED: Primeiro Médico criado com sucesso!');
         }
         app.listen(3000, () =>
             console.log("Servidor (TypeORM + SQLite) a correr na porta 3000")

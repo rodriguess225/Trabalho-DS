@@ -22,13 +22,18 @@ export class AuthService {
             nome: dados.nome,
             email: dados.email,
             password: passwordEncriptada,
-            perfil: dados.perfil || 'UTENTE', // Define UTENTE como padrão
+            perfil: dados.perfil || 'UTENTE', 
             telemovel: dados.telemovel
         });
 
-        await this.utilizadorRepo.save(novoUtilizador);
+        // Guardamos o utilizador numa variável
+        const userGuardado = await this.utilizadorRepo.save(novoUtilizador);
 
-        return { mensagem: 'Utilizador registado com sucesso!' };
+        // Devolvemos o utilizador 
+        return { 
+            mensagem: 'Utilizador registado com sucesso!',
+            utilizador: userGuardado 
+        };
     }
 
     // --- LÓGICA DE LOGIN ---
