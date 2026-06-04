@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>SaudINOB - Sistema Clínico</title>
+    <style>
+        /* CSS Base para separar Login da Aplicação */
+        body { font-family: sans-serif; margin: 0; background: #f3f4f6; }
+        .hidden { display: none !important; }
+        
+        /* Design do Ecrã de Login */
+        #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-box { background: white; padding: 2.5rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; }
+        .login-box input, .login-box button { width: 100%; padding: 12px; margin-top: 12px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;}
+        .login-box button { background: #0070f3; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px;}
+        .login-box button:hover { background: #005bb5; }
+        
+        /* Design da Aplicação Principal */
+        #app-screen { display: flex; min-height: 100vh; }
+        nav { width: 220px; background: #1f2937; color: white; padding: 20px; }
+        nav button { display: block; width: 100%; margin-bottom: 10px; padding: 10px; background: #374151; color: white; border: none; cursor: pointer; text-align: left; border-radius: 4px;}
+        nav button:hover { background: #4b5563; }
+        main { flex: 1; padding: 30px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="margin-top: 0; text-align: center; color: #1f2937;">SaudINOB</h2>
+            <p style="text-align: center; color: #6b7280; font-size: 14px;">Inicie sessão para aceder.</p>
+            <form id="formLogin">
+                <input type="email" id="loginEmail" placeholder="Email" required value="admin@clinica.pt"> 
+                <input type="password" id="loginPassword" placeholder="Password" required value="Admin123!">
+                <button type="submit">Entrar no Sistema</button>
+                <p id="loginErro" style="color: #ef4444; font-size: 13px; text-align: center; font-weight: bold; margin-top: 15px;"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        <nav>
+            <h2>Menu Principal</h2>
+            <p id="user-info" style="font-size: 12px; color: #9ca3af; word-break: break-all; margin-bottom: 30px;"></p>
+            
+            <button onclick="mostrarPagina('pagina-dashboard')">Dashboard</button>
+            <button onclick="mostrarPagina('pagina-carat')">Módulo CARAT</button>
+            <button onclick="logout()" style="background: #ef4444; margin-top: 50px;">Terminar Sessão</button>
+        </nav>
+        <main>
+            <div id="pagina-dashboard" class="pagina">
+                <h1>Painel de Controlo</h1>
+                <p>O login foi feito com sucesso. A sessão está autenticada.</p>
+                <div style="background: #dcfce7; padding: 15px; border-radius: 8px; color: #166534; border: 1px solid #86efac;">
+                    <strong>Sistema Operacional:</strong> Navegue no menu lateral para aceder aos módulos clínicos.
+                </div>
+            </div>
+            
+            <div id="pagina-carat" class="pagina hidden">
+                <h1>Questionário CARAT</h1>
+                <p>A carregar o questionário...</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. A FUNÇÃO MÁGICA: A partir de agora, os nossos fetchs serão feitos através daqui!
+        async function fetchAutenticado(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` }), // Injeta o token!
+                ...(options.headers || {})
+            };
+
+            const response = await fetch(url, { ...options, headers });
+            
+            // Se o servidor devolver 401 ou 403, o token expirou ou é inválido. Expulsa o user.
+            if (response.status === 401 || response.status === 403) {
+                logout(); 
+                alert("A sua sessão expirou ou não tem permissões. Faça login novamente.");
+                return null;
+            }
+            return response;
+        }
+
+        // 2. LÓGICA DE LOGIN (Fala com o teu auth.controller)
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const erroEl = document.getElementById('loginErro');
+            
+            erroEl.style.color = "#3b82f6";
+            erroEl.textContent = "A validar credenciais...";
+
+            try {
+                // Aqui fazemos um fetch normal porque ainda não temos token
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // SUcesso! Guarda o Token JWT
+                    localStorage.setItem('token', data.token); 
+                    localStorage.setItem('userEmail', email); // Opcional, só para estética
+                    
+                    entrarNaApp();
+                } else {
+                    erroEl.style.color = "#ef4444";
+                    erroEl.textContent = data.erro || "Credenciais inválidas.";
+                }
+            } catch (err) {
+                erroEl.style.color = "#ef4444";
+                erroEl.textContent = "Falha ao contactar o servidor.";
+            }
+        });
+
+        // 3. CONTROLO DE ECRÃS E SESSÃO
+        function entrarNaApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('user-info').textContent = `Logado: ${localStorage.getItem('userEmail')}`;
+            document.getElementById('loginErro').textContent = "";
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app-screen').classList.add('hidden');
+        }
+
+        function mostrarPagina(id) {
+            document.querySelectorAll('.pagina').forEach(p => p.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // Ao abrir a página, verifica logo se a pessoa já tem um token válido guardado
+        if (localStorage.getItem('token')) {
+            entrarNaApp();
+        }
+    </script>
+</body>
+</html>
