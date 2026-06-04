@@ -1,11 +1,13 @@
 import { AppDataSource } from '../database/database';
 import { Medico } from '../models/medico.entity';
+import { Utente } from '../models/utente.entity';
 import { CreateMedicoDto } from '../dtos/medico/create-medico.dto';
 import { LogAuditoriaService } from './logauditoria.service';
 
 export class MedicoService {
     private repo = AppDataSource.getRepository(Medico);
     private logService = new LogAuditoriaService();
+    private utenteRepo = AppDataSource.getRepository(Utente);
 
     /**
      * Cria o perfil profissional do Médico e guarda na tabela 'medicos'
@@ -13,11 +15,9 @@ export class MedicoService {
     async criarMedico(dados: CreateMedicoDto, id_admin_que_criou: number): Promise<Medico> {
         
         // 1. O nosso truque do 'any' para contornar o exactOptionalPropertyTypes
-        // Adicionei o numCedula pois vi no teu erro que a entidade Medico exige isso!
         const dadosParaCriar: any = {
             id_utilizador: dados.id_utilizador,
             especialidade: dados.especialidade ?? null,
-            // Se o vosso DTO tiver numCedula, ele usa, senão passa null para a BD não berrar
             numCedula: (dados as any).numCedula ?? null 
         };
 
@@ -52,4 +52,10 @@ export class MedicoService {
     async buscarPorId(id_medico: number): Promise<Medico | null> {
         return await this.repo.findOneBy({ id_medico: id_medico });
     }
+
+async listarUtentesDoMedico(id_medico: number) {
+    return await this.utenteRepo.find({ 
+        where: { id_medico: id_medico } 
+    });
+}
 }

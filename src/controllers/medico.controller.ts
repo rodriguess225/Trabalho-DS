@@ -84,4 +84,22 @@ export class MedicoController {
             return res.status(400).json({ erro: error.message });
         }
     }
+
+  // Adiciona este método ao teu MedicoController
+    async listarUtentes(req: Request, res: Response) {
+        try {
+            // 🚨 AQUI: Adiciona o "as string"
+            const id_medico = parseInt(req.params.id as string);
+            
+            // É boa prática validar se o ID é um número
+            if (isNaN(id_medico)) {
+                return res.status(400).json({ erro: "ID do médico inválido." });
+            }
+
+            const utentes = await this.service.listarUtentesDoMedico(id_medico);
+            return res.json(utentes);
+        } catch (error: any) {
+            return res.status(500).json({ erro: "Erro ao buscar utentes" });
+        }
+    }
 }

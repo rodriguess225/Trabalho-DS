@@ -81,21 +81,22 @@
     </div>
 
     <div id="app-screen" class="hidden">
-        <nav id="menu-lateral" style="display: flex; flex-direction: column; height: 100vh; padding: 20px; background: #1f2937; color: white;">
-            <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
-            <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
-            
-            <button onclick="mostrarPagina('pagina-dashboard')" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Dashboard</button>
-            
-            <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Módulo CARAT</button>
-            
-            <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Prescrições</button>
-            
-            <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
-            
-            <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
-            <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Os Meus Utentes</button>
-        </nav>
+      <nav id="menu-lateral" style="display: flex; flex-direction: column; height: 100vh; padding: 20px; background: #1f2937; color: white;">
+    <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
+    <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
+    
+    <button onclick="mostrarPagina('pagina-dashboard')" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Dashboard</button>
+    
+    <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Módulo CARAT</button>
+    
+    <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Prescrições</button>
+    
+    <button id="btn-alertas" onclick="mostrarPagina('pagina-alertas'); carregarAlertas();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Ver Alertas</button>
+    
+    <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden" style="background: #374151; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Os Meus Utentes</button>
+    
+    <button onclick="logout()" style="margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; cursor: pointer;">Terminar Sessão</button>
+</nav>
         <main>
           <div id="pagina-dashboard" class="pagina">
                 <h1>Painel de Controlo</h1>
@@ -650,6 +651,52 @@ let meuGrafico = null;
         
         mostrarPagina('pagina-alertas');
         carregarAlertas();
+    }
+}
+// --- FUNÇÃO PARA O MÉDICO VER OS SEUS UTENTES ---
+async function carregarMeusUtentes() {
+    const tbody = document.getElementById('tabela-utentes-body');
+    if (!tbody) return; // Segurança caso a página não exista
+    
+    tbody.innerHTML = '<tr><td colspan="3">A carregar os seus utentes...</td></tr>';
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+    try {
+        // 1. Identificar o Médico
+        const resMedico = await fetchAutenticado(`/medicos/utilizador/${tokenData.id}`);
+        if (!resMedico || !resMedico.ok) throw new Error("Não foi possível identificar o médico.");
+        const medicoData = await resMedico.json();
+
+        // 2. Buscar a lista de utentes (Garante que este endpoint existe no teu backend!)
+        const resUtentes = await fetchAutenticado(`/medicos/${medicoData.id_medico}/utentes`);
+        if (!resUtentes || !resUtentes.ok) throw new Error("Erro ao buscar lista de utentes.");
+        
+        const listaUtentes = await resUtentes.json();
+
+        // 3. Desenhar a tabela
+        tbody.innerHTML = '';
+        if (listaUtentes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum utente associado a si.</td></tr>';
+            return;
+        }
+
+        listaUtentes.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${u.nome}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${u.numSaude || 'N/A'}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+                    <button style="background:#0070f3; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Ver Clínico</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="3" style="color:red; text-align:center;">Erro ao carregar utentes.</td></tr>';
     }
 }
     </script>
