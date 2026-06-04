@@ -1,48 +1,40 @@
 import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { appConfig } from '../config/app.config';
-
-import {AppDataSource } from '../database/database'; 
+import { AppDataSource } from '../database/database';
+import { Utilizador } from '../models/utilizador.entity';
 
 export class AuthService {
-    
+    private utilizadorRepo = AppDataSource.getRepository(Utilizador);
+
     // --- LÓGICA DE REGISTO ---
     async register(dados: any): Promise<any> {
-        // 1. Verificar se o utilizador já existe na BD
-        // Exemplo: const userExiste = await db.query('SELECT * FROM users WHERE username = ?', [dados.username]);
-        // if (userExiste) throw new Error('Username já está em uso.');
+        // 1. Verificar se o utilizador já existe (através do email)
+        const userExiste = await this.utilizadorRepo.findOneBy({ email: dados.email });
+        if (userExiste) throw new Error('Este email já está em uso.');
 
         // 2. Encriptar a password
         const salt = bcrypt.genSaltSync(10);
         const passwordEncriptada = bcrypt.hashSync(dados.password, salt);
 
-        // 3. Guardar na BD com o Role correspondente (Utente, Medico, Admin)
-        // Exemplo: await db.query('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', 
-        // [dados.username, passwordEncriptada, dados.role]);
+        // 3. Guardar na BD
+        const novoUtilizador = this.utilizadorRepo.create({
+            nome: dados.nome,
+            email: dados.email,
+            password: passwordEncriptada,
+            perfil: dados.perfil || 'UTENTE', // Define UTENTE como padrão
+            telemovel: dados.telemovel
+        });
+
+        await this.utilizadorRepo.save(novoUtilizador);
 
         return { mensagem: 'Utilizador registado com sucesso!' };
     }
 
     // --- LÓGICA DE LOGIN ---
-    async login(username: string, password: string): Promise<string> {
-        
-        // 1. Procurar o utilizador na BD
-        // Exemplo: const user = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-        
-        // O "any" resolve o erro do type 'never'
-        let user: any = null; 
-
-        // DICA: Se quiseres testar o Login no Postman ANTES de ligares a BD,
-        // apaga o "let user: any = null;" em cima e descomenta o código abaixo:
-        /*
-        let user: any = {
-            id: 1,
-            username: 'admin',
-            // Esta password é '12345' já encriptada com bcrypt para poderes testar!
-            password: '$2a$10$Wb/jY.pE./J4x5X1F9z.O.Tz3q9hT3t5u/X0yDk/tX1/X.X.X.X.X', 
-            role: 'Admin'
-        };
-        */
+    async login(email: string, password: string): Promise<string> {
+        // 1. Procurar o utilizador na BD pelo email
+        const user = await this.utilizadorRepo.findOneBy({ email: email });
 
         if (!user) {
             throw new Error('Credenciais inválidas.');
@@ -50,26 +42,24 @@ export class AuthService {
 
         // 2. Comparar a password enviada com a password encriptada na BD
         const passwordValida = bcrypt.compareSync(password, user.password);
-
         if (!passwordValida) {
             throw new Error('Credenciais inválidas.');
         }
 
+        // Atualizar o último login (opcional, mas bom para os teus registos)
+        user.ultimoLogin = new Date().toISOString();
+        await this.utilizadorRepo.save(user);
+
         // 3. Gerar o Token JWT
-        // Os "as jwt.Secret" e "as any" resolvem o erro de overload do TypeScript
         const token = jwt.sign(
             {
                 id: user.id,
-                username: user.username,
-                role: user.role
+                email: user.email,
+                role: user.perfil // O teu middleware de autorização usa req.user.role
             },
             appConfig.auth.jwtSecret as jwt.Secret,
             { expiresIn: appConfig.auth.expiresIn as any }
         );
-
-        // 4. REGISTO DE AUDITORIA
-        // Exemplo: await db.query('INSERT INTO audit_logs (user_id, acao, data) VALUES (?, ?, ?)', 
-        // [user.id, 'LOGIN', new Date()]);
 
         return token;
     }

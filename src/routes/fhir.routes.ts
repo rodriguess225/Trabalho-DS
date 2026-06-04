@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { getObservationsFromFhir } from '../services/fhir.service';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { requireRole } from '../middleware/authorization.middleware';
+import { roleMiddleware } from '../middleware/role.middleware';
 
 const router = Router();
 
 // Protegido: Apenas UTENTE e MEDICO podem aceder
-router.get('/observations', authMiddleware, requireRole('UTENTE', 'MEDICO'), async (req, res) => {
+router.get('/observations', authMiddleware, roleMiddleware(['UTENTE', 'MEDICO']), async (req, res) => {
   try {
     const code = typeof req.query.code === 'string'
       ? req.query.code

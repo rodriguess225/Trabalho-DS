@@ -20,11 +20,8 @@ export class AuthController {
     // LOGIN
     async login(req: Request, res: Response): Promise<void> {
         try {
-            const { username, password } = req.body;
-            
-            // Chama o service de forma assíncrona
-            const token = await this.authService.login(username, password);
-
+            const { email, password } = req.body; // Alterado para email
+            const token = await this.authService.login(email, password);
             res.status(200).json({
                 mensagem: 'Login com sucesso',
                 token
