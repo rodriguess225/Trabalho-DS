@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { appConfig } from '../config/app.config';
 import { AppDataSource } from '../database/database';
 import { Utilizador } from '../models/utilizador.entity';
+import { Utente } from '../models/utente.entity';
 
 export class AuthService {
     private utilizadorRepo = AppDataSource.getRepository(Utilizador);
@@ -67,5 +68,40 @@ export class AuthService {
         );
 
         return token;
+    }
+async registarUtente(dados: any) {
+        const utilizadorRepo = AppDataSource.getRepository(Utilizador);
+        const utenteRepo = AppDataSource.getRepository(Utente);
+
+        // 1. Verificar se o email já existe
+        const existe = await utilizadorRepo.findOne({ where: { email: dados.email } });
+        if (existe) {
+            throw new Error("Este email já está em uso.");
+        }
+
+        // 2. Encriptar a password
+        const hashPassword = await bcrypt.hash(dados.password, 10);
+
+      // 3. Criar a conta de Login
+        const novoUtilizador = utilizadorRepo.create({
+            nome: dados.nome, 
+            email: dados.email,
+            password: hashPassword,
+            perfil: 'UTENTE' 
+        } as any);
+        
+        const utilSalvo: any = await utilizadorRepo.save(novoUtilizador);
+        
+
+       // 4. Criar o Perfil Clínico Associado
+        const novoUtente = utenteRepo.create({
+            nome: dados.nome, 
+            id_utilizador: utilSalvo.id_utilizador, 
+            dataNascimento: new Date('1990-01-01') 
+        } as any); 
+        
+        await utenteRepo.save(novoUtente);
+
+        return utilSalvo;
     }
 }

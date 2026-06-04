@@ -6,5 +6,6 @@ const controller = new AuthController();
 
 router.post('/register', controller.register.bind(controller));
 router.post('/login', controller.login.bind(controller));
+router.post('/registar', controller.registar.bind(controller));
 
 export default router;

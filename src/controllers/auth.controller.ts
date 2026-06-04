@@ -30,4 +30,13 @@ export class AuthController {
             res.status(401).json({ erro: error.message });
         }
     }
+
+    async registar(req: Request, res: Response) {
+        try {
+            const resultado = await this.authService.registarUtente(req.body);
+            return res.status(201).json({ mensagem: "Conta criada com sucesso!" });
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message });
+        }
+    }
 }
