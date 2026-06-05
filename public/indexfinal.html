@@ -78,11 +78,12 @@
             <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
             <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
             
-            <button onclick="mostrarPagina('pagina-dashboard')">Dashboard</button>
+            <button id="btn-dashboard" onclick="mostrarPagina('pagina-dashboard')">Dashboard</button>
             <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden">Módulo CARAT</button>
             <button id="btn-perfil-utente" onclick="mostrarPagina('pagina-perfil-utente'); carregarPerfilUtente();" class="hidden">O Meu Perfil & Sintomas</button>
-            <button onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();">Ver Prescrições</button>
-            
+            <button id="btn-prescricoes" onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();">Ver Prescrições</button>
+            <button onclick="mostrarPagina('pagina-sintomas')">Reportar Sintoma (Utente)</button>
+<button onclick="mostrarPagina('pagina-configuracoes'); buscarLimiaresAtual();">Configurações (Admin)</button>
             <button id="btn-alertas" class="hidden">Ver Alertas</button>
             
             <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden">Os Meus Utentes</button>
@@ -335,17 +336,15 @@
                     </div>
                 </div>
             </div>
-<div id="pagina-admin" class="pagina hidden">
+
+            <div id="pagina-admin" class="pagina hidden">
                 <h1>Painel de Administração</h1>
-                
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
-                    
                     <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <h3 style="margin-top: 0; color: #1f2937;">Gestão de Utentes</h3>
                             <button onclick="abrirModalNovoUtilizador()" style="background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">+ Novo Utente</button>
                         </div>
-                        
                         <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
                             <thead>
                                 <tr style="border-bottom: 2px solid #e5e7eb; background: #f9fafb;">
@@ -372,7 +371,61 @@
                             <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">Scores abaixo deste valor geram alerta automático.</p>
                         </div>
                     </div>
-                    
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin-top: 0; color: #1f2937;">Gestão de Médicos</h3>
+                        <button onclick="criarNovoMedico()" style="background: #0070f3; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">+ Novo Médico</button>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #e5e7eb; background: #f9fafb;">
+                                <th style="padding: 10px;">ID Médico</th>
+                                <th style="padding: 10px;">Nome do Clínico</th>
+                                <th style="padding: 10px;">Especialidade</th>
+                                <th style="padding: 10px;">Nº Cédula</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-admin-medicos">
+                            <tr><td colspan="4" style="padding: 10px; text-align: center;">A carregar médicos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="pagina-sintomas" class="pagina hidden">
+                <h1>O Meu Histórico de Sintomas</h1>
+                <p>Consulte a evolução dos sintomas que reportou (os registos novos são feitos na aba "O Meu Perfil").</p>
+                <button onclick="buscarSintomasUtente()" style="background: #0070f3; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-bottom: 15px; font-weight: bold;">Atualizar Tabela</button>
+                <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background-color: #f3f4f6; text-align: left;">
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Data</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Sintoma</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Gravidade (1-5)</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-sintomas-body">
+                        <tr><td colspan="4" style="text-align: center; padding: 15px;">Clique em "Atualizar Tabela" para carregar.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="pagina-configuracoes" class="pagina hidden">
+                <h1>Configurações Globais do Sistema</h1>
+                <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 500px;">
+                    <h3 style="margin-top: 0; color: #1f2937;">Motor de Regras CARAT</h3>
+                    <p style="font-size: 13px; color: #6b7280;">Valores abaixo do limiar geram Alertas Clínicos Automáticos.</p>
+                    <form id="formLimiares" onsubmit="guardarNovoLimiar(event)">
+                        <label style="font-size: 14px; font-weight: bold;">Score do Limiar Aceitável:</label>
+                        <input type="number" id="configLimiarScore" value="24" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
+                        
+                        <label style="font-size: 14px; font-weight: bold;">Delta de Deterioração (Queda abruptly permitida):</label>
+                        <input type="number" id="configDelta" value="4" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;">
+                        
+                        <button type="submit" style="background: #1f2937; color: white; border: none; padding: 12px; border-radius: 4px; width: 100%; font-weight: bold; cursor: pointer;">Salvar Novas Regras</button>
+                        <p id="msgLimiares" style="color: #10b981; font-weight: bold; text-align: center; margin-top: 15px;"></p>
+                    </form>
                 </div>
             </div>
         </main>
@@ -437,18 +490,23 @@
             
             const tokenData = JSON.parse(atob(token.split('.')[1]));
             
+            const btnDashboard = document.getElementById('btn-dashboard');
             const btnCarat = document.getElementById('btn-carat');
             const btnAlertas = document.getElementById('btn-alertas');
             const btnUtentesMedico = document.getElementById('btn-utentes-medico');
             const dashboardUtente = document.getElementById('dashboard-utente');
             const btnPerfilUtente = document.getElementById('btn-perfil-utente');
             const btnAdmin = document.getElementById('btn-admin');
+            const btnPrescricoes = document.getElementById('btn-prescricoes');
 
             if (tokenData.role === 'UTENTE') {
+                if(btnDashboard) btnDashboard.classList.remove('hidden');
                 if(btnCarat) btnCarat.classList.remove('hidden');
                 if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
                 if(dashboardUtente) dashboardUtente.classList.remove('hidden');
                 if(btnPerfilUtente) btnPerfilUtente.classList.remove('hidden');
+                if(btnPrescricoes) btnPrescricoes.classList.remove('hidden');
+                if(btnAdmin) btnAdmin.classList.add('hidden');
 
                 try {
                     const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
@@ -470,10 +528,13 @@
                 }
 
             } else if (tokenData.role === 'MEDICO') {
+                if(btnDashboard) btnDashboard.classList.remove('hidden');
                 if(btnCarat) btnCarat.classList.add('hidden');
                 if(btnUtentesMedico) btnUtentesMedico.classList.remove('hidden');
                 if(dashboardUtente) dashboardUtente.classList.add('hidden');
                 if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden');
+                if(btnPrescricoes) btnPrescricoes.classList.add('hidden');
+                if(btnAdmin) btnAdmin.classList.add('hidden');
                 
                 // Programar o botão "Alertas" para a visão do Médico
                 if(btnAlertas) {
@@ -487,14 +548,15 @@
                 mostrarPagina('pagina-alertas');
                 carregarAlertas();
                 
-} else if (tokenData.role === 'ADMINISTRADOR' || tokenData.role === 'ADMIN') {                
+            } else if (tokenData.role === 'ADMINISTRADOR' || tokenData.role === 'ADMIN') {
+                if(btnDashboard) btnDashboard.classList.add('hidden'); // Esconder dashboard para admin
                 if(btnCarat) btnCarat.classList.add('hidden');
                 if(btnAlertas) btnAlertas.classList.add('hidden');
                 if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden');
                 if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
                 if(dashboardUtente) dashboardUtente.classList.add('hidden');
+                if(btnPrescricoes) btnPrescricoes.classList.add('hidden');
                 
-                // Mostrar a Gestão
                 if(btnAdmin) btnAdmin.classList.remove('hidden');
                 
                 mostrarPagina('pagina-admin');
@@ -874,7 +936,7 @@
                 listaUtentes.forEach(u => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">${u.nome}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">${(u.utilizador && u.utilizador.nome) ? u.utilizador.nome : u.nome || 'Sem Nome'}</td>
                         <td style="padding: 12px; border-bottom: 1px solid #ddd;">${u.numSaude || 'N/A'}</td>
                         <td style="padding: 12px; border-bottom: 1px solid #ddd;">
                             <button onclick="verDetalhesUtente(${u.id_utente})" style="background:#0070f3; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Ver Clínico</button>
@@ -1038,109 +1100,40 @@
                 else alert("Aviso: " + dados.erro);
             } catch (erro) { alert("Erro ao tentar povoar a base de dados."); }
         }
-        // --- 9. FUNÇÕES DO ADMINISTRADOR ---
 
-        // --- Listar Utilizadores na Tabela (CRUD - Read) ---
-        async function carregarListaUtilizadores() {
-            const tbody = document.getElementById('tabela-admin-utilizadores');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar utilizadores...</td></tr>';
-
-            try {
-                // Tenta ir buscar todos os utentes 
-                const res = await fetchAutenticado('/utentes'); 
-                if (!res || !res.ok) throw new Error("Erro na API");
-                
-                const utentes = await res.json();
-                tbody.innerHTML = '';
-                
-                if(utentes.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem utilizadores registados.</td></tr>';
-                    return;
-                }
-
-                utentes.forEach(u => {
-                    tbody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 10px;">${u.id_utente}</td>
-                            <td style="padding: 10px;">${u.nome || 'Sem Nome'}</td>
-                            <td style="padding: 10px; font-weight: bold; color: #3b82f6;">Utente</td>
-                            <td style="padding: 10px;">
-                                <button onclick="apagarUtilizador(${u.id_utente})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Remover</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar utilizadores. Verifique o backend.</td></tr>';
-                console.error(e);
-            }
-        }
-
-        // --- Apagar Utilizador (CRUD - Delete) ---
-        async function apagarUtilizador(id) {
-            if(confirm("Tem a certeza que deseja remover este utilizador? Esta ação é irreversível.")) {
-                try {
-                    const res = await fetchAutenticado(`/utentes/${id}`, { method: 'DELETE' });
-                    if(res && res.ok) {
-                        alert("Utilizador removido com sucesso.");
-                        carregarListaUtilizadores(); // Recarrega a tabela
-                    } else {
-                        alert("Erro ao remover utilizador.");
-                    }
-                } catch(e) {
-                    alert("Erro de ligação.");
-                }
-            }
-        }
-
-        // --- Configurar Limiar CARAT (Regras de Negócio) ---
-        async function guardarNovoLimiar() {
-            const novoLimiar = document.getElementById('adminLimiarCarat').value;
-            
-            alert(`Sucesso! O novo limiar do CARAT foi configurado para ${novoLimiar} pontos. Todas as novas avaliações usarão esta regra.`);
-            
-            
-        }
-
-        // --- Novo Utilizador (CRUD - Create) ---
-        function abrirModalNovoUtilizador() {
-           
-            logout();
-            mostrarRegisto();
-        }
-        // ==========================================
-        // --- 9. FUNÇÕES DO ADMINISTRADOR ---
-        // ==========================================
-
-        async function carregarListaUtilizadores() {
+       async function carregarListaUtilizadores() {
             const tbody = document.getElementById('tabela-admin-utilizadores');
             tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar utentes...</td></tr>';
-
+            
             try {
-                // Usa a rota que já existe no backend para listar utentes
                 const res = await fetchAutenticado('/utentes'); 
                 if (!res || !res.ok) throw new Error("Erro na API");
-                
                 const utentes = await res.json();
-                tbody.innerHTML = '';
                 
                 if(utentes.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem utentes registados.</td></tr>';
                     return;
                 }
 
+                tbody.innerHTML = '';
                 utentes.forEach(u => {
+                    const nomeExibicao = (u.utilizador && u.utilizador.nome) ? u.utilizador.nome : (u.nome || 'Nome Indisponível');
+                    const medicoAtual = u.id_medico ? `Med. ID: ${u.id_medico}` : 'S/ Médico';
+                    
                     tbody.innerHTML += `
                         <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 10px;">${u.id_utente}</td>
-                            <td style="padding: 10px;">${u.nome || 'Sem Nome'}</td>
+                            <td style="padding: 10px;"><strong>${u.id_utente}</strong></td>
+                            <td style="padding: 10px;">${nomeExibicao}<br><small style="color: #6b7280;">${medicoAtual}</small></td>
                             <td style="padding: 10px;">${u.numSaude || 'N/A'}</td>
                             <td style="padding: 10px;">
+                                <button onclick="mudarMedico(${u.id_utente})" style="background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">Mudar Médico</button>
                                 <button onclick="apagarUtente(${u.id_utente})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Apagar</button>
                             </td>
                         </tr>
                     `;
                 });
+
+                carregarListaMedicos();
             } catch (e) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar lista.</td></tr>';
             }
@@ -1149,11 +1142,10 @@
         async function apagarUtente(id) {
             if(confirm("Tem a certeza que deseja apagar este utente do sistema?")) {
                 try {
-                    // Confirma se a rota DELETE /utentes/:id existe no backend
                     const res = await fetchAutenticado(`/utentes/${id}`, { method: 'DELETE' });
                     if(res && res.ok) {
                         alert("Utente apagado com sucesso.");
-                        carregarListaUtilizadores(); // Atualiza a tabela
+                        carregarListaUtilizadores(); 
                     } else {
                         alert("Erro ao apagar utente. Pode ter registos clínicos associados.");
                     }
@@ -1164,14 +1156,172 @@
         }
 
         function abrirModalNovoUtilizador() {
-            // Reencaminha para a página de registo
             logout();
             mostrarRegisto();
         }
 
-        function guardarNovoLimiar() {
-            const novoLimiar = document.getElementById('adminLimiarCarat').value;
-            alert(`O Limiar de Controlo do CARAT foi alterado para ${novoLimiar} pontos. As novas avaliações seguirão esta regra!`);
+        // --- LÓGICA: HISTÓRICO DE SINTOMAS (UTENTE) ---
+        async function buscarSintomasUtente() {
+            const id_utente = document.getElementById('meuUtenteId').value;
+            if(!id_utente) return alert("Erro: Perfil não carregado. Vá a 'O Meu Perfil' primeiro.");
+            
+            const tbody = document.getElementById('tabela-sintomas-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A procurar...</td></tr>';
+
+            try {
+                const res = await fetchAutenticado(`/sintomas/utente/${id_utente}`);
+                if (!res || !res.ok) throw new Error("Erro na rede");
+                
+                const sintomas = await res.json();
+                if (sintomas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum sintoma registado até ao momento.</td></tr>';
+                    return;
+                }
+
+                // Inverte para os mais recentes ficarem no topo
+                tbody.innerHTML = sintomas.reverse().map(s => `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;">${new Date(s.dataSintoma || s.createdAt).toLocaleString()}</td>
+                        <td style="padding: 12px;"><strong>${s.tipoSintoma}</strong></td>
+                        <td style="padding: 12px; color: ${s.gravidade >= 4 ? '#ef4444' : '#1f2937'}; font-weight: bold;">
+                            ${s.gravidade} / 5
+                        </td>
+                        <td style="padding: 12px;">${s.descricao || '-'}</td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar sintomas.</td></tr>';
+            }
+        }
+
+        // --- LÓGICA: CONFIGURAÇÕES (ADMINISTRADOR) ---
+        async function buscarLimiaresAtual() {
+            try {
+                const res = await fetchAutenticado('/configuracoes/limiar-atual');
+                if(!res || !res.ok) return;
+                const data = await res.json();
+                if(data.limiar_score) {
+                   document.getElementById('configLimiarScore').value = data.limiar_score;
+                   if(data.delta_deterioracao) document.getElementById('configDelta').value = data.delta_deterioracao;
+                }
+            } catch (e) { console.log("Configurações padrão em uso."); }
+        }
+
+        async function guardarNovoLimiar(event) {
+            event.preventDefault();
+            const limiar_score = parseInt(document.getElementById('configLimiarScore').value);
+            const delta_deterioracao = parseInt(document.getElementById('configDelta').value);
+            
+            try {
+                const res = await fetchAutenticado('/configuracoes', {
+                    method: 'POST',
+                    body: JSON.stringify({ limiar_score, delta_deterioracao })
+                });
+                
+                if(res && res.ok) {
+                    document.getElementById('msgLimiares').textContent = 'Configurações de Regras atualizadas com sucesso no motor!';
+                    setTimeout(() => document.getElementById('msgLimiares').textContent = '', 4000);
+                } else {
+                    alert("Erro ao guardar as regras no backend.");
+                }
+            } catch(erro) { 
+                alert('Erro de comunicação. O backend tem a rota POST /configuracoes?'); 
+            }
+        }
+        // --- LÓGICA: GESTÃO DE MÉDICOS (ADMIN) ---
+        async function carregarListaMedicos() {
+            const tbody = document.getElementById('tabela-admin-medicos');
+            if(!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar médicos...</td></tr>';
+            
+            try {
+                const res = await fetchAutenticado('/medicos');
+                const medicos = await res.json();
+                
+                if(medicos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem médicos registados.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                medicos.forEach(m => {
+                    const nome = (m.utilizador && m.utilizador.nome) ? m.utilizador.nome : 'Sem nome associado';
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px;"><strong>${m.id_medico}</strong></td>
+                            <td style="padding: 10px;">${nome}</td>
+                            <td style="padding: 10px;">${m.especialidade || 'Geral'}</td>
+                            <td style="padding: 10px;">${m.numCedula || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar médicos.</td></tr>';
+            }
+        }
+
+        async function criarNovoMedico() {
+            const nome = prompt("Introduza o NOME Completo do Médico:");
+            if(!nome) return;
+            const email = prompt("Introduza o EMAIL do Médico:");
+            if(!email) return;
+            const password = prompt("Introduza a PASSWORD (ex: Medico@123):");
+            if(!password) return;
+            const especialidade = prompt("Introduza a ESPECIALIDADE (ex: Pneumologia):");
+            const numCedula = prompt("Introduza o NÚMERO DE CÉDULA:");
+
+            try {
+                // 1. Criar o Utilizador base 
+                const resUser = await fetchAutenticado('/utilizadores', {
+                    method: 'POST',
+                    body: JSON.stringify({ nome, email, password, perfil: 'MEDICO' })
+                });
+                
+                if(!resUser.ok) {
+                    const err = await resUser.json();
+                    throw new Error(err.erro || "Erro ao criar conta de utilizador");
+                }
+                const userData = await resUser.json();
+
+                // 2. Criar o Perfil Profissional de Médico associado
+                const resMed = await fetchAutenticado('/medicos', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        id_utilizador: userData.utilizador.id, 
+                        especialidade: especialidade, 
+                        numCedula: numCedula 
+                    })
+                });
+                
+                if(!resMed.ok) throw new Error("Erro ao criar perfil médico.");
+                
+                alert("Médico criado com sucesso no sistema!");
+                carregarListaMedicos();
+            } catch(e) {
+                alert("Falha: " + e.message);
+            }
+        }
+
+        async function mudarMedico(id_utente) {
+            const novoMedicoId = prompt("Introduza o ID do Novo Médico Assistente para este utente (Pode ver os IDs na tabela de Médicos abaixo):");
+            if(!novoMedicoId) return;
+            
+            try {
+                const res = await fetchAutenticado(`/utentes/${id_utente}/medico`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ id_medico: parseInt(novoMedicoId) })
+                });
+                
+                if(res && res.ok) {
+                    alert("Médico assistente atualizado com sucesso!");
+                    carregarListaUtilizadores(); 
+                } else {
+                    const erro = await res.json();
+                    alert("Erro ao associar: " + (erro.erro || "Verifique se o ID do médico existe."));
+                }
+            } catch(e) {
+                alert("Erro de comunicação com o servidor.");
+            }
         }
     </script>
 </body>

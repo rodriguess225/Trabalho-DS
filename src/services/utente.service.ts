@@ -86,11 +86,21 @@ export class UtenteService {
     }
 
     
-    async listarUtentes(id_medico?: number): Promise<Utente[]> {
-        if (id_medico) {
-            return await this.repo.find({ where: { id_medico: id_medico } });
-        }
-        return await this.repo.find();
+  async listarUtentes(id_medico?: number): Promise<Utente[]> {
+        const utentes = id_medico 
+            ? await this.repo.find({ where: { id_medico: id_medico } })
+            : await this.repo.find();
+            
+        const utentesComUtilizador = await Promise.all(utentes.map(async (u) => {
+            const utilizador = await this.utilizadorRepo.findOneBy({ id: u.id_utilizador });
+            if (utilizador) {
+                const { password, ...dadosSeguros } = utilizador; 
+                return { ...u, utilizador: dadosSeguros } as any;
+            }
+            return u;
+        }));
+        
+        return utentesComUtilizador;
     }
 
     /**
