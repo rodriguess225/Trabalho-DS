@@ -51,4 +51,11 @@ export class IntervencaoClinicaService {
             dataIntervencao: intervencao.dataRegisto 
         } as any;
     }
+    // Adiciona este método dentro da classe IntervencaoService
+    async buscarPorUtente(id_utente: number): Promise<IntervencaoClinica[]> {
+        return await this.repo.find({
+            where: { id_utente: id_utente },
+            order: { dataRegisto: 'DESC' } // Mostra as notas mais recentes primeiro
+        });
+    }
 }

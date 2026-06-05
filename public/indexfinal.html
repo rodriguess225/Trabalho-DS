@@ -314,6 +314,11 @@
                             <h3 style="margin-top: 0; color: #991b1b;">Alertas Ativos</h3>
                             <ul id="detalhe-alertas" style="color: #991b1b; padding-left: 20px; margin-bottom: 0;"></ul>
                         </div>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 20px;">
+                            <h3 style="margin-top: 0; color: #334155;">Histórico de Notas Clínicas</h3>
+                            <ul id="detalhe-notas-clinicas" style="padding-left: 0; list-style-type: none; margin-bottom: 0;">
+                                </ul>
+                        </div>
                     </div>
                     <div>
                         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
@@ -1113,7 +1118,36 @@ const examesContainer = document.getElementById('detalhe-exames');
                     },
                     options: { scales: { y: { min: 0, max: 30 } } }
                 });
-
+// --- 7. CARREGAR HISTÓRICO DE NOTAS CLÍNICAS (INTERVENÇÕES) ---
+                const notasContainer = document.getElementById('detalhe-notas-clinicas');
+                notasContainer.innerHTML = '<li style="color: #6b7280; font-size: 13px;">A procurar notas anteriores...</li>';
+                
+                try {
+                    // Pede ao backend todas as intervenções deste utente
+                    const resNotas = await fetchAutenticado(`/intervencoes/utente/${id_utente}`);
+                    
+                    if (resNotas && resNotas.ok) {
+                        const notas = await resNotas.json();
+                        
+                        if (notas.length === 0) {
+                            notasContainer.innerHTML = '<li style="color: #6b7280; font-size: 13px;">Nenhuma nota clínica registada anteriormente.</li>';
+                        } else {
+                            // Ordena para as mais recentes aparecerem primeiro e desenha a lista
+                            const notasOrdenadas = notas.sort((a, b) => new Date(b.dataRegisto || b.createdAt) - new Date(a.dataRegisto || a.createdAt));
+                            
+                            notasContainer.innerHTML = notasOrdenadas.map(n => `
+                                <li style="margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                                    <small style="color: #64748b; font-weight: bold;">📅 ${new Date(n.dataRegisto || n.createdAt).toLocaleDateString()}</small><br>
+<span style="color: #0f172a; font-size: 14px;"><strong>Ação Tomada:</strong> ${n.acaoTomada || 'Sem ação especificada'}</span><br>                                    <span style="color: #475569; font-size: 13px; display: block; margin-top: 4px;"><em>"${n.notasMedicas}"</em></span>
+                                </li>
+                            `).join('');
+                        }
+                    } else {
+                        notasContainer.innerHTML = '<li style="color: #ef4444; font-size: 13px;">Rota do Backend não encontrada (Erro 404).</li>';
+                    }
+                } catch (e) {
+                    notasContainer.innerHTML = '<li style="color: #ef4444; font-size: 13px;">Erro ao ligar ao servidor.</li>';
+                }
             } catch (error) {
                 document.getElementById('detalhe-nome-utente').textContent = "Erro ao carregar dados. Tente novamente.";
             }
@@ -1168,6 +1202,7 @@ const examesContainer = document.getElementById('detalhe-exames');
 
                 if (res && res.ok) {
                     alert("Nota clínica gravada com sucesso!");
+                    verDetalhesUtente(id_utente); // Atualiza a página para mostrar a nova nota logo na lista!
                     document.getElementById('formNovaIntervencao').reset();
                 } else {
                     const erroData = await res.json();

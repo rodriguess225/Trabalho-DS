@@ -31,4 +31,17 @@ export class IntervencaoClinicaController {
             return res.status(400).json({ erro: error.message });
         }
     }
+    async listarPorUtente(req: Request, res: Response) {
+        try {
+            const id_utente = parseInt(req.params.id as string);
+            if (isNaN(id_utente)) {
+                return res.status(400).json({ erro: "ID do utente inválido." });
+            }
+
+            const intervencoes = await this.service.buscarPorUtente(id_utente);
+            return res.json(intervencoes);
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message });
+        }
+    }
 }
