@@ -10,14 +10,17 @@ export class ExameService {
 
    async criarExame(dados: CreateExameDto, id_medico_que_solicitou: number): Promise<ExameResponseDto> {
         
-        const jaExiste = await this.repo.findOneBy({
-            tipoExame: dados.tipoExame,
-            id_utente: dados.id_utente,
-            id_intervencao_clinica: dados.id_intervencao_clinica
+       // Procura se existe um exame igual que AINDA NÃO FOI CONCLUÍDO (concluido: false)
+        const examePendente = await this.repo.findOne({
+            where: {
+                id_utente: dados.id_utente,
+                tipoExame: dados.tipoExame,
+                concluido: false // <--- A MÁGICA ESTÁ AQUI
+            }
         });
-        
-        if (jaExiste) {
-            throw new Error("Já existe um exame igual registado para este utente.");
+
+        if (examePendente) {
+            throw new Error("O utente já tem um exame deste tipo PENDENTE. Aguarde o resultado antes de pedir um novo.");
         }
 
         // 1. Isolar num objeto 'any' para o TypeScript não bloquear no 'create'
@@ -42,6 +45,26 @@ export class ExameService {
         });
 
         return this.toResponseDto(exameGuardado);
+    }
+    async atualizarResultado(id_exame: number, dados: any, id_medico_que_alterou: number): Promise<ExameResponseDto> {
+        const exame = await this.repo.findOneBy({ id_exame: id_exame });
+        if (!exame) throw new Error("Exame não encontrado.");
+
+        // Atualiza os campos apenas se vierem no pedido
+        if (dados.concluido !== undefined) exame.concluido = dados.concluido;
+        if (dados.resultado !== undefined) exame.resultado = dados.resultado;
+
+        const exameAtualizado = await this.repo.save(exame);
+
+        await this.logService.registarLog({
+            id_utilizador: id_medico_que_alterou,
+            tipoAcao: 'UPDATE',
+            entidadeAfetada: 'Exame',
+            id_registo_afetado: exameAtualizado.id_exame,
+            valorNovo: JSON.stringify({ concluido: exameAtualizado.concluido, resultado: exameAtualizado.resultado })
+        });
+
+        return this.toResponseDto(exameAtualizado);
     }
 
     async listarExames(): Promise<ExameResponseDto[]> {

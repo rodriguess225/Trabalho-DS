@@ -82,10 +82,12 @@
             <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden">Módulo CARAT</button>
             <button id="btn-perfil-utente" onclick="mostrarPagina('pagina-perfil-utente'); carregarPerfilUtente();" class="hidden">O Meu Perfil</button>
             <button id="btn-prescricoes" onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" class="hidden">Ver Prescrições</button>
+           <button id="btn-exames" onclick="mostrarPagina('pagina-exames'); carregarExames();" class="hidden">Ver Exames</button>
             <button id="btn-sintomas" onclick="mostrarPagina('pagina-sintomas')" class="hidden">Histórico de Sintomas</button>
             <button id="btn-configuracoes" onclick="mostrarPagina('pagina-configuracoes'); buscarLimiaresAtual();" class="hidden" style="background: #1f2937; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Configurações (Admin)</button>
             <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden">Os Meus Utentes</button>
             <button id="btn-alertas" class="hidden">Ver Alertas</button>
+            
             
             <button id="btn-admin" onclick="mostrarPagina('pagina-admin'); carregarListaUtilizadores();" class="hidden" style="background: #8b5cf6; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; font-weight: bold;">Gestão do Sistema</button>
             
@@ -245,7 +247,21 @@
                     <tbody id="tabela-prescricoes-body"></tbody>
                 </table>
             </div>
-
+<div id="pagina-exames" class="pagina hidden">
+                <h1>Os Meus Exames</h1>
+                <p>Acompanhe os pedidos de exames médicos e os respetivos resultados.</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background-color: #f3f4f6; text-align: left;">
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Tipo de Exame</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Data do Pedido</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Estado</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Resultado Clínico</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-exames-body"></tbody>
+                </table>
+            </div>
             <div id="pagina-alertas" class="pagina hidden">
                 <h1>Alertas Clínicos</h1>
                 <p>Lista de situações que requerem atenção médica:</p>
@@ -304,6 +320,10 @@
                             <h3 style="margin-top: 0;">Medicação Ativa</h3>
                             <ul id="detalhe-medicacao" style="padding-left: 20px;"></ul>
                         </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                            <h3 style="margin-top: 0;">Histórico de Exames</h3>
+                            <ul id="detalhe-exames" style="padding-left: 20px;"></ul>
+                        </div>
                         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                             <h3 style="margin-top: 0;">Últimos Sintomas</h3>
                             <ul id="detalhe-sintomas" style="padding-left: 20px;"></ul>
@@ -335,6 +355,21 @@
                             </form>
                         </div>
                     </div>
+                    <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h4 style="margin-top: 0; color: #f59e0b;">Solicitar Exame</h4>                            
+                            <form id="formNovoExame" onsubmit="submeterExame(event)">
+                                <input type="hidden" id="exameUtenteId">
+                                <select id="exameTipo" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                                    <option value="" disabled selected>Selecione o Exame...</option>
+                                    <option value="Espirometria com Prova de Broncodilatação">Espirometria com Prova de Broncodilatação</option>
+                                    <option value="Raio-X Tórax">Raio-X Tórax</option>
+                                    <option value="TAC Torácica">TAC Torácica</option>
+                                    <option value="Testes de Sensibilidade Cutânea (Prick Test)">Testes de Alergia (Prick Test)</option>
+                                    <option value="Análises ao Sangue (IgE)">Análises ao Sangue (IgE)</option>
+                                </select>
+                                <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Pedir Exame</button>
+                            </form>
+                        </div>
                 </div>
             </div>
 
@@ -496,6 +531,7 @@
             const btnAdmin = document.getElementById('btn-admin');
             const btnConfiguracoes = document.getElementById('btn-configuracoes'); // Admin
             const dashboardUtente = document.getElementById('dashboard-utente');
+            const btnExames = document.getElementById('btn-exames');
 
             // 2. FORÇAR TUDO A FICAR ESCONDIDO POR DEFEITO (Limpeza de Segurança)
             const todosOsBotoes = [btnDashboard, btnCarat, btnPerfilUtente, btnPrescricoes, btnSintomas, btnUtentesMedico, btnAlertas, btnAdmin, btnConfiguracoes, dashboardUtente];
@@ -514,6 +550,7 @@
                 if(btnPerfilUtente) btnPerfilUtente.classList.remove('hidden');
                 if(btnPrescricoes) btnPrescricoes.classList.remove('hidden');
                 if(btnSintomas) btnSintomas.classList.remove('hidden'); // UTENTE VÊ SINTOMAS
+                if(btnExames) btnExames.classList.remove('hidden');
 
                 // Esconder de vez as configurações
                 if(btnConfiguracoes) { btnConfiguracoes.classList.add('hidden'); btnConfiguracoes.style.display = 'none'; }
@@ -537,7 +574,7 @@
             } else if (tokenData.role === 'MEDICO') {
                 if(btnDashboard) btnDashboard.classList.remove('hidden');
                 if(btnUtentesMedico) btnUtentesMedico.classList.remove('hidden');
-                
+                if(btnExames) btnExames.classList.add('hidden');
                 if(btnSintomas) { btnSintomas.classList.add('hidden'); btnSintomas.style.display = 'none'; }
                 if(btnConfiguracoes) { btnConfiguracoes.classList.add('hidden'); btnConfiguracoes.style.display = 'none'; }
 
@@ -557,7 +594,7 @@
                 // ADMIN VÊ APENAS A GESTÃO DE SISTEMA E AS CONFIGURAÇÕES
                 if(btnAdmin) btnAdmin.classList.remove('hidden');
                 if(btnConfiguracoes) btnConfiguracoes.classList.remove('hidden'); 
-                
+                if(btnExames) btnExames.classList.add('hidden');
                 // Esconder de vez os sintomas
                 if(btnSintomas) { btnSintomas.classList.add('hidden'); btnSintomas.style.display = 'none'; }
                 
@@ -1015,7 +1052,8 @@
             document.getElementById('prescUtenteId').value = id_utente;
             document.getElementById('intervUtenteId').value = id_utente;
             document.getElementById('detalhe-nome-utente').textContent = "A carregar perfil...";
-            
+            document.getElementById('exameUtenteId').value = id_utente;
+
             try {
                 const response = await fetchAutenticado(`/dashboard/utente/${id_utente}`);
                 if (!response || !response.ok) throw new Error("Erro ao carregar dados");
@@ -1037,7 +1075,29 @@
                 const sintContainer = document.getElementById('detalhe-sintomas');
                 if (dashboard.historico_detalhado.sintomas_reportados.length === 0) sintContainer.innerHTML = '<li>Nenhum sintoma.</li>';
                 else sintContainer.innerHTML = dashboard.historico_detalhado.sintomas_reportados.slice(0, 3).map(s => `<li>${new Date(s.dataSintoma).toLocaleDateString()}: ${s.tipoSintoma} (Gravidade: ${s.gravidade})</li>`).join('');
-
+const examesContainer = document.getElementById('detalhe-exames');
+            if (dashboard.historico_detalhado.exames_prescritos.length === 0) {
+                examesContainer.innerHTML = '<li>Nenhum exame solicitado.</li>';
+            } else {
+                // 6. Preencher Histórico de Exames (Com botão de Atualizar)
+            const examesContainer = document.getElementById('detalhe-exames');
+            if (!dashboard.historico_detalhado.exames_prescritos || dashboard.historico_detalhado.exames_prescritos.length === 0) {
+                examesContainer.innerHTML = '<li>Nenhum exame solicitado.</li>';
+            } else {
+                examesContainer.innerHTML = dashboard.historico_detalhado.exames_prescritos.map(e => {
+                    // Apanhar o ID correto do exame (pode vir como id ou id_exame consoante o backend)
+                    const idDoExame = e.id_exame || e.id; 
+                    
+                    return `<li style="margin-bottom: 12px; border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px;">
+                        <strong>${e.tipoExame}</strong> <small style="color: #6b7280;">(${new Date(e.dataSolicitacao).toLocaleDateString()})</small> 
+                        - ${e.concluido ? '<span style="color: #10b981; font-weight: bold;">Concluído</span>' : '<span style="color: #f59e0b; font-weight: bold;">Pendente</span>'}
+                        ${e.resultado ? `<br><span style="color: #4b5563; font-size: 13px;"><strong>Resultado:</strong> ${e.resultado}</span>` : ''}
+                        
+                        ${!e.concluido ? `<br><button onclick="registarResultadoExame(${idDoExame}, ${id_utente})" style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 6px; font-weight: bold;">+ Inserir Resultado</button>` : ''}
+                    </li>`;
+                }).join('');
+            }
+            }
                 const ctx = document.getElementById('graficoDetalheMedico').getContext('2d');
                 if (graficoMedico) graficoMedico.destroy(); 
                 const avaliacoes = dashboard.historico_detalhado.avaliacoes_carat.sort((a, b) => new Date(a.dataAvaliacao) - new Date(b.dataAvaliacao));
@@ -1417,6 +1477,110 @@
                 }
             } catch(e) {
                 alert("Erro de comunicação com o servidor.");
+            }
+        }
+        // ==========================================
+        // --- 10. FUNÇÕES DE EXAMES ---
+        // ==========================================
+
+        // Utente visualiza os seus exames
+        async function carregarExames() {
+            const tbody = document.getElementById('tabela-exames-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar exames...</td></tr>';
+            const token = localStorage.getItem('token');
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+
+            try {
+                // Identificar o utente logado
+                const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
+                const utenteData = await resUtente.json();
+                
+                // Pedir os exames ao backend
+                const resposta = await fetchAutenticado(`/exames/utente/${utenteData.id_utente}`);
+                const exames = await resposta.json();
+                
+                tbody.innerHTML = '';
+                if (exames.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem exames registados.</td></tr>';
+                    return;
+                }
+                
+                exames.forEach(e => {
+                    const status = e.concluido 
+                        ? '<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">Concluído</span>' 
+                        : '<span style="background: #fef3c7; color: #b45309; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">Pendente</span>';
+                    
+                    const resultado = e.resultado ? e.resultado : '<span style="color: #9ca3af; font-style: italic;">A aguardar laboratório...</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = "1px solid #e5e7eb";
+                    tr.innerHTML = `
+                        <td style="padding: 12px;"><strong>${e.tipoExame}</strong></td>
+                        <td style="padding: 12px;">${e.dataSolicitacao ? new Date(e.dataSolicitacao).toLocaleDateString() : 'N/A'}</td>
+                        <td style="padding: 12px;">${status}</td>
+                        <td style="padding: 12px;">${resultado}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (erro) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar exames.</td></tr>';
+            }
+        }
+
+        // Médico pede um novo exame
+        async function submeterExame(event) {
+            event.preventDefault();
+            const id_utente = document.getElementById('exameUtenteId').value;
+            const payload = {
+                id_utente: parseInt(id_utente),
+                tipoExame: document.getElementById('exameTipo').value
+            };
+
+            try {
+                const res = await fetchAutenticado('/exames', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res && res.ok) {
+                    alert("Exame solicitado com sucesso ao laboratório!");
+                    document.getElementById('formNovoExame').reset();
+                    verDetalhesUtente(id_utente); // Recarrega a página para aparecer o exame novo!
+                } else {
+                    const erro = await res.json();
+                    alert("Erro ao pedir exame: " + (erro.erro || "Falha de rede."));
+                }
+            } catch (e) { alert("Erro de ligação ao servidor."); }
+        }
+        // Médico regista o resultado e fecha o exame
+        async function registarResultadoExame(id_exame, id_utente) {
+            // Abre uma caixinha no navegador para o médico escrever
+            const textoResultado = prompt("Introduza o relatório/resultado do exame:");
+            
+            // Se o médico cancelar a caixa ou não escrever nada, abortamos
+            if (textoResultado === null || textoResultado.trim() === "") {
+                return; 
+            }
+
+            try {
+                // Envia a atualização para o Backend
+                const res = await fetchAutenticado(`/exames/${id_exame}`, {
+                    method: 'PATCH', 
+                    body: JSON.stringify({
+                        concluido: true,
+                        resultado: textoResultado,
+                        dataRealizacao: new Date().toISOString() 
+                    })
+                });
+                
+                if (res && res.ok) {
+                    alert("Resultado gravado e exame concluído com sucesso!");
+                    verDetalhesUtente(id_utente); 
+                } else {
+                    alert("Erro ao gravar o resultado. Verifique o backend.");
+                }
+            } catch (e) { 
+                alert("Erro de ligação ao servidor."); 
             }
         }
     </script>

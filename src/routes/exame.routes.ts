@@ -8,7 +8,7 @@ const controller = new ExameController();
 
 routes.get('/', authMiddleware, roleMiddleware(['MEDICO', 'ADMIN', 'ADMINISTRADOR']), controller.listar.bind(controller));
 routes.get('/utente/:id_utente', authMiddleware, roleMiddleware(['UTENTE', 'MEDICO']), controller.listarPorUtente.bind(controller));
-
+routes.patch('/:id', authMiddleware, roleMiddleware(['MEDICO']), controller.atualizar.bind(controller));
 routes.post('/', authMiddleware, roleMiddleware(['MEDICO']), controller.criar.bind(controller));
 
 export default routes;

@@ -60,4 +60,24 @@ export class ExameController {
             return res.status(400).json({ erro: error.message });
         }
     }
+    async atualizar(req: Request, res: Response) {
+        try {
+            const id_exame = parseInt(req.params.id as string);
+            if (isNaN(id_exame)) {
+                return res.status(400).json({ erro: "ID do exame inválido." });
+            }
+
+            // Identificar quem está a alterar (o Médico)
+            const id_medico_que_alterou = (req as any).user ? (req as any).user.id : 1;
+
+            const exameAtualizado = await this.service.atualizarResultado(id_exame, req.body, id_medico_que_alterou);
+            
+            return res.json({
+                mensagem: "Exame atualizado com sucesso!",
+                exame: exameAtualizado
+            });
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message });
+        }
+    }
 }
