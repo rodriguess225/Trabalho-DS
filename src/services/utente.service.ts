@@ -106,8 +106,16 @@ export class UtenteService {
     /**
      * Localiza a ficha do Utente usando o ID de Utilizador dele
      */
-    async buscarPorIdUtilizador(id_utilizador: number): Promise<Utente | null> {
-        return await this.repo.findOneBy({ id_utilizador: id_utilizador });
+    async buscarPorIdUtilizador(id_utilizador: number): Promise<any | null> {
+        const utente = await this.repo.findOneBy({ id_utilizador: id_utilizador });
+        if (!utente) return null;
+
+        const utilizador = await this.utilizadorRepo.findOneBy({ id: id_utilizador });
+
+        return {
+            ...utente,
+            utilizador: utilizador ? { telemovel: utilizador.telemovel, nome: utilizador.nome } : null
+        };
     }
 
     /**
@@ -115,6 +123,7 @@ export class UtenteService {
      */
     async buscarPorId(id_utente: number): Promise<Utente | null> {
         return await this.repo.findOneBy({ id_utente: id_utente });
+        relations: ['utilizador']
     }
 
     async atualizarDadosPerfil(id_utente: number, dados: any) {
@@ -141,7 +150,7 @@ export class UtenteService {
         return await this.repo.save(utente);        // Grava o resto na tabela utentes
     }
 
-    
+
     async apagarUtente(id_utente: number): Promise<void> {
         const utente = await this.repo.findOneBy({ id_utente });
         if (!utente) throw new Error("Utente não encontrado no sistema.");

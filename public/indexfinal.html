@@ -53,12 +53,13 @@
                 <input type="text" id="regNome" placeholder="Nome Completo" required>
                 <input type="email" id="regEmail" placeholder="Email" required>
                 <input type="password" id="regPassword" placeholder="Password" required>
+                <input type="tel" id="registoContacto" placeholder="Telemóvel" required style="width: 100%; padding: 12px; margin-top: 12px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;">
                 <input type="text" id="regNif" placeholder="NIF" required>
                 <input type="text" id="regNumSaude" placeholder="Nº de Utente de Saúde" required>
-                <select id="regGenero" required>
+               <select id="regGenero" required>
                     <option value="" disabled selected>Selecione o Género...</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
                     <option value="Outro">Outro</option>
                 </select>
                 <input type="text" id="regMorada" placeholder="Morada Completa" required>
@@ -644,10 +645,11 @@
 
         document.getElementById('formRegisto').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const payload = {
+          const payload = {
                 nome: document.getElementById('regNome').value,
                 email: document.getElementById('regEmail').value,
                 password: document.getElementById('regPassword').value,
+                contacto: document.getElementById('registoContacto').value, 
                 nif: document.getElementById('regNif').value,
                 morada: document.getElementById('regMorada').value,
                 dataNascimento: document.getElementById('regDataNasc').value,
@@ -764,6 +766,7 @@
 
                 const labelsDatas = avaliacoes.map(a => new Date(a.createdAt || a.dataAvaliacao).toLocaleDateString());
                 const dadosScores = avaliacoes.map(a => a.scoreTotal);
+                const limiarAtual = parseInt(localStorage.getItem('limiarCarat')) || 24;
 
                 if (meuGrafico) meuGrafico.destroy();
                 meuGrafico = new Chart(ctx, {
@@ -772,7 +775,7 @@
                         labels: labelsDatas,
                         datasets: [
                             { label: 'Score CARAT', data: dadosScores, borderColor: '#0070f3', backgroundColor: 'rgba(0, 112, 243, 0.1)', borderWidth: 2, fill: true, tension: 0.3 },
-                            { label: 'Limiar (24)', data: Array(avaliacoes.length).fill(24), borderColor: '#ef4444', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false }
+                            { label: `Limiar (${limiarAtual})`, data: Array(avaliacoes.length).fill(limiarAtual), borderColor: '#ef4444', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false }
                         ]
                     },
                     options: { scales: { y: { min: 0, max: 30 } } }
@@ -790,7 +793,7 @@
                 `).join('');
 
                 const ultimaAvaliacao = avaliacoes[avaliacoes.length - 1];
-                if (ultimaAvaliacao.scoreTotal < 24) {
+                if (ultimaAvaliacao.scoreTotal < limiarAtual) { 
                     bannerAlerta.classList.remove('hidden');
                 } else {
                     bannerAlerta.classList.add('hidden');
@@ -839,12 +842,18 @@
             
             try {
                 const res = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
-                if (!res || !res.ok) throw new Error("Erro ao carregar perfil");
+                if (!res || !res.ok) throw new Error("Erro ao carregar perfil (Erro 500 no Backend)");
                 const utenteData = await res.json();
                 
+                // Preenchemos os campos base
                 document.getElementById('meuUtenteId').value = utenteData.id_utente;
                 document.getElementById('perfilMorada').value = utenteData.morada || '';
-                document.getElementById('perfilContacto').value = utenteData.contacto || utenteData.telemovel || '';        
+                
+                // O telemóvel agora vem guardado dentro da "gaveta" do utilizador sem causar erros!
+                const telemovelGuardado = (utenteData.utilizador && utenteData.utilizador.telemovel) ? utenteData.utilizador.telemovel : '';
+                document.getElementById('perfilContacto').value = telemovelGuardado;        
+                
+                // Restantes campos (NIF, Nº Saude, Género)
                 document.getElementById('perfilNumSaude').value = utenteData.numSaude || '';
                 document.getElementById('perfilNif').value = utenteData.nif || '';
                 document.getElementById('perfilGenero').value = utenteData.genero || '';
@@ -1107,13 +1116,16 @@ const examesContainer = document.getElementById('detalhe-exames');
                 if (graficoMedico) graficoMedico.destroy(); 
                 const avaliacoes = dashboard.historico_detalhado.avaliacoes_carat.sort((a, b) => new Date(a.dataAvaliacao) - new Date(b.dataAvaliacao));
                 
+               const limiarAtual = parseInt(localStorage.getItem('limiarCarat')) || 24;
+
                 graficoMedico = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: avaliacoes.map(a => new Date(a.dataAvaliacao).toLocaleDateString()),
                         datasets: [
                             { label: 'Score CARAT', data: avaliacoes.map(a => a.scoreTotal), borderColor: '#0070f3', backgroundColor: 'rgba(0, 112, 243, 0.1)', fill: true, tension: 0.3 },
-                            { label: 'Limiar (24)', data: Array(avaliacoes.length).fill(24), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false }
+                            // TORNA DINÂMICO TAMBÉM NO GRÁFICO DO MÉDICO:
+                            { label: `Limiar (${limiarAtual})`, data: Array(avaliacoes.length).fill(limiarAtual), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false }
                         ]
                     },
                     options: { scales: { y: { min: 0, max: 30 } } }
@@ -1258,9 +1270,14 @@ const examesContainer = document.getElementById('detalhe-exames');
         }
 
        async function carregarListaUtilizadores() {
+        const inputLimiar = document.getElementById('adminLimiarCarat');
+            if (inputLimiar) {
+                inputLimiar.value = localStorage.getItem('limiarCarat') || 24;
+            }
+
             const tbody = document.getElementById('tabela-admin-utilizadores');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar utentes...</td></tr>';
-            
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar utentes...</td></tr>';    
+        
             try {
                 const res = await fetchAutenticado('/utentes'); 
                 if (!res || !res.ok) throw new Error("Erro na API");
@@ -1350,8 +1367,15 @@ const examesContainer = document.getElementById('detalhe-exames');
             }
         }
 
-        // --- LÓGICA: CONFIGURAÇÕES (ADMINISTRADOR) ---
+       // --- LÓGICA: CONFIGURAÇÕES (ADMINISTRADOR) ---
         async function buscarLimiaresAtual() {
+            const limiarGuardado = localStorage.getItem('limiarCarat') || 24;
+            const deltaGuardado = localStorage.getItem('deltaCarat') || 4;
+            
+            document.getElementById('configLimiarScore').value = limiarGuardado;
+            document.getElementById('configDelta').value = deltaGuardado;
+
+            // (Mantém-se a chamada ao backend caso no futuro queira-se guardar lá em vez do localStorage)
             try {
                 const res = await fetchAutenticado('/configuracoes/limiar-atual');
                 if(!res || !res.ok) return;
@@ -1360,29 +1384,29 @@ const examesContainer = document.getElementById('detalhe-exames');
                    document.getElementById('configLimiarScore').value = data.limiar_score;
                    if(data.delta_deterioracao) document.getElementById('configDelta').value = data.delta_deterioracao;
                 }
-            } catch (e) { console.log("Configurações padrão em uso."); }
+            } catch (e) { console.log("A usar configurações locais."); }
         }
 
-        async function guardarNovoLimiar(event) {
-            event.preventDefault();
-            const limiar_score = parseInt(document.getElementById('configLimiarScore').value);
-            const delta_deterioracao = parseInt(document.getElementById('configDelta').value);
+        function guardarNovoLimiar(event) {
+            // 1. Evita que a página faça refresh automático!
+            event.preventDefault(); 
             
-            try {
-                const res = await fetchAutenticado('/configuracoes', {
-                    method: 'POST',
-                    body: JSON.stringify({ limiar_score, delta_deterioracao })
-                });
-                
-                if(res && res.ok) {
-                    document.getElementById('msgLimiares').textContent = 'Configurações de Regras atualizadas com sucesso no motor!';
-                    setTimeout(() => document.getElementById('msgLimiares').textContent = '', 4000);
-                } else {
-                    alert("Erro ao guardar as regras no backend.");
-                }
-            } catch(erro) { 
-                alert('Erro de comunicação. O backend tem a rota POST /configuracoes?'); 
-            }
+            // 2. Vai buscar os valores usando os IDs novos que tu criaste no HTML
+            const novoLimiar = document.getElementById('configLimiarScore').value;
+            const novoDelta = document.getElementById('configDelta').value;
+            
+            // 3. Grava no Local Storage
+            localStorage.setItem('limiarCarat', novoLimiar); 
+            localStorage.setItem('deltaCarat', novoDelta);
+            
+            // 4. Mostra a mensagem de sucesso naquela tag verde <p id="msgLimiares"> 
+            const msgBox = document.getElementById('msgLimiares');
+            msgBox.textContent = "Novas regras do motor CARAT salvas com sucesso!";
+            
+            // Limpa a mensagem ao fim de 3 segundos para ficar elegante
+            setTimeout(() => {
+                msgBox.textContent = "";
+            }, 3000);
         }
        async function carregarListaMedicos() {
             const tbody = document.getElementById('tabela-admin-medicos');

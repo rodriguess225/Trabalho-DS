@@ -88,7 +88,8 @@ async registarUtente(dados: any) {
             nome: dados.nome, 
             email: dados.email,
             password: hashPassword,
-            perfil: 'UTENTE' 
+            perfil: 'UTENTE', 
+            telemovel: dados.contacto,
         });
         
         const utilSalvo = await utilizadorRepo.save(novoUtilizador);
