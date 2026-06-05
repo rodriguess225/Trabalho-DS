@@ -140,4 +140,19 @@ export class UtenteService {
         await this.utilizadorRepo.save(utilizador); // Grava o telemóvel na tabela utilizadores
         return await this.repo.save(utente);        // Grava o resto na tabela utentes
     }
+
+    
+    async apagarUtente(id_utente: number): Promise<void> {
+        const utente = await this.repo.findOneBy({ id_utente });
+        if (!utente) throw new Error("Utente não encontrado no sistema.");
+
+        // Procura o utilizador associado à conta de login
+        const utilizador = await this.utilizadorRepo.findOneBy({ id: utente.id_utilizador });
+        
+        // Remove primeiro o perfil clínico, depois a conta de login
+        await this.repo.remove(utente);
+        if (utilizador) {
+            await this.utilizadorRepo.remove(utilizador);
+        }
+    }
 }

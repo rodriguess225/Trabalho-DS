@@ -102,4 +102,23 @@ export class MedicoController {
             return res.status(500).json({ erro: "Erro ao buscar utentes" });
         }
     }
+async apagar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            await this.service.apagarMedico(id);
+            return res.status(200).json({ mensagem: "Médico removido com sucesso do sistema." });
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message || "Erro ao apagar médico." });
+        }
+    }
+
+    async atualizar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const medicoAtualizado = await this.service.atualizarMedico(id, req.body);
+            return res.status(200).json(medicoAtualizado);
+        } catch (error: any) {
+            return res.status(400).json({ erro: error.message || "Erro ao atualizar médico." });
+        }
+    }
 }

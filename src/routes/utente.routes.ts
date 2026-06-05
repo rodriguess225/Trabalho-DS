@@ -14,5 +14,6 @@ routes.get('/utilizador/:id_utilizador', authMiddleware, controller.buscarPorIdU
 routes.post('/', authMiddleware, roleMiddleware(['UTENTE', 'MEDICO', 'ADMIN', 'ADMINISTRADOR']), controller.criar.bind(controller));
 routes.patch('/:id/medico', authMiddleware, roleMiddleware(['ADMIN', 'ADMINISTRADOR']), controller.associarMedico.bind(controller));
 routes.patch('/:id', authMiddleware, roleMiddleware(['UTENTE', 'MEDICO', 'ADMIN', 'ADMINISTRADOR']), controller.atualizarPerfil.bind(controller));
+routes.delete('/:id', authMiddleware, roleMiddleware(['ADMIN', 'ADMINISTRADOR']), controller.apagar.bind(controller));
 
 export default routes;

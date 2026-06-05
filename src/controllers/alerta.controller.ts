@@ -14,7 +14,7 @@ export class AlertaController {
                 return res.status(400).json({ erro: "ID do médico inválido." });
             }
 
-            const alertas = await this.service.listarAlertasPorMedico(id_medico);
+            const alertas = await this.service.listarPorMedico(id_medico);
             return res.json(alertas);
         } catch (error: any) {
             return res.status(500).json({ erro: error.message });
@@ -69,6 +69,19 @@ export class AlertaController {
             });
         } catch (error: any) {
             return res.status(400).json({ erro: error.message });
+        }
+    }
+   async listarPorUtente(req: Request, res: Response) {
+        try {
+            const id_utente = parseInt(req.params.id as string);
+            if (isNaN(id_utente)) {
+                return res.status(400).json({ erro: "ID de utente inválido." });
+            }
+
+            const alertas = await this.service.listarPorUtente(id_utente);
+            return res.status(200).json(alertas);
+        } catch (error: any) {
+            return res.status(500).json({ erro: "Erro ao buscar alertas do utente." });
         }
     }
 }

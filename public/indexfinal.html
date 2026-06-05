@@ -75,20 +75,21 @@
     <div id="app-screen" class="hidden">
         
         <nav id="menu-lateral">
-            <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
+           <h2 style="font-size: 20px; margin-bottom: 20px;">Menu Principal</h2>
             <p id="user-info" style="font-size: 12px; color: #9ca3af; margin-bottom: 30px;"></p>
             
-            <button id="btn-dashboard" onclick="mostrarPagina('pagina-dashboard')">Dashboard</button>
+            <button id="btn-dashboard" onclick="mostrarPagina('pagina-dashboard')" class="hidden">Dashboard</button>
             <button id="btn-carat" onclick="mostrarPagina('pagina-carat')" class="hidden">Módulo CARAT</button>
-            <button id="btn-perfil-utente" onclick="mostrarPagina('pagina-perfil-utente'); carregarPerfilUtente();" class="hidden">O Meu Perfil & Sintomas</button>
-            <button id="btn-prescricoes" onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();">Ver Prescrições</button>
-            <button onclick="mostrarPagina('pagina-sintomas')">Reportar Sintoma (Utente)</button>
-<button onclick="mostrarPagina('pagina-configuracoes'); buscarLimiaresAtual();">Configurações (Admin)</button>
+            <button id="btn-perfil-utente" onclick="mostrarPagina('pagina-perfil-utente'); carregarPerfilUtente();" class="hidden">O Meu Perfil</button>
+            <button id="btn-prescricoes" onclick="mostrarPagina('pagina-prescricoes'); carregarPrescricoes();" class="hidden">Ver Prescrições</button>
+            <button id="btn-sintomas" onclick="mostrarPagina('pagina-sintomas')" class="hidden">Histórico de Sintomas</button>
+            <button id="btn-configuracoes" onclick="mostrarPagina('pagina-configuracoes'); buscarLimiaresAtual();" class="hidden" style="background: #1f2937; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left;">Configurações (Admin)</button>
+            <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden">Os Meus Utentes</button>
             <button id="btn-alertas" class="hidden">Ver Alertas</button>
             
-            <button id="btn-utentes-medico" onclick="mostrarPagina('pagina-utentes-medico'); carregarMeusUtentes();" class="hidden">Os Meus Utentes</button>
             <button id="btn-admin" onclick="mostrarPagina('pagina-admin'); carregarListaUtilizadores();" class="hidden" style="background: #8b5cf6; color: white; border: none; padding: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; font-weight: bold;">Gestão do Sistema</button>
-            <button onclick="logout()" style="margin-top: auto; background: #ef4444;">Terminar Sessão</button>
+            
+            <button onclick="logout()" style="margin-top: auto; background: #ef4444; border: none; padding: 10px; color: white; cursor: pointer; width: 100%; border-radius: 4px;">Terminar Sessão</button>
         </nav>
 
         <main>
@@ -337,9 +338,12 @@
                 </div>
             </div>
 
-            <div id="pagina-admin" class="pagina hidden">
+           <div id="pagina-admin" class="pagina hidden">
                 <h1>Painel de Administração</h1>
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px;">
+                    
+                    <!-- TABELA DE UTENTES -->
                     <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <h3 style="margin-top: 0; color: #1f2937;">Gestão de Utentes</h3>
@@ -360,36 +364,27 @@
                         </table>
                     </div>
 
-                    <div>
-                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                            <h3 style="margin-top: 0; color: #1f2937;">Regras de Negócio</h3>
-                            <label style="font-size: 14px; font-weight: bold;">Limiar do CARAT (Alerta):</label>
-                            <div style="display: flex; gap: 10px; margin-top: 5px;">
-                                <input type="number" id="adminLimiarCarat" value="24" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                                <button onclick="guardarNovoLimiar()" style="background: #0070f3; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Salvar</button>
-                            </div>
-                            <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">Scores abaixo deste valor geram alerta automático.</p>
+                    <!-- TABELA DE MÉDICOS -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin-top: 0; color: #1f2937;">Gestão de Médicos</h3>
+                            <button onclick="criarNovoMedico()" style="background: #0070f3; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">+ Novo Médico</button>
                         </div>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e5e7eb; background: #f9fafb;">
+                                    <th style="padding: 10px;">ID Médico</th>
+                                    <th style="padding: 10px;">Nome do Clínico</th>
+                                    <th style="padding: 10px;">Especialidade</th>
+                                    <th style="padding: 10px;">Nº Cédula</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-admin-medicos">
+                                <tr><td colspan="4" style="padding: 10px; text-align: center;">A carregar médicos...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin-top: 0; color: #1f2937;">Gestão de Médicos</h3>
-                        <button onclick="criarNovoMedico()" style="background: #0070f3; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">+ Novo Médico</button>
-                    </div>
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid #e5e7eb; background: #f9fafb;">
-                                <th style="padding: 10px;">ID Médico</th>
-                                <th style="padding: 10px;">Nome do Clínico</th>
-                                <th style="padding: 10px;">Especialidade</th>
-                                <th style="padding: 10px;">Nº Cédula</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-admin-medicos">
-                            <tr><td colspan="4" style="padding: 10px; text-align: center;">A carregar médicos...</td></tr>
-                        </tbody>
-                    </table>
+
                 </div>
             </div>
             <div id="pagina-sintomas" class="pagina hidden">
@@ -490,23 +485,38 @@
             
             const tokenData = JSON.parse(atob(token.split('.')[1]));
             
+            // 1. CAPTURAR TODOS OS BOTÕES DO MENU
             const btnDashboard = document.getElementById('btn-dashboard');
             const btnCarat = document.getElementById('btn-carat');
-            const btnAlertas = document.getElementById('btn-alertas');
-            const btnUtentesMedico = document.getElementById('btn-utentes-medico');
-            const dashboardUtente = document.getElementById('dashboard-utente');
             const btnPerfilUtente = document.getElementById('btn-perfil-utente');
-            const btnAdmin = document.getElementById('btn-admin');
             const btnPrescricoes = document.getElementById('btn-prescricoes');
+            const btnSintomas = document.getElementById('btn-sintomas'); // Utente
+            const btnUtentesMedico = document.getElementById('btn-utentes-medico');
+            const btnAlertas = document.getElementById('btn-alertas');
+            const btnAdmin = document.getElementById('btn-admin');
+            const btnConfiguracoes = document.getElementById('btn-configuracoes'); // Admin
+            const dashboardUtente = document.getElementById('dashboard-utente');
 
+            // 2. FORÇAR TUDO A FICAR ESCONDIDO POR DEFEITO (Limpeza de Segurança)
+            const todosOsBotoes = [btnDashboard, btnCarat, btnPerfilUtente, btnPrescricoes, btnSintomas, btnUtentesMedico, btnAlertas, btnAdmin, btnConfiguracoes, dashboardUtente];
+            todosOsBotoes.forEach(btn => { 
+                if(btn) { 
+                    btn.classList.add('hidden'); 
+                    btn.style.display = ''; // Limpa regras forçadas de display
+                } 
+            });
+
+            // 3. MOSTRAR APENAS O NECESSÁRIO CONSOANTE O PERFIL
             if (tokenData.role === 'UTENTE') {
                 if(btnDashboard) btnDashboard.classList.remove('hidden');
                 if(btnCarat) btnCarat.classList.remove('hidden');
-                if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
                 if(dashboardUtente) dashboardUtente.classList.remove('hidden');
                 if(btnPerfilUtente) btnPerfilUtente.classList.remove('hidden');
                 if(btnPrescricoes) btnPrescricoes.classList.remove('hidden');
-                if(btnAdmin) btnAdmin.classList.add('hidden');
+                if(btnSintomas) btnSintomas.classList.remove('hidden'); // UTENTE VÊ SINTOMAS
+
+                // Esconder de vez as configurações
+                if(btnConfiguracoes) { btnConfiguracoes.classList.add('hidden'); btnConfiguracoes.style.display = 'none'; }
 
                 try {
                     const resUtente = await fetchAutenticado(`/utentes/utilizador/${tokenData.id}`);
@@ -514,7 +524,6 @@
                         const utenteData = await resUtente.json();
                         carregarGraficoDashboard(utenteData.id_utente); 
 
-                        // Programar o botão "Alertas" para a visão do Utente
                         if(btnAlertas) {
                             btnAlertas.classList.remove('hidden');
                             btnAlertas.onclick = () => {
@@ -523,20 +532,15 @@
                             };
                         }
                     }
-                } catch (err) {
-                    console.error("Erro ao obter perfil do utente:", err);
-                }
+                } catch (err) { console.error("Erro no utente:", err); }
 
             } else if (tokenData.role === 'MEDICO') {
                 if(btnDashboard) btnDashboard.classList.remove('hidden');
-                if(btnCarat) btnCarat.classList.add('hidden');
                 if(btnUtentesMedico) btnUtentesMedico.classList.remove('hidden');
-                if(dashboardUtente) dashboardUtente.classList.add('hidden');
-                if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden');
-                if(btnPrescricoes) btnPrescricoes.classList.add('hidden');
-                if(btnAdmin) btnAdmin.classList.add('hidden');
                 
-                // Programar o botão "Alertas" para a visão do Médico
+                if(btnSintomas) { btnSintomas.classList.add('hidden'); btnSintomas.style.display = 'none'; }
+                if(btnConfiguracoes) { btnConfiguracoes.classList.add('hidden'); btnConfiguracoes.style.display = 'none'; }
+
                 if(btnAlertas) {
                     btnAlertas.classList.remove('hidden');
                     btnAlertas.onclick = () => {
@@ -549,15 +553,13 @@
                 carregarAlertas();
                 
             } else if (tokenData.role === 'ADMINISTRADOR' || tokenData.role === 'ADMIN') {
-                if(btnDashboard) btnDashboard.classList.add('hidden'); // Esconder dashboard para admin
-                if(btnCarat) btnCarat.classList.add('hidden');
-                if(btnAlertas) btnAlertas.classList.add('hidden');
-                if(btnPerfilUtente) btnPerfilUtente.classList.add('hidden');
-                if(btnUtentesMedico) btnUtentesMedico.classList.add('hidden');
-                if(dashboardUtente) dashboardUtente.classList.add('hidden');
-                if(btnPrescricoes) btnPrescricoes.classList.add('hidden');
                 
+                // ADMIN VÊ APENAS A GESTÃO DE SISTEMA E AS CONFIGURAÇÕES
                 if(btnAdmin) btnAdmin.classList.remove('hidden');
+                if(btnConfiguracoes) btnConfiguracoes.classList.remove('hidden'); 
+                
+                // Esconder de vez os sintomas
+                if(btnSintomas) { btnSintomas.classList.add('hidden'); btnSintomas.style.display = 'none'; }
                 
                 mostrarPagina('pagina-admin');
                 carregarListaUtilizadores();
@@ -758,27 +760,34 @@
         }
 
         // --- FUNÇÕES DOS UTENTES ---
-        async function carregarAlertasUtente(id_utente) {
+       async function carregarAlertasUtente(id_utente) {
+            const container = document.getElementById('lista-alertas-utente');
+            container.innerHTML = '<li>A verificar alertas...</li>';
+            
             try {
                 const res = await fetchAutenticado(`/alertas/utente/${id_utente}`); 
-                if (!res.ok) return;
-                const alertas = await res.json();
+                if (!res || !res.ok) throw new Error("Falha no servidor");
                 
-                const container = document.getElementById('lista-alertas-utente');
-                const alertasAtivos = alertas.filter(a => a.estado !== 'FECHADO');
+                const dados = await res.json();
+                
+                // Prevenção de erro caso o backend mande objeto em vez de Array
+                const alertasArray = Array.isArray(dados) ? dados : (dados.alertas || []);
+                
+                const alertasAtivos = alertasArray.filter(a => a.estado !== 'FECHADO');
                 
                 if (alertasAtivos.length === 0) {
                     container.innerHTML = '<li>Não tem alertas críticos. Continue o bom trabalho!</li>';
                 } else {
                     container.innerHTML = alertasAtivos.map(a => `
                         <li style="margin-bottom: 10px;">
-                            <strong>${a.tipo}</strong>: ${a.motivo} <br>
-                            <small style="color: #6b7280;">(Gerado a: ${new Date(a.dataGeracao).toLocaleDateString()})</small>
+                            <strong>${a.prioridade === 'ALTA' ? '🔴' : '🟠'} ${a.tipo || 'Alerta'}</strong>: ${a.motivo || a.descricao || 'Verifique o seu estado clínico.'} <br>
+                            <small style="color: #6b7280;">(Gerado a: ${new Date(a.createdAt || a.dataGeracao || Date.now()).toLocaleDateString()})</small>
                         </li>
                     `).join('');
                 }
             } catch (e) {
-                console.error("Erro ao carregar alertas do utente:", e);
+                console.error(e);
+                container.innerHTML = '<li style="color: red;">Erro ao carregar os seus alertas.</li>';
             }
         }
 
@@ -853,6 +862,7 @@
         }
 
         // --- FUNÇÕES DOS MÉDICOS ---
+       // --- GESTÃO DE ALERTAS (MÉDICO) ---
         async function carregarAlertas() {
             const container = document.getElementById('listaAlertas');
             container.innerHTML = '<p>A procurar alertas...</p>';
@@ -860,54 +870,105 @@
             const tokenData = JSON.parse(atob(token.split('.')[1]));
 
             try {
-                let idParaPesquisa = null;
-                let ehMedico = false;
-
+                // 1. Ir buscar o ID do Médico
                 const resMedico = await fetchAutenticado(`/medicos/utilizador/${tokenData.id}`);
-                if (resMedico && resMedico.ok) {
-                    const medicoData = await resMedico.json();
-                    idParaPesquisa = medicoData.id_medico;
-                    ehMedico = true;
-                }
+                if (!resMedico || !resMedico.ok) throw new Error("Acesso negado.");
+                const medicoData = await resMedico.json();
 
-                if (!ehMedico) {
-                    container.innerHTML = '<p>Apenas médicos podem aceder à lista de alertas.</p>';
-                    return;
-                }
-
-                const resposta = await fetchAutenticado(`/alertas/medico/${idParaPesquisa}`);
+                // 2. Ir buscar os alertas deste Médico
+                const resposta = await fetchAutenticado(`/alertas/medico/${medicoData.id_medico}`);
                 if (!resposta || !resposta.ok) throw new Error("Erro ao aceder aos alertas");
 
                 const alertas = await resposta.json();
+                
+                // Filtramos os que já estão FECHADOS para não poluir a visão
+                const alertasAtivos = alertas.filter(a => a.estado !== 'FECHADO');
 
-                if (alertas.length === 0) {
-                    container.innerHTML = '<p>Não existem alertas registados no momento.</p>';
+                if (alertasAtivos.length === 0) {
+                    container.innerHTML = '<p>Excelente! Não existem alertas pendentes no momento.</p>';
                     return;
                 }
 
-                container.innerHTML = "";
-                alertas.forEach(a => {
-                    container.innerHTML += `<div style="padding:10px; border:1px solid #ccc; margin-bottom:5px; background: white; border-radius: 4px;">
-                        <strong>Alerta:</strong> ${a.descricao} — <strong>Estado:</strong> ${a.estado}
-                        <button onclick="atualizarAlerta(${a.id}, 'RESOLVIDO')" style="margin-left: 10px; padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Resolver</button>
-                    </div>`;
+                // 3. Construir a Tabela com Dropdown de Estados
+               let html = `<table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background-color: #f3f4f6; text-align: left;">
+                            <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Data</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Utente</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Prioridade</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Motivo</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Estado</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Ação</th>
+                        </tr>
+                    </thead><tbody>`;
+
+                alertasAtivos.forEach(a => {
+                    const id = a.id_alerta || a.id;
+                    html += `
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px;">${new Date(a.createdAt || a.dataGeracao || Date.now()).toLocaleDateString()}</td>
+                            <td style="padding: 10px;"><strong>${a.nomeUtente}</strong></td>
+                            <td style="padding: 10px; color: ${a.prioridade === 'ALTA' ? '#ef4444' : '#f59e0b'}; font-weight: bold;">${a.prioridade || 'MÉDIA'}</td>
+                            <td style="padding: 10px;">${a.motivo || a.descricao || 'Verificar estado clínico.'}</td>
+                            <td style="padding: 10px;">
+                                <select id="estadoAlerta_${id}" style="padding: 4px; border-radius: 4px;">
+                                    <option value="NOVO" ${a.estado === 'NOVO' ? 'selected' : ''}>NOVO</option>
+                                    <option value="VISTO" ${a.estado === 'VISTO' ? 'selected' : ''}>VISTO</option>
+                                    <option value="EM_SEGUIMENTO" ${a.estado === 'EM_SEGUIMENTO' ? 'selected' : ''}>EM SEGUIMENTO</option>
+                                    <option value="FECHADO" ${a.estado === 'FECHADO' ? 'selected' : ''}>FECHADO</option>
+                                </select>
+                            </td>
+                            <td style="padding: 10px;">
+                                <button onclick="atualizarEstadoAlerta(${id})" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Gravar</button>
+                            </td>
+                        </tr>
+                    `;
                 });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
             } catch (erro) {
-                container.innerHTML = '<p>Sem alertas disponíveis ou erro de carregamento.</p>';
+                container.innerHTML = '<p style="color: red;">Erro de comunicação ao carregar alertas.</p>';
             }
         }
 
-        async function atualizarAlerta(idAlerta, novoEstado) {
-            try {
-                const resposta = await fetchAutenticado(`/alertas/${idAlerta}/estado`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ estado: novoEstado })
-                });
-                if (resposta && resposta.ok) {
-                    alert("Estado do alerta atualizado.");
-                    carregarAlertas();
+        async function atualizarEstadoAlerta(id_alerta) {
+            const selectEstado = document.getElementById(`estadoAlerta_${id_alerta}`);
+            if(!selectEstado) return alert("Erro na interface. Não foi possível ler o estado.");
+            
+            const novoEstado = selectEstado.value;
+
+            // Cumprimento do RF13: Exigir nota clínica se for fechado ou em seguimento
+            let notaClinica = "";
+            if (novoEstado === 'FECHADO' || novoEstado === 'EM_SEGUIMENTO') {
+                notaClinica = prompt(`RF13: Ação Clínica Obrigatória.\nQual foi a ação médica tomada para justificar a alteração para ${novoEstado}?`);
+                
+                if (!notaClinica || notaClinica.trim() === "") {
+                    alert("Operação cancelada. É estritamente obrigatório justificar clinicamente a alteração de estado.");
+                    carregarAlertas(); // Reverte a tabela visualmente
+                    return; 
                 }
-            } catch (erro) { alert("Erro ao atualizar o alerta."); }
+            }
+
+            try {
+                // Enviar a requisição para o Backend
+                const res = await fetchAutenticado(`/alertas/${id_alerta}/estado`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ 
+                        estado: novoEstado,
+                        notaMedica: notaClinica // Opcional, caso o teu backend queira gravar na mesma tabela
+                    })
+                });
+
+                if(res && res.ok) {
+                    alert('Estado do alerta atualizado com sucesso!');
+                    carregarAlertas(); // Recarrega a tabela para esconder alertas fechados
+                } else {
+                    alert('Erro ao atualizar alerta no servidor.');
+                }
+            } catch(err) { 
+                alert('Erro de comunicação com o servidor.');
+            }
         }
 
         async function carregarMeusUtentes() {
@@ -1228,18 +1289,17 @@
                 alert('Erro de comunicação. O backend tem a rota POST /configuracoes?'); 
             }
         }
-        // --- LÓGICA: GESTÃO DE MÉDICOS (ADMIN) ---
-        async function carregarListaMedicos() {
+       async function carregarListaMedicos() {
             const tbody = document.getElementById('tabela-admin-medicos');
             if(!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">A carregar médicos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">A carregar médicos...</td></tr>';
             
             try {
                 const res = await fetchAutenticado('/medicos');
                 const medicos = await res.json();
                 
-                if(medicos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Sem médicos registados.</td></tr>';
+                if(!Array.isArray(medicos) || medicos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Sem médicos registados.</td></tr>';
                     return;
                 }
 
@@ -1252,12 +1312,48 @@
                             <td style="padding: 10px;">${nome}</td>
                             <td style="padding: 10px;">${m.especialidade || 'Geral'}</td>
                             <td style="padding: 10px;">${m.numCedula || 'N/A'}</td>
+                            <td style="padding: 10px;">
+                                <button onclick="editarMedico(${m.id_medico})" style="background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">Editar</button>
+                                <button onclick="apagarMedico(${m.id_medico})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Apagar</button>
+                            </td>
                         </tr>
                     `;
                 });
             } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao carregar médicos.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Erro ao carregar médicos.</td></tr>';
             }
+        }
+
+        async function apagarMedico(id) {
+            if(confirm("Tem a certeza que deseja apagar este médico e todo o seu acesso ao sistema?")) {
+                try {
+                    const res = await fetchAutenticado(`/medicos/${id}`, { method: 'DELETE' });
+                    if(res && res.ok) {
+                        alert("Médico apagado com sucesso.");
+                        carregarListaMedicos(); 
+                    } else alert("Erro ao apagar. Pode ter utentes associados a si.");
+                } catch(e) { alert("Erro de ligação."); }
+            }
+        }
+
+        async function editarMedico(id) {
+            const novaEspecialidade = prompt("Introduza a nova especialidade do médico (deixe em branco para não alterar):");
+            const novaCedula = prompt("Introduza o novo número de cédula (deixe em branco para não alterar):");
+            if (!novaEspecialidade && !novaCedula) return;
+
+            try {
+                const res = await fetchAutenticado(`/medicos/${id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        ...(novaEspecialidade && { especialidade: novaEspecialidade }),
+                        ...(novaCedula && { numCedula: novaCedula })
+                    })
+                });
+                if(res && res.ok) {
+                    alert("Dados do médico atualizados!");
+                    carregarListaMedicos();
+                } else alert("Erro ao atualizar médico.");
+            } catch(e) { alert("Erro de ligação."); }
         }
 
         async function criarNovoMedico() {

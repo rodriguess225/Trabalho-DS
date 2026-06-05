@@ -133,4 +133,19 @@ export class UtenteController {
             return res.status(500).json({ erro: error.message });
         }
     }
+
+    async apagar(req: Request, res: Response) {
+        try {
+            const id_utente = parseInt(req.params.id as string);
+            if (isNaN(id_utente)) {
+                return res.status(400).json({ erro: "ID de utente inválido." });
+            }
+
+            await this.service.apagarUtente(id_utente);
+            return res.status(200).json({ mensagem: "Utente removido com sucesso do sistema." });
+        } catch (error: any) {
+            // Este catch previne que a BD rebente caso o utente já tenha Exames ou Avaliações CARAT que impeçam a exclusão
+            return res.status(400).json({ erro: "Não é possível apagar: O utente possui histórico clínico associado." });
+        }
+    }
 }
