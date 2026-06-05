@@ -555,10 +555,9 @@
                 if(dashboardUtente) dashboardUtente.classList.remove('hidden');
                 if(btnPerfilUtente) btnPerfilUtente.classList.remove('hidden');
                 if(btnPrescricoes) btnPrescricoes.classList.remove('hidden');
-                if(btnSintomas) btnSintomas.classList.remove('hidden'); // UTENTE VÊ SINTOMAS
+                if(btnSintomas) btnSintomas.classList.remove('hidden'); 
                 if(btnExames) btnExames.classList.remove('hidden');
 
-                // Esconder de vez as configurações
                 if(btnConfiguracoes) { btnConfiguracoes.classList.add('hidden'); btnConfiguracoes.style.display = 'none'; }
 
                 try {
@@ -601,7 +600,6 @@
                 if(btnAdmin) btnAdmin.classList.remove('hidden');
                 if(btnConfiguracoes) btnConfiguracoes.classList.remove('hidden'); 
                 if(btnExames) btnExames.classList.add('hidden');
-                // Esconder de vez os sintomas
                 if(btnSintomas) { btnSintomas.classList.add('hidden'); btnSintomas.style.display = 'none'; }
                 
                 mostrarPagina('pagina-admin');
@@ -845,15 +843,12 @@
                 if (!res || !res.ok) throw new Error("Erro ao carregar perfil (Erro 500 no Backend)");
                 const utenteData = await res.json();
                 
-                // Preenchemos os campos base
                 document.getElementById('meuUtenteId').value = utenteData.id_utente;
                 document.getElementById('perfilMorada').value = utenteData.morada || '';
                 
-                // O telemóvel agora vem guardado dentro da "gaveta" do utilizador sem causar erros!
                 const telemovelGuardado = (utenteData.utilizador && utenteData.utilizador.telemovel) ? utenteData.utilizador.telemovel : '';
                 document.getElementById('perfilContacto').value = telemovelGuardado;        
                 
-                // Restantes campos (NIF, Nº Saude, Género)
                 document.getElementById('perfilNumSaude').value = utenteData.numSaude || '';
                 document.getElementById('perfilNif').value = utenteData.nif || '';
                 document.getElementById('perfilGenero').value = utenteData.genero || '';
@@ -932,7 +927,6 @@
 
                 const alertas = await resposta.json();
                 
-                // Filtramos os que já estão FECHADOS para não poluir a visão
                 const alertasAtivos = alertas.filter(a => a.estado !== 'FECHADO');
 
                 if (alertasAtivos.length === 0) {
@@ -989,7 +983,6 @@
             
             const novoEstado = selectEstado.value;
 
-            // Cumprimento do RF13: Exigir nota clínica se for fechado ou em seguimento
             let notaClinica = "";
             if (novoEstado === 'FECHADO' || novoEstado === 'EM_SEGUIMENTO') {
                 notaClinica = prompt(`RF13: Ação Clínica Obrigatória.\nQual foi a ação médica tomada para justificar a alteração para ${novoEstado}?`);
@@ -1007,13 +1000,13 @@
                     method: 'PATCH',
                     body: JSON.stringify({ 
                         estado: novoEstado,
-                        notaMedica: notaClinica // Opcional, caso o teu backend queira gravar na mesma tabela
+                        notaMedica: notaClinica 
                     })
                 });
 
                 if(res && res.ok) {
                     alert('Estado do alerta atualizado com sucesso!');
-                    carregarAlertas(); // Recarrega a tabela para esconder alertas fechados
+                    carregarAlertas(); 
                 } else {
                     alert('Erro ao atualizar alerta no servidor.');
                 }
@@ -1124,7 +1117,6 @@ const examesContainer = document.getElementById('detalhe-exames');
                         labels: avaliacoes.map(a => new Date(a.dataAvaliacao).toLocaleDateString()),
                         datasets: [
                             { label: 'Score CARAT', data: avaliacoes.map(a => a.scoreTotal), borderColor: '#0070f3', backgroundColor: 'rgba(0, 112, 243, 0.1)', fill: true, tension: 0.3 },
-                            // TORNA DINÂMICO TAMBÉM NO GRÁFICO DO MÉDICO:
                             { label: `Limiar (${limiarAtual})`, data: Array(avaliacoes.length).fill(limiarAtual), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false }
                         ]
                     },
@@ -1391,7 +1383,7 @@ const examesContainer = document.getElementById('detalhe-exames');
             // 1. Evita que a página faça refresh automático!
             event.preventDefault(); 
             
-            // 2. Vai buscar os valores usando os IDs novos que tu criaste no HTML
+            // 2. Vai buscar os valores usando os IDs novos que criou-se no HTML
             const novoLimiar = document.getElementById('configLimiarScore').value;
             const novoDelta = document.getElementById('configDelta').value;
             
@@ -1403,7 +1395,6 @@ const examesContainer = document.getElementById('detalhe-exames');
             const msgBox = document.getElementById('msgLimiares');
             msgBox.textContent = "Novas regras do motor CARAT salvas com sucesso!";
             
-            // Limpa a mensagem ao fim de 3 segundos para ficar elegante
             setTimeout(() => {
                 msgBox.textContent = "";
             }, 3000);
@@ -1538,9 +1529,7 @@ const examesContainer = document.getElementById('detalhe-exames');
                 alert("Erro de comunicação com o servidor.");
             }
         }
-        // ==========================================
         // --- 10. FUNÇÕES DE EXAMES ---
-        // ==========================================
 
         // Utente visualiza os seus exames
         async function carregarExames() {

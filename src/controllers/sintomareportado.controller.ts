@@ -43,7 +43,6 @@ export class SintomaReportadoController {
             // Captura quem está a submeter (o próprio utente autenticado)
             const id_utilizador_que_reportou = (req as any).user ? (req as any).user.id : 1;
 
-            // O 'as any' para pacificar as checagens estritas do DTO no TypeScript
             const novoRegisto = await this.service.reportarSintoma(
                 { id_utente, tipoSintoma, gravidade, dataSintoma, numSintoma, descricao, sintomaPresistente } as any,
                 id_utilizador_que_reportou

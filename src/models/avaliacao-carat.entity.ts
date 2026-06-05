@@ -6,7 +6,7 @@ export class AvaliacaoCARAT {
     id!: number;
 
     @Column({ type: "int" })
-    utenteId!: number; // Ligação manual ao ID do Utente
+    utenteId!: number; 
 
     @Column({ type: "int" })
     scoreTotal!: number;

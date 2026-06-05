@@ -7,7 +7,7 @@ export class AlertaController {
     // GET /alertas/medico/:id_medico
     async listarPorMedico(req: Request, res: Response) {
         try {
-            // Usamos o 'as string' para o TypeScript aceitar
+            // Usar o 'as string' para o TypeScript aceitar
             const id_medico = parseInt(req.params.id_medico as string);
             
             if (isNaN(id_medico)) {
@@ -27,7 +27,6 @@ export class AlertaController {
             const id_alerta = parseInt(req.params.id as string);
             const { estado } = req.body; 
 
-            // Se ainda não houver user no token de login durante os testes, usamos um ID provisório (ex: 1)
             const id_medico_que_alterou = (req as any).user ? (req as any).user.id : 1; 
 
             if (!estado) {
@@ -48,8 +47,6 @@ export class AlertaController {
         }
     }
 
-    // POST /alertas (Apesar de o alerta ser gerado pelo Motor CARAT internamente, 
-    //dá jeito ter o endpoint para testar via Postman ou Frontend)
     async criar(req: Request, res: Response) {
         try {
             const { id_utente, id_medico, id_avaliacao_origem, tipo, prioridade, motivo } = req.body;

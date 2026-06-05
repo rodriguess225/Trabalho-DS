@@ -9,15 +9,12 @@ export class IntervencaoClinicaController {
         try {
             const { id_utente, id_medico, id_alerta, notasMedicas, acoesTomadas } = req.body;
 
-            // Validações básicas de segurança para a cozinha não queimar o prato
             if (!id_utente || !id_medico) {
                 return res.status(400).json({ erro: "Os campos id_utente e id_medico são obrigatórios." });
             }
 
-            // Captura o ID do médico autenticado. Usamos o id_medico do body como fallback seguro.
             const id_medico_que_registou = (req as any).user ? (req as any).user.id : id_medico;
 
-            // O 'as any' mágico para o DTO passar sem queixumes do TypeScript
             const novaIntervencao = await this.service.registarIntervencao(
                 { id_utente, id_medico, id_alerta, notasMedicas, acoesTomadas } as any,
                 id_medico_que_registou

@@ -21,7 +21,7 @@ export class AdministradorService {
 
         // 3. Registar o Log de Auditoria (Requisito Não Funcional do Relatório)
         await this.logService.registarLog({
-            id_utilizador: id_utilizador_que_criou || adminGuardado.id_utilizador, // Quem executou a ação
+            id_utilizador: id_utilizador_que_criou || adminGuardado.id_utilizador, 
             tipoAcao: 'CREATE',
             entidadeAfetada: 'Administrador',
             id_registo_afetado: adminGuardado.id_administrador,

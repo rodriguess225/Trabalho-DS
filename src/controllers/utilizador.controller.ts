@@ -19,7 +19,6 @@ export class UtilizadorController {
                 return res.status(404).json({ erro: "Utilizador não encontrado." });
             }
 
-            // Boa prática de segurança: remover a password antes de enviar para o frontend
             const { password, ...utilizadorProtegido } = utilizador as any;
 
             return res.json(utilizadorProtegido);
@@ -38,7 +37,7 @@ export class UtilizadorController {
                 return res.status(400).json({ erro: "Os campos nome, email, password e perfil são obrigatórios." });
             }
 
-            // Captura o ID do Admin que está a criar a conta (se aplicável)
+            // Captura o ID do Admin que está a criar a conta 
             const id_admin_que_criou = (req as any).user ? (req as any).user.id : undefined;
 
             const novoUtilizador = await this.service.criarUtilizador(
@@ -54,7 +53,7 @@ export class UtilizadorController {
                 utilizador: utilizadorCriado
             });
         } catch (error: any) {
-            // Se o email já existir, devolvemos o status correto: 409 Conflict
+            // Se o email já existir, devolve o status correto
             if (error.message === "Já existe um utilizador registado com este email.") {
                 return res.status(409).json({ erro: error.message });
             }

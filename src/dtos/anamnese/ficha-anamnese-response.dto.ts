@@ -9,5 +9,5 @@ export interface FichaAnamneseResponseDto {
     altura: number | null;
     createdAt: Date;
     updatedAt: Date;
-    alergias: AlergiaResponseDto[]; // Lista de alergias associadas a esta ficha de anamnese
+    alergias: AlergiaResponseDto[]; 
 }

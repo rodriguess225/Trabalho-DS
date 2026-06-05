@@ -30,7 +30,7 @@ export class SintomaReportadoService {
         const sintomaGuardado = await this.repo.save(novoSintoma);
 
        
-        //gatilho 1  (RF14)
+        //gatilho 1  
     
         if (dados.gravidade && Number(dados.gravidade) >= 4) {
             if (utente.id_medico) {
@@ -46,7 +46,7 @@ export class SintomaReportadoService {
         }
 
         
-        // GATILHO 2  (UC5)
+        // GATILHO 2  
         
         
         
@@ -100,7 +100,7 @@ export class SintomaReportadoService {
     }
 
     async listarPorUtente(id_utente: number): Promise<SintomaReportadoResponseDto[]> {
-        // Corrigido de dataRegisto para dataSintoma
+
         const sintomas = await this.repo.find({ where: { id_utente: id_utente }, order: { dataSintoma: 'DESC' } });
         return sintomas.map(s => this.toResponseDto(s));
     }

@@ -9,7 +9,7 @@ export class FichaAnamnese {
     id_utente!: number; // FK -> utentes.id_utente (one-to-one)
 
     @Column({ nullable: true })
-    estadoTabagico!: string;  //estiloVida
+    estadoTabagico!: string;  
 
     @Column({ nullable: true })
     antecedentes!: string;

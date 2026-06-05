@@ -6,7 +6,7 @@ import { roleMiddleware } from '../middleware/role.middleware';
 const routes = Router();
 const controller = new MedicoController();
 
-routes.get('/', authMiddleware, controller.listar.bind(controller)); // Útil para dropdowns
+routes.get('/', authMiddleware, controller.listar.bind(controller)); 
 routes.get('/:id', authMiddleware, controller.buscarPorId.bind(controller));
 routes.get('/utilizador/:id_utilizador', authMiddleware, controller.buscarPorIdUtilizador.bind(controller));
 routes.post('/', authMiddleware, roleMiddleware(['ADMIN', 'ADMINISTRADOR']), controller.criar.bind(controller));

@@ -59,7 +59,7 @@ app.use('/carat', caratRoutes);
 app.use('/configuracoes', configuracaoLimiaresRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/exames', exameRoutes);
-app.use('/pedidos-exames', exameRoutes); // Mapeamento duplo (como o do professor)
+app.use('/pedidos-exames', exameRoutes); 
 app.use('/fhir', fhirRoutes);
 app.use('/fichas-anamnese', fichaAnamneseRoutes);
 app.use('/fichas-alergias', fichapossuialergiasRoutes);

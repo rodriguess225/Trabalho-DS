@@ -14,7 +14,6 @@ export class FichaAnamneseController {
                 return res.status(400).json({ erro: "O campo id_utente é obrigatório." });
             }
 
-            // Usamos o 'as any' para o TypeScript aceitar o objeto DTO sem chiar com as tipagens estritas
             const novaFicha = await this.service.criar(
                 { id_utente, estadoTabagico, antecedentes, peso, altura, alergias } as any
             );

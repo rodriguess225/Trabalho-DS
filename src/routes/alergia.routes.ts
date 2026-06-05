@@ -6,6 +6,6 @@ const routes = Router();
 const controller = new AlergiaController();
 
 routes.get('/', authMiddleware, controller.listar.bind(controller));
-routes.post('/', authMiddleware, controller.criar.bind(controller)); // Se omitires o role, basta estar logado
+routes.post('/', authMiddleware, controller.criar.bind(controller)); 
 
 export default routes;

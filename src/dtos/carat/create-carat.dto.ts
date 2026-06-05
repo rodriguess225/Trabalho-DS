@@ -9,6 +9,6 @@ export interface CreateAvaliacaoCaratDto {
     recomendacoes?: string;
     proximoPassoSugerido?: string;
     
-    respostas: CreateRespostaCaratDto[]; // Fica a usar o DTO que acabaste de criar
+    respostas: CreateRespostaCaratDto[]; 
 }
 

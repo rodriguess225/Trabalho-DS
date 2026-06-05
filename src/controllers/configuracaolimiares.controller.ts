@@ -8,7 +8,7 @@ export class ConfiguracaoLimiaresController {
     async obterAtual(req: Request, res: Response) {
         try {
             const limiar = await this.service.obterLimiarAtual();
-            // Devolvemos num objeto JSON para o frontend ler facilmente (ex: data.limiar_score)
+            // Devolvem num objeto JSON para o frontend ler facilmente 
             return res.json({ limiar_score: limiar });
         } catch (error: any) {
             return res.status(500).json({ erro: error.message });

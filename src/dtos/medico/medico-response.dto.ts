@@ -6,5 +6,5 @@ export interface MedicoResponseDto {
     numCedula: string | null;
     instituicao: string | null;
     createdAt: Date;
-    utilizador: UtilizadorResponseDto; // Composição para incluir os dados do utilizador associado
+    utilizador: UtilizadorResponseDto; 
 }

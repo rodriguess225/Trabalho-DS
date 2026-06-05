@@ -15,7 +15,7 @@ export class ExameService {
             where: {
                 id_utente: dados.id_utente,
                 tipoExame: dados.tipoExame,
-                concluido: false // <--- A MÁGICA ESTÁ AQUI
+                concluido: false // 
             }
         });
 

@@ -14,7 +14,7 @@ export class FichaPossuiAlergiasController {
                 return res.status(400).json({ erro: "Os IDs da Ficha e da Alergia são obrigatórios." });
             }
 
-            // Usamos o Number() para garantir que os dados passam como inteiros para o serviço
+            // Usa o Number() para garantir que os dados passam como inteiros para o serviço
             const novaLigacao = await this.service.criarLigacao(
                 Number(id_ficha_anamnese),
                 Number(id_alergia)

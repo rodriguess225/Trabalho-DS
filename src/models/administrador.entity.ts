@@ -6,7 +6,7 @@ export class Administrador {
     id_administrador!: number;
  
     @Column()
-    id_utilizador!: number; // FK -> utilizadores.id
+    id_utilizador!: number; 
  
     @CreateDateColumn()
     createdAt!: Date;

@@ -34,7 +34,7 @@ export class UtenteService {
         // 2. Driblar a restrição do TypeScript lidando com os potenciais undefined
         const dadosParaCriar: any = {
             id_utilizador: dados.id_utilizador,
-            id_medico: id_medico_final, // <--- UTILIZA O MÉDICO SORTEADO AQUI
+            id_medico: id_medico_final, 
             dataNascimento: dados.dataNascimento ?? null,
             morada: dados.morada ?? null,
             genero: dados.genero ?? null,

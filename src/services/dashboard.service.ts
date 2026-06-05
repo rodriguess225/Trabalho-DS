@@ -26,7 +26,7 @@ export class DashboardService {
     private logService = new LogAuditoriaService();
 
     /**
-     * Retorna uma visão consolidada de todo o histórico do utente (UC7)
+     * Retorna uma visão consolidada de todo o histórico do utente 
      */
     async obterHistoricoCompletoUtente(id_utente: number, id_medico_que_consulta: number): Promise<any> {
         
@@ -56,7 +56,7 @@ export class DashboardService {
                 // 3. Garantir que o paciente e o seu ID não são nulos/undefined
                 if (!primeiroPaciente || !primeiroPaciente.id) return [];
                 
-                // 4. Agora o TypeScript já sabe que fhirId é uma string válida (100% seguro)
+                // 4. Agora o TypeScript já sabe que fhirId é uma string válida 
                 const fhirId: string = primeiroPaciente.id;
                 
                 return await getConditionsFromFhir(fhirId);
@@ -77,7 +77,7 @@ export class DashboardService {
            medicacoes,
            sintomas,
            intervencoes,
-           diagnosticos_externos_fhir // <-- O resultado do FHIR cai aqui!
+           diagnosticos_externos_fhir // <-- O resultado do FHIR 
         ] = await Promise.all([
            this.caratRepo.find({ where: { utenteId: id_utente }, order: { dataAvaliacao: 'DESC' } }),
            this.alertaRepo.find({ where: { id_utente: id_utente }, order: { createdAt: 'DESC' } }),
@@ -85,7 +85,7 @@ export class DashboardService {
            this.medicacaoRepo.find({ where: { id_utente: id_utente } }),
            this.sintomaRepo.find({ where: { id_utente: id_utente } }),
            this.intervencaoRepo.find({ where: { id_utente: id_utente } }),
-           buscarDadosFHIR() // <-- A chamada ao FHIR arranca em simultâneo com a BD!
+           buscarDadosFHIR() // <-- A chamada ao FHIR arranca em simultâneo com a BD
        ]);
 
         // 4. Registar Log de Auditoria (Saber que o médico X visualizou a ficha do utente Y)

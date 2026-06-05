@@ -43,7 +43,7 @@ export class ExameController {
             // Apanhar o ID do médico (com o fallback habitual para 1)
             const id_medico_que_solicitou = (req as any).user ? (req as any).user.id : 1;
 
-            // Usamos o 'as any' para o TypeScript não bloquear caso o DTO exija mais propriedades opcionais
+            // Usa o 'as any' para o TypeScript não bloquear caso o DTO exija mais propriedades opcionais
             const novoExame = await this.service.criarExame(
                 { id_utente, tipoExame, id_intervencao_clinica, dataSolicitacao } as any,
                 id_medico_que_solicitou
@@ -55,7 +55,7 @@ export class ExameController {
             });
         } catch (error: any) {
             if (error.message === "Já existe um exame igual registado para este utente.") {
-                return res.status(409).json({ erro: error.message }); // 409 Conflict é o HTTP status correto para duplicados!
+                return res.status(409).json({ erro: error.message }); 
             }
             return res.status(400).json({ erro: error.message });
         }
@@ -67,7 +67,6 @@ export class ExameController {
                 return res.status(400).json({ erro: "ID do exame inválido." });
             }
 
-            // Identificar quem está a alterar (o Médico)
             const id_medico_que_alterou = (req as any).user ? (req as any).user.id : 1;
 
             const exameAtualizado = await this.service.atualizarResultado(id_exame, req.body, id_medico_que_alterou);

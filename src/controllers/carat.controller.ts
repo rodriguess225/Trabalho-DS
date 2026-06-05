@@ -22,8 +22,6 @@ export class CaratController {
                 return res.status(400).json({ erro: "Dados incompletos. O id_utente e as respostas são obrigatórios." });
             }
 
-            // Apanhamos o ID de quem está logado. 
-            // Se ainda estiveres a testar no Postman sem token, usamos o id_utente enviado no body como fallback.
             const id_utilizador_que_submeteu = (req as any).user ? (req as any).user.id : id_utente;
 
            const novaAvaliacao = await this.service.submeterAvaliacao(

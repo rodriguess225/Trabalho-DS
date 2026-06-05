@@ -31,7 +31,6 @@ export class LogAuditoriaController {
     }
 
     // POST /logs
-    // Principalmente usado para testes manuais no Postman, já que a maioria dos logs é gerada internamente
     async criar(req: Request, res: Response) {
         try {
             const { id_utilizador, tipoAcao, entidadeAfetada, id_registo_afetado, dataHora, valorAntigo, valorNovo } = req.body;

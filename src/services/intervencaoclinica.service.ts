@@ -24,7 +24,6 @@ export class IntervencaoClinicaService {
 
         const nova = this.repo.create(dadosParaCriar); 
         
-        // CORREÇÃO AQUI: as unknown as IntervencaoClinica
         const guardada = (await this.repo.save(nova)) as unknown as IntervencaoClinica;
              
         if (dados.id_alerta) {

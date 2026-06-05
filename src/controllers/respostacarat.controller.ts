@@ -9,15 +9,12 @@ export class RespostaCaratController {
         try {
             const { id_avaliacao, num_pergunta, valor_pontuacao } = req.body;
 
-            // Validação detalhada (repara que validamos se valor_pontuacao é undefined, 
-            // porque o valor '0' é uma resposta válida no CARAT e o JavaScript pode confundi-lo com "falso")
             if (!id_avaliacao || !num_pergunta || valor_pontuacao === undefined) {
                 return res.status(400).json({ 
                     erro: "Os campos id_avaliacao, num_pergunta e valor_pontuacao são obrigatórios." 
                 });
             }
 
-            // Chamada ao serviço passando os parâmetros convertidos em número por segurança
             const novaResposta = await this.service.criarResposta(
                 Number(id_avaliacao),
                 Number(num_pergunta),

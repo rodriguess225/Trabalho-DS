@@ -1,6 +1,6 @@
 export interface CreateUtenteDto {
-    id_utilizador: number; // FK -> utilizadores.id
-    id_medico: number; // FK -> medicos.id_medico
+    id_utilizador: number; 
+    id_medico: number; 
     numSaude: string;
     dataNascimento: string;
     genero?: string;

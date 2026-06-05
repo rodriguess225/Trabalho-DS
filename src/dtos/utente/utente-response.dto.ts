@@ -10,5 +10,5 @@ export interface UtenteResponseDto {
     morada: string | null;
     ativo: boolean;
     createdAt: Date;
-    utilizador: UtilizadorResponseDto; // Composição para incluir os dados do utilizador associado
+    utilizador: UtilizadorResponseDto; 
 }

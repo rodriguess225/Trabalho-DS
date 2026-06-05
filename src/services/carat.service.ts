@@ -38,7 +38,7 @@ export class CaratService {
             console.log("A usar score de corte padrão (24)");
         }
 
-        // 3. Processar Array de Respostas (Substitui o hardcoded antigo)
+        // 3. Processar Array de Respostas 
         let scoreSuperiores = 0;
         let scoreInferiores = 0;
 
@@ -65,7 +65,6 @@ export class CaratService {
 
         if (ultimaAvaliacao) {
             deltaQueda = ultimaAvaliacao.scoreTotal - scoreTotal;
-            // No vosso model está mapeado com caracteres especiais devido ao encoding: limiar_delta_deterorizaÃ§Ã£o
             const deltaPermitido = config?.limiar_delta_deterioracao || 4; 
             
             if (deltaQueda >= deltaPermitido) {
@@ -96,7 +95,7 @@ export class CaratService {
             dataAvaliacao: new Date()
         }));
 
-        // 7. Persistir Cada Resposta Individual (Resolve o Problema de Persistência)
+        // 7. Persistir Cada Resposta Individual 
         const respostaRepo = AppDataSource.getRepository(RespostaCarat);
         for (const resp of dados.respostas) {
             await respostaRepo.save(respostaRepo.create({
@@ -118,7 +117,7 @@ export class CaratService {
             });
         }
 
-        // 9. Gatilho de Alerta 2: Deterioração Abrupta (RF10)
+        // 9. Gatilho de Alerta 2: Deterioração Abrupta 
         if (dispararAlertaDeterioracao) {
             await this.alertaService.gerarAlerta({
                 id_utente: utenteLogado.id_utente,
@@ -142,7 +141,7 @@ export class CaratService {
         return avaliacaoGuardada;
     }
 
-    // Método auxiliar para listar que as vossas rotas usam
+    // Método auxiliar 
     async listarAvaliacoes(): Promise<AvaliacaoCARAT[]> {
         return await this.repo.find({
             order: { dataAvaliacao: 'DESC' }

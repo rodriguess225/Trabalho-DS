@@ -12,5 +12,5 @@ export class RespostaCarat {
     num_pergunta!: number; // 1 a 10
 
     @Column({ type: "int" })
-    valor!: number; // O valor da resposta escolhida
+    valor!: number; 
 }

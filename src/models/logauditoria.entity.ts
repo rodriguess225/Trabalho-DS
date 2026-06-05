@@ -15,7 +15,7 @@ export class LogAuditoria {
     entidadeAfetada!: string; // Ex: "AvaliacaoCARAT" | "Alerta" | "Utilizador"
 
     @Column({ nullable: true })
-    id_registo_afetado!: number; // ID do registo afetado
+    id_registo_afetado!: number; 
 
     @Column({ type: "datetime", nullable: true })
     dataHora!: string;

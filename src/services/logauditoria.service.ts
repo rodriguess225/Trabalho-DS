@@ -13,7 +13,7 @@ export class LogAuditoriaService {
             tipoAcao: dados.tipoAcao,
             entidadeAfetada: dados.entidadeAfetada,
             id_registo_afetado: dados.id_registo_afetado ?? null,
-            dataHora: dados.dataHora || new Date().toISOString(), // Mantemos a data como string como pede a BD
+            dataHora: dados.dataHora || new Date().toISOString(), // Mantem a data como string como pede a BD
             valorAntigo: dados.valorAntigo ?? null,
             valorNovo: dados.valorNovo ?? null
         };

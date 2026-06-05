@@ -1,5 +1,5 @@
 export interface CreateMedicoDto {
-    id_utilizador: number; // FK -> utilizadores.id
+    id_utilizador: number; 
     especialidade?: string;
     numCedula?: string;
     instituicao?: string;

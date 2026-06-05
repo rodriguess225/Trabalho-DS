@@ -33,7 +33,7 @@ export class MedicacaoController {
             // Captura o ID do utilizador (médico) logado que está a prescrever a medicação
             const id_utilizador = (req as any).user ? (req as any).user.id : 1;
 
-            // O 'as any' mágico para o DTO passar sem queixas do TypeScript
+            // O 'as any'  para o DTO passar sem queixas do TypeScript
             const novaMedicacao = await this.service.adicionarMedicacao(
                 { id_utente, id_intervencao_clinica, nomeMedicacao, dose, frequencia, dataPrescricao, dataFinal } as any,
                 id_utilizador

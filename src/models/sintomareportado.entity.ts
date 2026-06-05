@@ -20,7 +20,7 @@ export class SintomaReportado {
     @Column({ nullable: true })
     numSintoma!: string;
 
-    @Column({ nullable: true }) //Notas adicionais
+    @Column({ nullable: true }) 
     descricao!: string;
 
     @Column({ default: false })
